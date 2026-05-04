@@ -1,0 +1,69 @@
+[gd_scene load_steps=6 format=3 uid="uid://dice"]
+
+[ext_resource type="AudioStream" path="res://assets/dice/dice-89594.mp3" id="1"]
+[ext_resource type="Script" path="res://scripts/Dice.gd" id="2"]
+[ext_resource type="Resource" path="res://resources/dice/spade_dice_definition.tres" id="3"]
+
+[sub_resource type="PlaneMesh" id="1"]
+size = Vector2(0.25, 0.25)
+
+[sub_resource type="StandardMaterial3D" id="3"]
+cull_mode = 2
+roughness = 0.9
+
+[sub_resource type="BoxShape3D" id="7"]
+size = Vector3(0.25, 0.25, 0.25)
+margin = 0.0001
+
+[sub_resource type="BoxMesh" id="8"]
+size = Vector3(0.245, 0.245, 0.245)
+
+[node name="Dice" type="RigidBody3D"]
+mass = 1.0
+linear_damp = 0.05
+angular_damp = 0.2
+contact_monitor = true
+max_contacts_reported = 4
+script = ExtResource("2")
+definition = ExtResource("3")
+
+[node name="FaceTop" type="MeshInstance3D" parent="."]
+mesh = SubResource("1")
+material_override = SubResource("3")
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 0.125, 0)
+
+[node name="FaceBottom" type="MeshInstance3D" parent="."]
+mesh = SubResource("1")
+material_override = SubResource("3")
+transform = Transform3D(1, 0, 0, 0, -1, 0, 0, 0, -1, 0, -0.125, 0)
+
+[node name="FaceFront" type="MeshInstance3D" parent="."]
+mesh = SubResource("1")
+material_override = SubResource("3")
+transform = Transform3D(1, 0, 0, 0, 0, -1, 0, 1, 0, 0, 0, 0.125)
+
+[node name="FaceBack" type="MeshInstance3D" parent="."]
+mesh = SubResource("1")
+material_override = SubResource("3")
+transform = Transform3D(1, 0, 0, 0, 0, 1, 0, -1, 0, 0, 0, -0.125)
+
+[node name="FaceRight" type="MeshInstance3D" parent="."]
+mesh = SubResource("1")
+material_override = SubResource("3")
+transform = Transform3D(0, 1, 0, -1, 0, 0, 0, 0, 1, 0.125, 0, 0)
+
+[node name="FaceLeft" type="MeshInstance3D" parent="."]
+mesh = SubResource("1")
+material_override = SubResource("3")
+transform = Transform3D(0, -1, 0, 1, 0, 0, 0, 0, 1, -0.125, 0, 0)
+
+[node name="Collision" type="CollisionShape3D" parent="."]
+shape = SubResource("7")
+
+[node name="ShadowCaster" type="MeshInstance3D" parent="."]
+mesh = SubResource("8")
+cast_shadow = 3
+
+[node name="HitSound" type="AudioStreamPlayer3D" parent="."]
+stream = ExtResource("1")
+volume_db = -6.0
