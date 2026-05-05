@@ -1,0 +1,26 @@
+[
+	{
+		"hp": 3,
+		"id": "scheletro_guerriero",
+		"image": "res://assets/enemies/skeleton.png",
+		"name": "Scheletro guerriero",
+		"reward": 1,
+		"strength": 3
+	},
+	{
+		"hp": 4,
+		"id": "goblin",
+		"image": "res://assets/enemies/goblin.png",
+		"name": "Goblin",
+		"reward": 1,
+		"strength": 2
+	},
+	{
+		"hp": 5,
+		"id": "licantropo",
+		"image": "res://assets/enemies/werewolf.png",
+		"name": "Licantropo",
+		"reward": 2,
+		"strength": 3
+	}
+]

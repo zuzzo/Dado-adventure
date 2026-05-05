@@ -1,7 +1,12 @@
-[gd_scene load_steps=14 format=3 uid="uid://dice_roll_module"]
+[gd_scene load_steps=19 format=3 uid="uid://dice_roll_module"]
 
 [ext_resource type="PackedScene" path="res://scenes/Dice.tscn" id="1"]
 [ext_resource type="Script" path="res://scripts/modules/DiceRollModule.gd" id="2"]
+[ext_resource type="PackedScene" path="res://scenes/ScudoDice.tscn" id="3"]
+[ext_resource type="PackedScene" path="res://scenes/MagiaDice.tscn" id="4"]
+[ext_resource type="PackedScene" path="res://scenes/LadroDice.tscn" id="5"]
+[ext_resource type="PackedScene" path="res://scenes/MonetaDice.tscn" id="6"]
+[ext_resource type="Texture2D" path="res://assets/dice/panno.png" id="7"]
 
 [sub_resource type="Environment" id="1"]
 background_mode = 1
@@ -11,45 +16,36 @@ ambient_light_color = Color(0.8, 0.85, 1, 1)
 ambient_light_energy = 0.7
 
 [sub_resource type="StandardMaterial3D" id="2"]
-albedo_color = Color(0.168627, 0.215686, 0.278431, 1)
-roughness = 0.95
+albedo_texture = ExtResource("7")
+uv1_scale = Vector3(5.5, 5.5, 5.5)
+roughness = 1.0
 
-[sub_resource type="BoxMesh" id="3"]
-size = Vector3(12, 0.4, 12)
+[sub_resource type="CylinderMesh" id="3"]
+top_radius = 2.4
+bottom_radius = 2.175
+height = 0.4
+radial_segments = 32
 
-[sub_resource type="BoxShape3D" id="4"]
-size = Vector3(12, 0.4, 12)
+[sub_resource type="CylinderShape3D" id="4"]
+radius = 2.375
+height = 0.4
 
 [sub_resource type="BoxMesh" id="5"]
-size = Vector3(12.4, 0.8, 0.35)
-
-[sub_resource type="StyleBoxFlat" id="5"]
-bg_color = Color(0.0352941, 0.0470588, 0.0862745, 0.88)
-border_width_left = 2
-border_width_top = 2
-border_width_right = 2
-border_width_bottom = 2
-border_color = Color(0.529412, 0.705882, 1, 0.9)
-corner_radius_top_left = 14
-corner_radius_top_right = 14
-corner_radius_bottom_right = 14
-corner_radius_bottom_left = 14
+size = Vector3(2.18, 0.9, 0.4)
 
 [sub_resource type="BoxShape3D" id="6"]
-size = Vector3(12.4, 0.8, 0.35)
+size = Vector3(2.18, 0.9, 0.4)
 
-[sub_resource type="BoxMesh" id="7"]
-size = Vector3(0.35, 0.8, 12.4)
-
-[sub_resource type="BoxShape3D" id="8"]
-size = Vector3(0.35, 0.8, 12.4)
+[sub_resource type="BoxShape3D" id="10"]
+size = Vector3(2.3, 4.5, 0.8)
 
 [node name="DiceRollModule" type="Node3D"]
 script = ExtResource("2")
 dice_scene = ExtResource("1")
+dice_scenes = Array[PackedScene]([ExtResource("1"), ExtResource("3"), ExtResource("4"), ExtResource("5"), ExtResource("6")])
 
 [node name="Camera3D" type="Camera3D" parent="."]
-position = Vector3(0, 4.95, 0)
+position = Vector3(0, 5.69, 0)
 rotation_degrees = Vector3(-90, 0, 0)
 current = true
 fov = 50.0
@@ -73,71 +69,142 @@ material_override = SubResource("2")
 [node name="CollisionShape3D" type="CollisionShape3D" parent="Table"]
 shape = SubResource("4")
 
-[node name="NorthWall" type="StaticBody3D" parent="."]
-transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 0.4, -6)
+[node name="WallNorth" type="StaticBody3D" parent="."]
+position = Vector3(0, 0.55, -2.35)
 
-[node name="MeshInstance3D" type="MeshInstance3D" parent="NorthWall"]
+[node name="MeshInstance3D" type="MeshInstance3D" parent="WallNorth"]
 mesh = SubResource("5")
 material_override = SubResource("2")
 
-[node name="CollisionShape3D" type="CollisionShape3D" parent="NorthWall"]
+[node name="CollisionShape3D" type="CollisionShape3D" parent="WallNorth"]
 shape = SubResource("6")
 
-[node name="SouthWall" type="StaticBody3D" parent="."]
-transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 0.4, 6)
+[node name="BarrierNorth" type="StaticBody3D" parent="."]
+position = Vector3(0, 2.25, -2.65)
 
-[node name="MeshInstance3D" type="MeshInstance3D" parent="SouthWall"]
+[node name="CollisionShape3D" type="CollisionShape3D" parent="BarrierNorth"]
+shape = SubResource("10")
+
+[node name="WallNorthEast" type="StaticBody3D" parent="."]
+position = Vector3(1.66, 0.55, -1.66)
+rotation_degrees = Vector3(0, -45, 0)
+
+[node name="MeshInstance3D" type="MeshInstance3D" parent="WallNorthEast"]
 mesh = SubResource("5")
 material_override = SubResource("2")
 
-[node name="CollisionShape3D" type="CollisionShape3D" parent="SouthWall"]
+[node name="CollisionShape3D" type="CollisionShape3D" parent="WallNorthEast"]
 shape = SubResource("6")
 
-[node name="EastWall" type="StaticBody3D" parent="."]
-transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 6, 0.4, 0)
+[node name="BarrierNorthEast" type="StaticBody3D" parent="."]
+position = Vector3(1.87, 2.25, -1.87)
+rotation_degrees = Vector3(0, -45, 0)
 
-[node name="MeshInstance3D" type="MeshInstance3D" parent="EastWall"]
-mesh = SubResource("7")
+[node name="CollisionShape3D" type="CollisionShape3D" parent="BarrierNorthEast"]
+shape = SubResource("10")
+
+[node name="WallEast" type="StaticBody3D" parent="."]
+position = Vector3(2.35, 0.55, 0)
+rotation_degrees = Vector3(0, 90, 0)
+
+[node name="MeshInstance3D" type="MeshInstance3D" parent="WallEast"]
+mesh = SubResource("5")
 material_override = SubResource("2")
 
-[node name="CollisionShape3D" type="CollisionShape3D" parent="EastWall"]
-shape = SubResource("8")
+[node name="CollisionShape3D" type="CollisionShape3D" parent="WallEast"]
+shape = SubResource("6")
 
-[node name="WestWall" type="StaticBody3D" parent="."]
-transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, -6, 0.4, 0)
+[node name="BarrierEast" type="StaticBody3D" parent="."]
+position = Vector3(2.65, 2.25, 0)
+rotation_degrees = Vector3(0, 90, 0)
 
-[node name="MeshInstance3D" type="MeshInstance3D" parent="WestWall"]
-mesh = SubResource("7")
+[node name="CollisionShape3D" type="CollisionShape3D" parent="BarrierEast"]
+shape = SubResource("10")
+
+[node name="WallSouthEast" type="StaticBody3D" parent="."]
+position = Vector3(1.66, 0.55, 1.66)
+rotation_degrees = Vector3(0, 45, 0)
+
+[node name="MeshInstance3D" type="MeshInstance3D" parent="WallSouthEast"]
+mesh = SubResource("5")
 material_override = SubResource("2")
 
-[node name="CollisionShape3D" type="CollisionShape3D" parent="WestWall"]
-shape = SubResource("8")
+[node name="CollisionShape3D" type="CollisionShape3D" parent="WallSouthEast"]
+shape = SubResource("6")
 
-[node name="CanvasLayer" type="CanvasLayer" parent="."]
+[node name="BarrierSouthEast" type="StaticBody3D" parent="."]
+position = Vector3(1.87, 2.25, 1.87)
+rotation_degrees = Vector3(0, 45, 0)
 
-[node name="DiceWindow" type="PanelContainer" parent="CanvasLayer"]
-offset_left = 20.0
-offset_top = 20.0
-offset_right = 620.0
-offset_bottom = 180.0
-theme_override_styles/panel = SubResource("5")
+[node name="CollisionShape3D" type="CollisionShape3D" parent="BarrierSouthEast"]
+shape = SubResource("10")
 
-[node name="MarginContainer" type="MarginContainer" parent="CanvasLayer/DiceWindow"]
-theme_override_constants/margin_left = 18
-theme_override_constants/margin_top = 14
-theme_override_constants/margin_right = 18
-theme_override_constants/margin_bottom = 14
+[node name="WallSouth" type="StaticBody3D" parent="."]
+position = Vector3(0, 0.55, 2.35)
 
-[node name="VBoxContainer" type="VBoxContainer" parent="CanvasLayer/DiceWindow/MarginContainer"]
+[node name="MeshInstance3D" type="MeshInstance3D" parent="WallSouth"]
+mesh = SubResource("5")
+material_override = SubResource("2")
 
-[node name="TitleLabel" type="Label" parent="CanvasLayer/DiceWindow/MarginContainer/VBoxContainer"]
-theme_override_font_sizes/font_size = 26
-text = "Modulo Lancio Dadi"
+[node name="CollisionShape3D" type="CollisionShape3D" parent="WallSouth"]
+shape = SubResource("6")
 
-[node name="InfoLabel" type="Label" parent="CanvasLayer/DiceWindow/MarginContainer/VBoxContainer"]
-theme_override_font_sizes/font_size = 24
-text = "Premi SPAZIO per lanciare 1 dado"
+[node name="BarrierSouth" type="StaticBody3D" parent="."]
+position = Vector3(0, 2.25, 2.65)
 
-[node name="ResultLabel" type="Label" parent="CanvasLayer/DiceWindow/MarginContainer/VBoxContainer"]
-theme_override_font_sizes/font_size = 30
-text = "Risultato in attesa..."
+[node name="CollisionShape3D" type="CollisionShape3D" parent="BarrierSouth"]
+shape = SubResource("10")
+
+[node name="WallSouthWest" type="StaticBody3D" parent="."]
+position = Vector3(-1.66, 0.55, 1.66)
+rotation_degrees = Vector3(0, -45, 0)
+
+[node name="MeshInstance3D" type="MeshInstance3D" parent="WallSouthWest"]
+mesh = SubResource("5")
+material_override = SubResource("2")
+
+[node name="CollisionShape3D" type="CollisionShape3D" parent="WallSouthWest"]
+shape = SubResource("6")
+
+[node name="BarrierSouthWest" type="StaticBody3D" parent="."]
+position = Vector3(-1.87, 2.25, 1.87)
+rotation_degrees = Vector3(0, -45, 0)
+
+[node name="CollisionShape3D" type="CollisionShape3D" parent="BarrierSouthWest"]
+shape = SubResource("10")
+
+[node name="WallWest" type="StaticBody3D" parent="."]
+position = Vector3(-2.35, 0.55, 0)
+rotation_degrees = Vector3(0, 90, 0)
+
+[node name="MeshInstance3D" type="MeshInstance3D" parent="WallWest"]
+mesh = SubResource("5")
+material_override = SubResource("2")
+
+[node name="CollisionShape3D" type="CollisionShape3D" parent="WallWest"]
+shape = SubResource("6")
+
+[node name="BarrierWest" type="StaticBody3D" parent="."]
+position = Vector3(-2.65, 2.25, 0)
+rotation_degrees = Vector3(0, 90, 0)
+
+[node name="CollisionShape3D" type="CollisionShape3D" parent="BarrierWest"]
+shape = SubResource("10")
+
+[node name="WallNorthWest" type="StaticBody3D" parent="."]
+position = Vector3(-1.66, 0.55, -1.66)
+rotation_degrees = Vector3(0, 45, 0)
+
+[node name="MeshInstance3D" type="MeshInstance3D" parent="WallNorthWest"]
+mesh = SubResource("5")
+material_override = SubResource("2")
+
+[node name="CollisionShape3D" type="CollisionShape3D" parent="WallNorthWest"]
+shape = SubResource("6")
+
+[node name="BarrierNorthWest" type="StaticBody3D" parent="."]
+position = Vector3(-1.87, 2.25, -1.87)
+rotation_degrees = Vector3(0, 45, 0)
+
+[node name="CollisionShape3D" type="CollisionShape3D" parent="BarrierNorthWest"]
+shape = SubResource("10")

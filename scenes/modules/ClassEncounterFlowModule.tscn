@@ -1,0 +1,191 @@
+[gd_scene load_steps=11 format=3]
+
+[ext_resource type="Script" path="res://scripts/modules/ClassEncounterFlowModule.gd" id="1"]
+[ext_resource type="PackedScene" path="res://scenes/modules/DiceRollModule.tscn" id="2"]
+[ext_resource type="PackedScene" path="res://scenes/modules/BattleBoardModule.tscn" id="3"]
+[ext_resource type="PackedScene" path="res://scenes/Dice.tscn" id="4"]
+[ext_resource type="PackedScene" path="res://scenes/ScudoDice.tscn" id="5"]
+[ext_resource type="PackedScene" path="res://scenes/MagiaDice.tscn" id="6"]
+[ext_resource type="PackedScene" path="res://scenes/LadroDice.tscn" id="7"]
+[ext_resource type="PackedScene" path="res://scenes/MonetaDice.tscn" id="8"]
+
+[node name="ClassEncounterFlowModule" type="Node"]
+script = ExtResource("1")
+spada_dice_scene = ExtResource("4")
+scudo_dice_scene = ExtResource("5")
+magia_dice_scene = ExtResource("6")
+ladro_dice_scene = ExtResource("7")
+moneta_dice_scene = ExtResource("8")
+
+[node name="DiceRollModule" parent="." instance=ExtResource("2")]
+visible = false
+
+[node name="BattleBoardModule" parent="." instance=ExtResource("3")]
+visible = false
+
+[node name="SelectionScreen" type="Control" parent="."]
+layout_mode = 3
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+grow_horizontal = 2
+grow_vertical = 2
+
+[node name="Background" type="ColorRect" parent="SelectionScreen"]
+layout_mode = 1
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+grow_horizontal = 2
+grow_vertical = 2
+color = Color(0.0313726, 0.0431373, 0.0666667, 1)
+
+[node name="Center" type="CenterContainer" parent="SelectionScreen"]
+layout_mode = 1
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+grow_horizontal = 2
+grow_vertical = 2
+
+[node name="SelectionRow" type="HBoxContainer" parent="SelectionScreen/Center"]
+layout_mode = 2
+theme_override_constants/separation = 36
+
+[node name="VBox" type="VBoxContainer" parent="SelectionScreen/Center/SelectionRow"]
+layout_mode = 2
+theme_override_constants/separation = 18
+
+[node name="Title" type="Label" parent="SelectionScreen/Center/SelectionRow/VBox"]
+layout_mode = 2
+horizontal_alignment = 1
+theme_override_font_sizes/font_size = 40
+text = "Scegli Il Personaggio"
+
+[node name="Subtitle" type="Label" parent="SelectionScreen/Center/SelectionRow/VBox"]
+layout_mode = 2
+horizontal_alignment = 1
+theme_override_font_sizes/font_size = 20
+text = "Ogni classe parte con 3 dadi base diversi"
+
+[node name="Buttons" type="VBoxContainer" parent="SelectionScreen/Center/SelectionRow/VBox"]
+layout_mode = 2
+theme_override_constants/separation = 12
+
+[node name="WarriorButton" type="Button" parent="SelectionScreen/Center/SelectionRow/VBox/Buttons"]
+custom_minimum_size = Vector2(420, 64)
+layout_mode = 2
+theme_override_font_sizes/font_size = 26
+text = "Guerriero"
+
+[node name="MageButton" type="Button" parent="SelectionScreen/Center/SelectionRow/VBox/Buttons"]
+custom_minimum_size = Vector2(420, 64)
+layout_mode = 2
+theme_override_font_sizes/font_size = 26
+text = "Mago"
+
+[node name="ThiefButton" type="Button" parent="SelectionScreen/Center/SelectionRow/VBox/Buttons"]
+custom_minimum_size = Vector2(420, 64)
+layout_mode = 2
+theme_override_font_sizes/font_size = 26
+text = "Ladro"
+
+[node name="WarlockButton" type="Button" parent="SelectionScreen/Center/SelectionRow/VBox/Buttons"]
+custom_minimum_size = Vector2(420, 64)
+layout_mode = 2
+theme_override_font_sizes/font_size = 26
+text = "Warlock"
+
+[node name="PreviewPanel" type="PanelContainer" parent="SelectionScreen/Center/SelectionRow"]
+custom_minimum_size = Vector2(420, 560)
+layout_mode = 2
+
+[node name="PreviewMargin" type="MarginContainer" parent="SelectionScreen/Center/SelectionRow/PreviewPanel"]
+layout_mode = 2
+theme_override_constants/margin_left = 18
+theme_override_constants/margin_top = 18
+theme_override_constants/margin_right = 18
+theme_override_constants/margin_bottom = 18
+
+[node name="PreviewVBox" type="VBoxContainer" parent="SelectionScreen/Center/SelectionRow/PreviewPanel/PreviewMargin"]
+layout_mode = 2
+theme_override_constants/separation = 14
+
+[node name="CharacterName" type="Label" parent="SelectionScreen/Center/SelectionRow/PreviewPanel/PreviewMargin/PreviewVBox"]
+layout_mode = 2
+horizontal_alignment = 1
+theme_override_font_sizes/font_size = 28
+text = "Guerriero"
+
+[node name="CharacterImagePanel" type="PanelContainer" parent="SelectionScreen/Center/SelectionRow/PreviewPanel/PreviewMargin/PreviewVBox"]
+custom_minimum_size = Vector2(0, 420)
+layout_mode = 2
+size_flags_vertical = 3
+
+[node name="CharacterImageMargin" type="MarginContainer" parent="SelectionScreen/Center/SelectionRow/PreviewPanel/PreviewMargin/PreviewVBox/CharacterImagePanel"]
+layout_mode = 2
+theme_override_constants/margin_left = 16
+theme_override_constants/margin_top = 16
+theme_override_constants/margin_right = 16
+theme_override_constants/margin_bottom = 16
+
+[node name="CharacterImageCenter" type="CenterContainer" parent="SelectionScreen/Center/SelectionRow/PreviewPanel/PreviewMargin/PreviewVBox/CharacterImagePanel/CharacterImageMargin"]
+layout_mode = 2
+
+[node name="CharacterImage" type="TextureRect" parent="SelectionScreen/Center/SelectionRow/PreviewPanel/PreviewMargin/PreviewVBox/CharacterImagePanel/CharacterImageMargin/CharacterImageCenter"]
+custom_minimum_size = Vector2(320, 320)
+layout_mode = 2
+expand_mode = 1
+stretch_mode = 5
+
+[node name="CharacterHint" type="Label" parent="SelectionScreen/Center/SelectionRow/PreviewPanel/PreviewMargin/PreviewVBox"]
+layout_mode = 2
+horizontal_alignment = 1
+text = "Inserisci le immagini in res://assets/characters/"
+
+[node name="LoadoutTitle" type="Label" parent="SelectionScreen/Center/SelectionRow/PreviewPanel/PreviewMargin/PreviewVBox"]
+layout_mode = 2
+horizontal_alignment = 1
+theme_override_font_sizes/font_size = 20
+text = "Dadi Base"
+
+[node name="CharacterStats" type="Label" parent="SelectionScreen/Center/SelectionRow/PreviewPanel/PreviewMargin/PreviewVBox"]
+layout_mode = 2
+horizontal_alignment = 1
+theme_override_font_sizes/font_size = 18
+text = "Punti Vita: 10"
+
+[node name="LoadoutRow" type="HBoxContainer" parent="SelectionScreen/Center/SelectionRow/PreviewPanel/PreviewMargin/PreviewVBox"]
+layout_mode = 2
+alignment = 1
+theme_override_constants/separation = 12
+
+[node name="RollOverlay" type="Control" parent="."]
+visible = false
+layout_mode = 3
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+grow_horizontal = 2
+grow_vertical = 2
+mouse_filter = 2
+
+[node name="OverlayTop" type="MarginContainer" parent="RollOverlay"]
+layout_mode = 1
+anchors_preset = 10
+anchor_right = 1.0
+offset_left = 24.0
+offset_top = 24.0
+offset_right = -24.0
+offset_bottom = 120.0
+grow_horizontal = 2
+
+[node name="RollInfo" type="Label" parent="RollOverlay/OverlayTop"]
+layout_mode = 2
+theme_override_font_sizes/font_size = 28
+visible = false
+
+[node name="ContinueHint" type="Label" parent="RollOverlay/OverlayTop"]
+layout_mode = 2
+theme_override_font_sizes/font_size = 18
+visible = false

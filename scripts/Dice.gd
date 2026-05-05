@@ -19,8 +19,11 @@ var dice_type: String = ""
 
 const DICE_COLORS := {
 	"blue": Color(0.35, 0.65, 1.0, 1.0),
+	"cyan": Color(0.35, 0.82, 1.0, 1.0),
 	"green": Color(0.3, 0.95, 0.45, 1.0),
-	"red": Color(1.0, 0.35, 0.35, 1.0)
+	"purple": Color(0.64, 0.38, 0.95, 1.0),
+	"red": Color(1.0, 0.35, 0.35, 1.0),
+	"yellow": Color(0.97, 0.82, 0.2, 1.0)
 }
 
 func _ready() -> void:
@@ -117,53 +120,42 @@ func _get_global_normal(face: Dictionary) -> Vector3:
 	var global_normal = transform.basis * local_normal
 	return global_normal.normalized()
 
-func get_top_value() -> int:
-	var best_dot := -2.0  # dot product range is [-1, 1]
-	var best_value := 1
-	var best_face_id := 1
-	var best_label := ""
-	
-	# UP vector in world space (positive Y)
-	var up = Vector3.UP
-	
+func _get_top_face_entry() -> Dictionary:
+	var best_dot := -2.0
+	var best_entry: Dictionary = {}
+	var up := Vector3.UP
 	for entry in _faces:
 		var global_normal = _get_global_normal(entry)
-		# dot product tells us how parallel the normal is to UP
-		# highest dot product = most "pointing up" = top face
 		var dot = global_normal.dot(up)
 		if dot > best_dot:
 			best_dot = dot
-			best_value = entry["value"]
-			best_face_id = entry["face_id"]
-			best_label = entry["label"]
-	
-	print("Top face: %d (%s, dot: %.3f)" % [best_face_id, best_label, best_dot])
-	return best_value
+			best_entry = entry
+	return best_entry
+
+func get_top_value() -> int:
+	var entry := _get_top_face_entry()
+	if entry.is_empty():
+		return 1
+	print("Top face: %d (%s)" % [int(entry.get("face_id", 1)), str(entry.get("label", ""))])
+	return int(entry.get("value", 1))
 
 func get_top_name() -> String:
-	var best_dot := -2.0
-	var best_name := ""
-	var up = Vector3.UP
-	
-	for entry in _faces:
-		var global_normal = _get_global_normal(entry)
-		var dot = global_normal.dot(up)
-		if dot > best_dot:
-			best_dot = dot
-			best_name = entry["label"]
-	
-	return best_name
+	var entry := _get_top_face_entry()
+	return str(entry.get("label", ""))
 
 func get_top_face_id() -> int:
-	var best_dot := -2.0
-	var best_face_id := 1
-	var up := Vector3.UP
+	var entry := _get_top_face_entry()
+	return int(entry.get("face_id", 1))
 
-	for entry in _faces:
-		var global_normal = _get_global_normal(entry)
-		var dot = global_normal.dot(up)
-		if dot > best_dot:
-			best_dot = dot
-			best_face_id = int(entry["face_id"])
-
-	return best_face_id
+func get_top_result_data() -> Dictionary:
+	var entry := _get_top_face_entry()
+	if entry.is_empty():
+		return {}
+	return {
+		"face_id": int(entry.get("face_id", 1)),
+		"value": int(entry.get("value", 0)),
+		"label": str(entry.get("label", "")),
+		"symbol_texture": entry.get("symbol_texture"),
+		"dice_type": dice_type,
+		"dice_name": definition.definition_name if definition != null else ""
+	}

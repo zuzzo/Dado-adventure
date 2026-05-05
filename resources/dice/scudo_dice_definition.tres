@@ -1,0 +1,53 @@
+[gd_resource type="Resource" script_class="DiceDefinition" load_steps=10 format=3]
+
+[ext_resource type="Script" path="res://scripts/resources/DiceDefinition.gd" id="1"]
+[ext_resource type="Script" path="res://scripts/resources/DiceFaceDefinition.gd" id="2"]
+[ext_resource type="Texture2D" path="res://assets/dice/scudo1.png" id="3"]
+[ext_resource type="Texture2D" path="res://assets/dice/scudo2.png" id="4"]
+
+[sub_resource type="Resource" id="1"]
+script = ExtResource("2")
+face_id = 1
+value = 1
+label = "1 scudo"
+symbol_texture = ExtResource("3")
+
+[sub_resource type="Resource" id="2"]
+script = ExtResource("2")
+face_id = 2
+value = 2
+label = "2 scudi"
+symbol_texture = ExtResource("4")
+
+[sub_resource type="Resource" id="3"]
+script = ExtResource("2")
+face_id = 3
+value = 1
+label = "1 scudo"
+symbol_texture = ExtResource("3")
+
+[sub_resource type="Resource" id="4"]
+script = ExtResource("2")
+face_id = 4
+value = 2
+label = "2 scudi"
+symbol_texture = ExtResource("4")
+
+[sub_resource type="Resource" id="5"]
+script = ExtResource("2")
+face_id = 5
+value = 1
+label = "1 scudo"
+symbol_texture = ExtResource("3")
+
+[sub_resource type="Resource" id="6"]
+script = ExtResource("2")
+face_id = 6
+value = 0
+label = "0 scudi"
+
+[resource]
+script = ExtResource("1")
+definition_name = "Dado Scudo"
+default_dice_type = "yellow"
+faces = [SubResource("1"), SubResource("2"), SubResource("3"), SubResource("4"), SubResource("5"), SubResource("6")]

@@ -1,10 +1,10 @@
 [gd_scene load_steps=3 format=3 uid="uid://main_scene"]
 
-[ext_resource type="PackedScene" path="res://scenes/modules/DiceRollModule.tscn" id="1"]
 [ext_resource type="Script" path="res://scripts/Main.gd" id="2"]
+[ext_resource type="PackedScene" path="res://scenes/modules/ClassEncounterFlowModule.tscn" id="3"]
 
 [node name="Main" type="Node"]
 script = ExtResource("2")
-modules = Array[PackedScene]([ExtResource("1")])
+modules = Array[PackedScene]([ExtResource("3")])
 
 [node name="Modules" type="Node" parent="."]
