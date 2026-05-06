@@ -23,6 +23,7 @@ const DICE_COLORS := {
 	"green": Color(0.3, 0.95, 0.45, 1.0),
 	"purple": Color(0.64, 0.38, 0.95, 1.0),
 	"red": Color(1.0, 0.35, 0.35, 1.0),
+	"white": Color(0.96, 0.96, 0.96, 1.0),
 	"yellow": Color(0.97, 0.82, 0.2, 1.0)
 }
 

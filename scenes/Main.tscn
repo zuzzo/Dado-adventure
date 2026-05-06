@@ -1,7 +1,7 @@
 [gd_scene load_steps=3 format=3 uid="uid://main_scene"]
 
 [ext_resource type="Script" path="res://scripts/Main.gd" id="2"]
-[ext_resource type="PackedScene" path="res://scenes/modules/ClassEncounterFlowModule.tscn" id="3"]
+[ext_resource type="PackedScene" path="res://scenes/modules/MainMenuModule.tscn" id="3"]
 
 [node name="Main" type="Node"]
 script = ExtResource("2")

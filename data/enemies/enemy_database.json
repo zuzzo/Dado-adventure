@@ -1,26 +1,32 @@
 [
 	{
-		"hp": 3,
+		"flee_text": "-4 P.V.",
 		"id": "scheletro_guerriero",
 		"image": "res://assets/enemies/skeleton.png",
 		"name": "Scheletro guerriero",
-		"reward": 1,
-		"strength": 3
+		"requirements": [
+			"spada",
+			"scudo"
+		],
+		"reward_text": "10 monete, 10 EXP."
 	},
 	{
-		"hp": 4,
+		"flee_text": "Per 3 turni un dado casuale, è inutilizzabile.",
 		"id": "goblin",
 		"image": "res://assets/enemies/goblin.png",
 		"name": "Goblin",
-		"reward": 1,
-		"strength": 2
+		"requirements": [
+			"ladro",
+			"arco"
+		],
+		"reward_text": "15 monete, 5 EXP."
 	},
 	{
-		"hp": 5,
+		"flee_text": "",
 		"id": "licantropo",
 		"image": "res://assets/enemies/werewolf.png",
 		"name": "Licantropo",
-		"reward": 2,
-		"strength": 3
+		"requirements": [],
+		"reward_text": "2.0"
 	}
 ]
