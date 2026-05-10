@@ -1,0 +1,149 @@
+Decisioni sul nuovo sistema di combattimento e griglia
+Data: 2026-05-11
+
+Obiettivo generale
+- Sostituire la selezione automatica di righe e colonne con un sistema di tracciamento manuale.
+- Il giocatore tiene premuto e trascina una sequenza ortogonale sulla griglia.
+- La sequenza rappresenta una piccola formula/algebra composta da simboli e modificatori.
+- Questo sistema deve ridurre la dipendenza dal "matching esatto" dei simboli richiesti dal nemico.
+
+Nuova interazione sulla griglia
+- Il giocatore traccia una linea manualmente.
+- La traccia puo avere lunghezza variabile, indicativamente 2, 3 o 4 caselle.
+- I movimenti consentiti sono solo ortogonali.
+- Esempio valido: destra di 2, poi giu di 1.
+- La stessa casella non dovrebbe essere riutilizzata nella stessa traccia.
+- L'ordine della traccia conta: i simboli vengono letti nell'ordine in cui il giocatore li attraversa.
+
+Idea di base del dado a 6 facce
+- Il dado deve contenere elementi utili a costruire una mini algebra.
+- Facce proposte:
+  - spada
+  - scudo
+  - +1
+  - x2
+  - spada
+  - cuore
+
+Significato dei simboli base
+- spada: attacco/danno
+- scudo: difesa / previene danni del nemico
+- cuore: cura o recupero
+- +1: modificatore numerico
+- x2: moltiplicatore
+
+Direzione del sistema
+- Il combattimento non deve piu basarsi solo su requisiti simbolici rigidi del nemico.
+- Deve invece basarsi su un output costruito dal giocatore:
+  - danno
+  - difesa
+  - cura
+  - utility
+- In questo modo un set imperfetto di simboli puo comunque produrre un risultato utile.
+
+Regola decisa per la lettura della formula
+- Prima si legge la sequenza nell'ordine del drag.
+- Poi si raggruppano i simboli base uguali e consecutivi.
+- Solo dopo il raggruppamento si applicano le operazioni/modificatori.
+
+Esempio importante
+- Sequenza: spada, spada, x2
+- Prima fase: spada + spada = spada(2)
+- Seconda fase: spada(2) x2 = spada(4)
+
+Regola di raggruppamento
+- I simboli uguali si raggruppano solo se sono consecutivi nella sequenza.
+- I modificatori interrompono il raggruppamento.
+- Non si fa merge di simboli uguali separati da altri simboli o operatori.
+
+Regola per i modificatori
+- I modificatori agiscono sul blocco immediatamente precedente.
+- Esempio:
+  - spada, spada, x2 -> spada(4)
+  - scudo, scudo, +1 -> scudo(3)
+  - spada, cuore, x2 -> spada(1) + cuore(2)
+- I modificatori non agiscono sull'intera formula, a meno di introdurre in futuro simboli speciali espliciti per quello.
+
+Categorie di elementi in griglia
+- Dadi permanenti:
+  - producono simboli ogni turno
+  - quando usati si esauriscono fino a refresh/riposo
+- Oggetti persistenti:
+  - aggiungono simboli o effetti disponibili in modo continuativo
+  - restano in gioco
+- Consumabili / effetti effimeri:
+  - entrano in griglia o nel flusso di risoluzione una volta
+  - poi spariscono
+
+Decisione sugli oggetti
+- Gli oggetti hanno senso dentro il sistema, ma non come semplici icone identiche ai dadi.
+- Devono avere una durata/comportamento diverso.
+- La differenza chiave e:
+  - refresh
+  - persist
+  - consume
+
+Esempi discussi
+- Spada:
+  - puo essere un output da dado o un oggetto persistente
+  - quando usata si esaurisce e poi torna disponibile piu avanti
+- Palla di fuoco:
+  - esempio di effetto/oggetto effimero
+  - puo fare 4 danni
+  - se combinata con x2 puo diventare 8 danni
+  - viene consumata, non solo esaurita
+- Chiave:
+  - utility
+  - serve a risolvere certi vincoli o porte
+  - viene consumata
+
+Differenza importante tra esaurimento e consumo
+- Esaurito:
+  - l'elemento resta parte del personaggio/build
+  - va solo ricaricato/rinfrescato
+- Consumata:
+  - l'elemento scompare dopo l'uso
+
+Proprieta consigliate per futuri token/oggetti/simboli
+- tipo_output
+  - attacco
+  - difesa
+  - cura
+  - utility
+- valore_base
+- tags
+  - fisico
+  - fuoco
+  - arcano
+  - oggetto
+  - consumabile
+- durata_uso
+  - refresh
+  - persistent
+  - consume
+- sorgente
+  - dado
+  - equip
+  - loot
+  - skill
+
+Conseguenze di design sui nemici
+- I nemici in futuro non devono chiedere solo simboli esatti.
+- Possono richiedere risultati come:
+  - almeno X danni
+  - almeno X difesa
+  - un certo tipo di danno
+  - una utility specifica come chiave o fuoco
+
+Ordine consigliato di implementazione
+1. Formula base con spada, scudo, cuore, +1, x2
+2. Drag ortogonale manuale sulla griglia
+3. Raggruppamento di simboli consecutivi uguali
+4. Risoluzione dei modificatori sul blocco precedente
+5. Inserimento di consumabili semplici come chiave e palla di fuoco
+6. Solo dopo: oggetti persistenti piu complessi e resistenze dei nemici
+
+Nota finale
+- Il sistema deciso non e matematica libera completa.
+- E una "formula leggibile" costruita dal giocatore.
+- La priorita e mantenere chiarezza, leggibilita e controllo sul risultato.
