@@ -95,6 +95,12 @@ layout_mode = 2
 size_flags_horizontal = 3
 text = "Editor Personaggi"
 
+[node name="DungeonButton" type="Button" parent="Margin/Root/MenuPanel/MenuMargin/MenuVBox/ButtonsRow"]
+custom_minimum_size = Vector2(0, 58)
+layout_mode = 2
+size_flags_horizontal = 3
+text = "Dungeon"
+
 [node name="StatusLabel" type="Label" parent="Margin/Root/MenuPanel/MenuMargin/MenuVBox"]
 layout_mode = 2
 autowrap_mode = 3
@@ -106,6 +112,15 @@ size_flags_vertical = 3
 theme_override_styles/panel = SubResource("1")
 
 [node name="ContentRoot" type="Control" parent="Margin/Root/ContentPanel"]
+layout_mode = 1
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+grow_horizontal = 2
+grow_vertical = 2
+
+[node name="GameRoot" type="Control" parent="."]
+visible = false
 layout_mode = 1
 anchors_preset = 15
 anchor_right = 1.0

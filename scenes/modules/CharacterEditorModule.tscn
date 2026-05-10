@@ -80,6 +80,10 @@ text = "Editor Personaggi"
 layout_mode = 2
 theme_override_constants/separation = 8
 
+[node name="BackButton" type="Button" parent="Margin/Root/LeftPanel/LeftMargin/LeftVBox/Toolbar"]
+layout_mode = 2
+text = "Menu"
+
 [node name="NewButton" type="Button" parent="Margin/Root/LeftPanel/LeftMargin/LeftVBox/Toolbar"]
 layout_mode = 2
 text = "Nuovo"
@@ -166,29 +170,15 @@ min_value = 1.0
 max_value = 99.0
 value = 6.0
 
-[node name="DiceTitle" type="Label" parent="Margin/Root/RightPanel/RightMargin/RightScroll/RightVBox"]
+[node name="DiceCountLabel" type="Label" parent="Margin/Root/RightPanel/RightMargin/RightScroll/RightVBox"]
 layout_mode = 2
-text = "Dadi Di Partenza"
+text = "Quantita Dadi Di Partenza"
 
-[node name="DicePalette" type="HBoxContainer" parent="Margin/Root/RightPanel/RightMargin/RightScroll/RightVBox"]
+[node name="DiceCountInput" type="SpinBox" parent="Margin/Root/RightPanel/RightMargin/RightScroll/RightVBox"]
 layout_mode = 2
-theme_override_constants/separation = 10
-
-[node name="DiceButtons" type="HBoxContainer" parent="Margin/Root/RightPanel/RightMargin/RightScroll/RightVBox"]
-layout_mode = 2
-theme_override_constants/separation = 8
-
-[node name="AddDiceSlotButton" type="Button" parent="Margin/Root/RightPanel/RightMargin/RightScroll/RightVBox/DiceButtons"]
-layout_mode = 2
-text = "Aggiungi Slot"
-
-[node name="RemoveDiceSlotButton" type="Button" parent="Margin/Root/RightPanel/RightMargin/RightScroll/RightVBox/DiceButtons"]
-layout_mode = 2
-text = "Rimuovi Slot"
-
-[node name="DiceSlots" type="HBoxContainer" parent="Margin/Root/RightPanel/RightMargin/RightScroll/RightVBox"]
-layout_mode = 2
-theme_override_constants/separation = 10
+min_value = 1.0
+max_value = 20.0
+value = 3.0
 
 [node name="AbilityLabel" type="Label" parent="Margin/Root/RightPanel/RightMargin/RightScroll/RightVBox"]
 layout_mode = 2
@@ -223,50 +213,85 @@ layout_mode = 2
 horizontal_alignment = 1
 theme_override_font_sizes/font_size = 24
 text = "Nome Personaggio"
+visible = false
 
 [node name="PreviewImageCenter" type="CenterContainer" parent="Margin/Root/RightPanel/RightMargin/RightScroll/RightVBox/PreviewPanel/PreviewMargin/PreviewVBox"]
-custom_minimum_size = Vector2(0, 280)
+custom_minimum_size = Vector2(0, 390)
 layout_mode = 2
 
-[node name="CharacterPreview" type="TextureRect" parent="Margin/Root/RightPanel/RightMargin/RightScroll/RightVBox/PreviewPanel/PreviewMargin/PreviewVBox/PreviewImageCenter"]
-custom_minimum_size = Vector2(240, 240)
+[node name="PreviewCard" type="Control" parent="Margin/Root/RightPanel/RightMargin/RightScroll/RightVBox/PreviewPanel/PreviewMargin/PreviewVBox/PreviewImageCenter"]
+custom_minimum_size = Vector2(240, 340)
 layout_mode = 2
+
+[node name="CharacterPreview" type="TextureRect" parent="Margin/Root/RightPanel/RightMargin/RightScroll/RightVBox/PreviewPanel/PreviewMargin/PreviewVBox/PreviewImageCenter/PreviewCard"]
+layout_mode = 1
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+grow_horizontal = 2
+grow_vertical = 2
 expand_mode = 1
 stretch_mode = 5
 
-[node name="PreviewBottomPanel" type="PanelContainer" parent="Margin/Root/RightPanel/RightMargin/RightScroll/RightVBox/PreviewPanel/PreviewMargin/PreviewVBox"]
-layout_mode = 2
-theme_override_styles/panel = SubResource("1")
+[node name="CardName" type="Label" parent="Margin/Root/RightPanel/RightMargin/RightScroll/RightVBox/PreviewPanel/PreviewMargin/PreviewVBox/PreviewImageCenter/PreviewCard"]
+layout_mode = 1
+offset_left = 16.0
+offset_top = 10.0
+offset_right = 224.0
+offset_bottom = 34.0
+theme_override_font_sizes/font_size = 20
+theme_override_colors/font_color = Color(1, 1, 1, 1)
+theme_override_constants/outline_size = 4
+theme_override_colors/font_outline_color = Color(0, 0, 0, 1)
+horizontal_alignment = 0
+vertical_alignment = 1
+text = "Nome Personaggio"
 
-[node name="PreviewBottomMargin" type="MarginContainer" parent="Margin/Root/RightPanel/RightMargin/RightScroll/RightVBox/PreviewPanel/PreviewMargin/PreviewVBox/PreviewBottomPanel"]
-layout_mode = 2
-theme_override_constants/margin_left = 14
-theme_override_constants/margin_top = 14
-theme_override_constants/margin_right = 14
-theme_override_constants/margin_bottom = 14
+[node name="CardHp" type="Label" parent="Margin/Root/RightPanel/RightMargin/RightScroll/RightVBox/PreviewPanel/PreviewMargin/PreviewVBox/PreviewImageCenter/PreviewCard"]
+layout_mode = 1
+offset_left = 150.0
+offset_top = 168.0
+offset_right = 224.0
+offset_bottom = 196.0
+theme_override_font_sizes/font_size = 18
+theme_override_colors/font_color = Color(1, 1, 1, 1)
+theme_override_constants/outline_size = 4
+theme_override_colors/font_outline_color = Color(0, 0, 0, 1)
+horizontal_alignment = 2
+vertical_alignment = 2
+text = "6 PV"
 
-[node name="PreviewBottomVBox" type="VBoxContainer" parent="Margin/Root/RightPanel/RightMargin/RightScroll/RightVBox/PreviewPanel/PreviewMargin/PreviewVBox/PreviewBottomPanel/PreviewBottomMargin"]
-layout_mode = 2
-theme_override_constants/separation = 10
+[node name="CardInfo" type="MarginContainer" parent="Margin/Root/RightPanel/RightMargin/RightScroll/RightVBox/PreviewPanel/PreviewMargin/PreviewVBox/PreviewImageCenter/PreviewCard"]
+layout_mode = 1
+offset_left = 18.0
+offset_top = 208.0
+offset_right = 222.0
+offset_bottom = 326.0
+theme_override_constants/margin_left = 6
+theme_override_constants/margin_top = 6
+theme_override_constants/margin_right = 6
+theme_override_constants/margin_bottom = 6
 
-[node name="PreviewHp" type="Label" parent="Margin/Root/RightPanel/RightMargin/RightScroll/RightVBox/PreviewPanel/PreviewMargin/PreviewVBox/PreviewBottomPanel/PreviewBottomMargin/PreviewBottomVBox"]
+[node name="CardInfoVBox" type="VBoxContainer" parent="Margin/Root/RightPanel/RightMargin/RightScroll/RightVBox/PreviewPanel/PreviewMargin/PreviewVBox/PreviewImageCenter/PreviewCard/CardInfo"]
 layout_mode = 2
-text = "Punti Vita: 0"
+theme_override_constants/separation = 2
 
-[node name="PreviewDiceTitle" type="Label" parent="Margin/Root/RightPanel/RightMargin/RightScroll/RightVBox/PreviewPanel/PreviewMargin/PreviewVBox/PreviewBottomPanel/PreviewBottomMargin/PreviewBottomVBox"]
+[node name="PreviewDiceCount" type="Label" parent="Margin/Root/RightPanel/RightMargin/RightScroll/RightVBox/PreviewPanel/PreviewMargin/PreviewVBox/PreviewImageCenter/PreviewCard/CardInfo/CardInfoVBox"]
 layout_mode = 2
-text = "Dadi Di Partenza"
+theme_override_font_sizes/font_size = 11
+theme_override_colors/font_color = Color(0.0823529, 0.0666667, 0.0431373, 1)
+text = "Dadi Di Partenza: 0"
 
-[node name="PreviewDiceRow" type="HBoxContainer" parent="Margin/Root/RightPanel/RightMargin/RightScroll/RightVBox/PreviewPanel/PreviewMargin/PreviewVBox/PreviewBottomPanel/PreviewBottomMargin/PreviewBottomVBox"]
+[node name="PreviewAbilityTitle" type="Label" parent="Margin/Root/RightPanel/RightMargin/RightScroll/RightVBox/PreviewPanel/PreviewMargin/PreviewVBox/PreviewImageCenter/PreviewCard/CardInfo/CardInfoVBox"]
 layout_mode = 2
-theme_override_constants/separation = 8
-
-[node name="PreviewAbilityTitle" type="Label" parent="Margin/Root/RightPanel/RightMargin/RightScroll/RightVBox/PreviewPanel/PreviewMargin/PreviewVBox/PreviewBottomPanel/PreviewBottomMargin/PreviewBottomVBox"]
-layout_mode = 2
+theme_override_font_sizes/font_size = 11
+theme_override_colors/font_color = Color(0.0823529, 0.0666667, 0.0431373, 1)
 text = "Abilita"
 
-[node name="PreviewAbilityText" type="Label" parent="Margin/Root/RightPanel/RightMargin/RightScroll/RightVBox/PreviewPanel/PreviewMargin/PreviewVBox/PreviewBottomPanel/PreviewBottomMargin/PreviewBottomVBox"]
+[node name="PreviewAbilityText" type="Label" parent="Margin/Root/RightPanel/RightMargin/RightScroll/RightVBox/PreviewPanel/PreviewMargin/PreviewVBox/PreviewImageCenter/PreviewCard/CardInfo/CardInfoVBox"]
 layout_mode = 2
+theme_override_font_sizes/font_size = 11
+theme_override_colors/font_color = Color(0.0823529, 0.0666667, 0.0431373, 1)
 autowrap_mode = 3
 text = "-"
 

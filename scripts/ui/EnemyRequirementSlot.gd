@@ -25,8 +25,10 @@ func get_token():
 
 func clear_token():
 	var token = get_token()
-	if token != null:
-		token.queue_free()
+	if token == null:
+		return null
+	_content.remove_child(token)
+	return token
 
 func place_token(token):
 	if token == null:
@@ -60,9 +62,11 @@ func _drop_data(_at_position, data):
 		incoming = TextureRect.new()
 		incoming.set_script(load("res://scripts/ui/EnemyRequirementToken.gd"))
 		incoming.call("setup", icon_id, texture_path, false)
-	var existing = get_token()
-	if existing != null and origin_slot != null and origin_slot != self and origin_slot.has_method("place_token"):
-		origin_slot.call("place_token", existing)
-	elif existing != null and (origin_slot == null or origin_slot == self or is_palette_token):
-		existing.queue_free()
+	if not is_palette_token and origin_slot != null and origin_slot != self and origin_slot.has_method("clear_token"):
+		origin_slot.call("clear_token")
+	var existing = clear_token()
 	place_token(incoming)
+	if existing != null and not is_palette_token and origin_slot != null and origin_slot != self and origin_slot.has_method("place_token"):
+		origin_slot.call("place_token", existing)
+	elif existing != null:
+		existing.queue_free()

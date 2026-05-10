@@ -1,0 +1,19 @@
+[remap]
+
+importer="mp3"
+type="AudioStreamMP3"
+uid="uid://b6cufi52esnlp"
+path="res://.godot/imported/Crypt of Echoes.mp3-2e5eb77de83de8288d3c0f8a1bc572a0.mp3str"
+
+[deps]
+
+source_file="res://assets/musica/Crypt of Echoes.mp3"
+dest_files=["res://.godot/imported/Crypt of Echoes.mp3-2e5eb77de83de8288d3c0f8a1bc572a0.mp3str"]
+
+[params]
+
+loop=false
+loop_offset=0
+bpm=0
+beat_count=0
+bar_beats=4

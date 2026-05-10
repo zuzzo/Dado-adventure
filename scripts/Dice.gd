@@ -152,11 +152,31 @@ func get_top_result_data() -> Dictionary:
 	var entry := _get_top_face_entry()
 	if entry.is_empty():
 		return {}
+	var label = str(entry.get("label", ""))
 	return {
 		"face_id": int(entry.get("face_id", 1)),
 		"value": int(entry.get("value", 0)),
-		"label": str(entry.get("label", "")),
+		"label": label,
+		"symbol_id": _extract_symbol_id(label),
 		"symbol_texture": entry.get("symbol_texture"),
 		"dice_type": dice_type,
 		"dice_name": definition.definition_name if definition != null else ""
 	}
+
+func _extract_symbol_id(label: String) -> String:
+	var lower = label.to_lower().strip_edges()
+	if lower.contains("spad"):
+		return "spada"
+	if lower.contains("scud"):
+		return "scudo"
+	if lower.contains("cuor"):
+		return "cuore"
+	if lower.contains("monet"):
+		return "moneta"
+	if lower.contains("magi"):
+		return "magia"
+	if lower.contains("ladr"):
+		return "ladro"
+	if lower.contains("arc"):
+		return "arco"
+	return lower

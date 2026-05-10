@@ -1,32 +1,25 @@
 extends Control
 
+signal back_requested
+
+const EffectTextParser = preload("res://scripts/core/EffectTextParser.gd")
 const CHARACTERS_DIR := "res://assets/characters"
 const DATABASE_DIR := "res://data/characters"
 const DATABASE_PATH := "res://data/characters/character_database.json"
-const REQUIREMENT_SLOT_SCRIPT := preload("res://scripts/ui/EnemyRequirementSlot.gd")
-const REQUIREMENT_TOKEN_SCRIPT := preload("res://scripts/ui/EnemyRequirementToken.gd")
-const DICE_PALETTE := [
-	{"id": "spada", "path": "res://assets/dice/spada.png"},
-	{"id": "scudo", "path": "res://assets/dice/scudo1.png"},
-	{"id": "moneta", "path": "res://assets/dice/moneta1.png"},
-	{"id": "magia", "path": "res://assets/dice/magia1.png"},
-	{"id": "ladro", "path": "res://assets/dice/ladro1.png"},
-	{"id": "arco", "path": "res://assets/dice/arco1.png"}
-]
 
 @onready var character_list = $Margin/Root/LeftPanel/LeftMargin/LeftVBox/CharacterList
 @onready var status_label = $Margin/Root/LeftPanel/LeftMargin/LeftVBox/StatusLabel
 @onready var name_input = $Margin/Root/RightPanel/RightMargin/RightScroll/RightVBox/NameInput
 @onready var image_path_input = $Margin/Root/RightPanel/RightMargin/RightScroll/RightVBox/ImageRow/ImagePathInput
 @onready var hp_input = $Margin/Root/RightPanel/RightMargin/RightScroll/RightVBox/HpInput
+@onready var dice_count_input = $Margin/Root/RightPanel/RightMargin/RightScroll/RightVBox/DiceCountInput
 @onready var ability_text = $Margin/Root/RightPanel/RightMargin/RightScroll/RightVBox/AbilityText
-@onready var dice_palette = $Margin/Root/RightPanel/RightMargin/RightScroll/RightVBox/DicePalette
-@onready var dice_slots = $Margin/Root/RightPanel/RightMargin/RightScroll/RightVBox/DiceSlots
-@onready var character_preview = $Margin/Root/RightPanel/RightMargin/RightScroll/RightVBox/PreviewPanel/PreviewMargin/PreviewVBox/PreviewImageCenter/CharacterPreview
+@onready var character_preview = $Margin/Root/RightPanel/RightMargin/RightScroll/RightVBox/PreviewPanel/PreviewMargin/PreviewVBox/PreviewImageCenter/PreviewCard/CharacterPreview
 @onready var preview_name = $Margin/Root/RightPanel/RightMargin/RightScroll/RightVBox/PreviewPanel/PreviewMargin/PreviewVBox/PreviewName
-@onready var preview_hp = $Margin/Root/RightPanel/RightMargin/RightScroll/RightVBox/PreviewPanel/PreviewMargin/PreviewVBox/PreviewBottomPanel/PreviewBottomMargin/PreviewBottomVBox/PreviewHp
-@onready var preview_dice_row = $Margin/Root/RightPanel/RightMargin/RightScroll/RightVBox/PreviewPanel/PreviewMargin/PreviewVBox/PreviewBottomPanel/PreviewBottomMargin/PreviewBottomVBox/PreviewDiceRow
-@onready var preview_ability_text = $Margin/Root/RightPanel/RightMargin/RightScroll/RightVBox/PreviewPanel/PreviewMargin/PreviewVBox/PreviewBottomPanel/PreviewBottomMargin/PreviewBottomVBox/PreviewAbilityText
+@onready var card_name = $Margin/Root/RightPanel/RightMargin/RightScroll/RightVBox/PreviewPanel/PreviewMargin/PreviewVBox/PreviewImageCenter/PreviewCard/CardName
+@onready var card_hp = $Margin/Root/RightPanel/RightMargin/RightScroll/RightVBox/PreviewPanel/PreviewMargin/PreviewVBox/PreviewImageCenter/PreviewCard/CardHp
+@onready var preview_dice_count = $Margin/Root/RightPanel/RightMargin/RightScroll/RightVBox/PreviewPanel/PreviewMargin/PreviewVBox/PreviewImageCenter/PreviewCard/CardInfo/CardInfoVBox/PreviewDiceCount
+@onready var preview_ability_text = $Margin/Root/RightPanel/RightMargin/RightScroll/RightVBox/PreviewPanel/PreviewMargin/PreviewVBox/PreviewImageCenter/PreviewCard/CardInfo/CardInfoVBox/PreviewAbilityText
 @onready var file_dialog = $FileDialog
 
 var character_database: Array = []
@@ -37,13 +30,11 @@ var pending_image_project_path := ""
 func _ready():
 	_bind_events()
 	_ensure_directories()
-	_build_dice_palette()
 	_load_database()
-	if dice_slots.get_child_count() == 0:
-		_add_dice_slot()
 	_update_preview()
 
 func _bind_events():
+	$Margin/Root/LeftPanel/LeftMargin/LeftVBox/Toolbar/BackButton.pressed.connect(_on_back_pressed)
 	$Margin/Root/LeftPanel/LeftMargin/LeftVBox/Toolbar/NewButton.pressed.connect(_on_new_pressed)
 	$Margin/Root/LeftPanel/LeftMargin/LeftVBox/Toolbar/DeleteButton.pressed.connect(_on_delete_pressed)
 	$Margin/Root/LeftPanel/LeftMargin/LeftVBox/SaveButton.pressed.connect(_on_save_pressed)
@@ -53,41 +44,16 @@ func _bind_events():
 	$Margin/Root/RightPanel/RightMargin/RightScroll/RightVBox/ResetButton.pressed.connect(_clear_form)
 	$Margin/Root/RightPanel/RightMargin/RightScroll/RightVBox/BottomActions/SaveButtonLarge.pressed.connect(_on_save_pressed)
 	$Margin/Root/RightPanel/RightMargin/RightScroll/RightVBox/BottomActions/ReloadButtonLarge.pressed.connect(_load_database)
-	$Margin/Root/RightPanel/RightMargin/RightScroll/RightVBox/DiceButtons/AddDiceSlotButton.pressed.connect(_add_dice_slot)
-	$Margin/Root/RightPanel/RightMargin/RightScroll/RightVBox/DiceButtons/RemoveDiceSlotButton.pressed.connect(_remove_dice_slot)
 	character_list.item_selected.connect(_on_character_selected)
 	file_dialog.file_selected.connect(_on_file_selected)
-	name_input.text_changed.connect(_update_preview)
+	name_input.text_changed.connect(_on_name_changed)
 	hp_input.value_changed.connect(_on_hp_changed)
-	ability_text.text_changed.connect(_update_preview)
+	dice_count_input.value_changed.connect(_on_dice_count_changed)
+	ability_text.text_changed.connect(_on_ability_changed)
 
 func _ensure_directories():
 	DirAccess.make_dir_recursive_absolute(ProjectSettings.globalize_path(CHARACTERS_DIR))
 	DirAccess.make_dir_recursive_absolute(ProjectSettings.globalize_path(DATABASE_DIR))
-
-func _build_dice_palette():
-	_clear_children_now(dice_palette)
-	for dice_data in DICE_PALETTE:
-		var slot = _create_slot()
-		slot.custom_minimum_size = Vector2(78, 78)
-		dice_palette.add_child(slot)
-		var token = TextureRect.new()
-		token.set_script(REQUIREMENT_TOKEN_SCRIPT)
-		token.call("setup", dice_data["id"], dice_data["path"], true)
-		slot.call("place_token", token)
-
-func _add_dice_slot():
-	var slot = _create_slot()
-	slot.custom_minimum_size = Vector2(78, 78)
-	dice_slots.add_child(slot)
-	_update_preview()
-
-func _remove_dice_slot():
-	if dice_slots.get_child_count() <= 1:
-		return
-	var last_slot = dice_slots.get_child(dice_slots.get_child_count() - 1)
-	last_slot.queue_free()
-	_update_preview()
 
 func _load_database():
 	character_database.clear()
@@ -120,6 +86,9 @@ func _on_new_pressed():
 	character_list.deselect_all()
 	_clear_form()
 	_set_status("Scheda pronta per un nuovo personaggio.")
+
+func _on_back_pressed():
+	back_requested.emit()
 
 func _on_delete_pressed():
 	if selected_index < 0 or selected_index >= character_database.size():
@@ -163,14 +132,19 @@ func _on_file_selected(path):
 func _on_hp_changed(_value):
 	_update_preview()
 
+func _on_dice_count_changed(_value):
+	_update_preview()
+
+func _on_name_changed(_text):
+	_update_preview()
+
+func _on_ability_changed():
+	_update_preview()
+
 func _save_current_character():
 	var character_name = name_input.text.strip_edges()
 	if character_name.is_empty():
 		_set_status("Inserisci il nome del personaggio.")
-		return false
-	var starting_dice = _get_dice_data()
-	if starting_dice.is_empty():
-		_set_status("Definisci almeno un dado di partenza.")
 		return false
 	var image_project_path = image_path_input.text.strip_edges()
 	if pending_image_source_path != "":
@@ -182,8 +156,9 @@ func _save_current_character():
 		"name": character_name,
 		"image": image_project_path,
 		"hp": int(hp_input.value),
-		"starting_dice": starting_dice,
-		"ability_text": ability_text.text
+		"starting_dice_count": int(dice_count_input.value),
+		"ability_text": ability_text.text,
+		"ability_effects": EffectTextParser.parse_character_ability_effects(ability_text.text)
 	}
 	if selected_index >= 0 and selected_index < character_database.size():
 		character_database[selected_index] = character_record
@@ -226,68 +201,30 @@ func _load_character_into_form(index):
 	name_input.text = str(character.get("name", ""))
 	image_path_input.text = str(character.get("image", ""))
 	hp_input.value = float(character.get("hp", 1))
+	dice_count_input.value = float(character.get("starting_dice_count", 1))
 	ability_text.text = str(character.get("ability_text", ""))
 	pending_image_source_path = ""
 	pending_image_project_path = ""
 	_update_preview_from_project(image_path_input.text)
-	_load_dice(character.get("starting_dice", []))
 	_update_preview()
 
 func _clear_form():
 	name_input.text = ""
 	image_path_input.text = ""
 	hp_input.value = 6
+	dice_count_input.value = 3
 	ability_text.text = ""
 	pending_image_source_path = ""
 	pending_image_project_path = ""
 	character_preview.texture = null
-	_clear_children_now(dice_slots)
-	_add_dice_slot()
 	_update_preview()
-
-func _load_dice(starting_dice):
-	_clear_children_now(dice_slots)
-	for dice_id in starting_dice:
-		var slot = _create_slot()
-		slot.custom_minimum_size = Vector2(78, 78)
-		dice_slots.add_child(slot)
-		var dice_name = str(dice_id)
-		var texture_path = _get_dice_icon_path(dice_name)
-		if texture_path.is_empty():
-			continue
-		var token = TextureRect.new()
-		token.set_script(REQUIREMENT_TOKEN_SCRIPT)
-		token.call("setup", dice_name, texture_path, false)
-		slot.call("place_token", token)
-	if dice_slots.get_child_count() == 0:
-		_add_dice_slot()
-
-func _get_dice_data():
-	var starting_dice: Array = []
-	for slot in dice_slots.get_children():
-		if slot.has_method("has_token") and slot.call("has_token"):
-			var token = slot.call("get_token")
-			if token != null:
-				starting_dice.append(str(token.get("icon_id")))
-	return starting_dice
 
 func _update_preview():
 	preview_name.text = name_input.text if not name_input.text.is_empty() else "Nome Personaggio"
-	preview_hp.text = "Punti Vita: %d" % int(hp_input.value)
+	card_name.text = preview_name.text
+	card_hp.text = "%d PV" % int(hp_input.value)
+	preview_dice_count.text = "Dadi Di Partenza: %d" % int(dice_count_input.value)
 	preview_ability_text.text = ability_text.text if not ability_text.text.is_empty() else "-"
-	_clear_children_now(preview_dice_row)
-	for dice_id in _get_dice_data():
-		var texture_path = _get_dice_icon_path(dice_id)
-		if texture_path.is_empty():
-			continue
-		var icon := TextureRect.new()
-		icon.custom_minimum_size = Vector2(52, 52)
-		icon.expand_mode = TextureRect.EXPAND_IGNORE_SIZE
-		icon.stretch_mode = TextureRect.STRETCH_KEEP_ASPECT_CENTERED
-		if ResourceLoader.exists(texture_path):
-			icon.texture = load(texture_path)
-		icon.tooltip_text = dice_id.capitalize()
-		preview_dice_row.add_child(icon)
 
 func _update_preview_from_project(project_path):
 	if project_path.is_empty() or not ResourceLoader.exists(project_path):
@@ -317,47 +254,22 @@ func _slugify(text):
 func _normalize_character_record(character):
 	var character_name := str(character.get("name", "Personaggio senza nome"))
 	var image_path := str(character.get("image", ""))
-	var starting_dice: Array = []
-	var raw_starting_dice = character.get("starting_dice", [])
-	if raw_starting_dice is Array:
-		for dice_id in raw_starting_dice:
-			starting_dice.append(str(dice_id))
+	var dice_count := int(character.get("starting_dice_count", 0))
+	if dice_count <= 0 and character.get("starting_dice", []) is Array:
+		dice_count = (character.get("starting_dice", []) as Array).size()
+	if dice_count <= 0:
+		dice_count = 1
+	var ability_value := str(character.get("ability_text", ""))
+	var ability_effects = character.get("ability_effects", EffectTextParser.parse_character_ability_effects(ability_value))
 	return {
 		"id": str(character.get("id", _slugify(character_name))),
 		"name": character_name,
 		"image": image_path,
 		"hp": int(character.get("hp", 1)),
-		"starting_dice": starting_dice,
-		"ability_text": str(character.get("ability_text", ""))
+		"starting_dice_count": dice_count,
+		"ability_text": ability_value,
+		"ability_effects": ability_effects
 	}
-
-func _create_slot():
-	var slot = PanelContainer.new()
-	slot.set_script(REQUIREMENT_SLOT_SCRIPT)
-	var style := StyleBoxFlat.new()
-	style.bg_color = Color(0.145098, 0.184314, 0.247059, 1)
-	style.border_width_left = 2
-	style.border_width_top = 2
-	style.border_width_right = 2
-	style.border_width_bottom = 2
-	style.border_color = Color(0.313726, 0.396078, 0.533333, 1)
-	style.corner_radius_top_left = 6
-	style.corner_radius_top_right = 6
-	style.corner_radius_bottom_right = 6
-	style.corner_radius_bottom_left = 6
-	slot.add_theme_stylebox_override("panel", style)
-	return slot
-
-func _get_dice_icon_path(dice_id):
-	for dice_data in DICE_PALETTE:
-		if str(dice_data["id"]) == dice_id:
-			return str(dice_data["path"])
-	return ""
 
 func _set_status(message):
 	status_label.text = message
-
-func _clear_children_now(node):
-	for child in node.get_children():
-		node.remove_child(child)
-		child.free()

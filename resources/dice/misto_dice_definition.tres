@@ -3,7 +3,7 @@
 [ext_resource type="Script" path="res://scripts/resources/DiceDefinition.gd" id="1"]
 [ext_resource type="Script" path="res://scripts/resources/DiceFaceDefinition.gd" id="2"]
 [ext_resource type="Texture2D" path="res://assets/dice/spada.png" id="3"]
-[ext_resource type="Texture2D" path="res://assets/dice/scudo1.png" id="4"]
+[ext_resource type="Texture2D" path="res://assets/dice/cuore1.png" id="4"]
 [ext_resource type="Texture2D" path="res://assets/dice/moneta1.png" id="5"]
 [ext_resource type="Texture2D" path="res://assets/dice/magia1.png" id="6"]
 [ext_resource type="Texture2D" path="res://assets/dice/ladro1.png" id="7"]
@@ -20,7 +20,7 @@ symbol_texture = ExtResource("3")
 script = ExtResource("2")
 face_id = 2
 value = 1
-label = "1 scudo"
+label = "1 cuore"
 symbol_texture = ExtResource("4")
 
 [sub_resource type="Resource" id="3"]

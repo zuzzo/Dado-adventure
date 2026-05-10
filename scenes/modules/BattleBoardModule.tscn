@@ -85,9 +85,10 @@ horizontal_alignment = 1
 theme_override_font_sizes/font_size = 30
 theme_override_colors/font_color = Color(0.909804, 0.933333, 0.968627, 1)
 text = "Nemico"
+visible = false
 
 [node name="ImagePanel" type="PanelContainer" parent="EnemyArea/EnemyMargin/EnemyCard/CardMargin/CardVBox"]
-custom_minimum_size = Vector2(0, 420)
+custom_minimum_size = Vector2(0, 560)
 layout_mode = 2
 size_flags_vertical = 3
 theme_override_styles/panel = SubResource("3")
@@ -102,42 +103,117 @@ theme_override_constants/margin_bottom = 16
 [node name="ImageCenter" type="CenterContainer" parent="EnemyArea/EnemyMargin/EnemyCard/CardMargin/CardVBox/ImagePanel/ImageMargin"]
 layout_mode = 2
 
-[node name="EnemyImage" type="TextureRect" parent="EnemyArea/EnemyMargin/EnemyCard/CardMargin/CardVBox/ImagePanel/ImageMargin/ImageCenter"]
-custom_minimum_size = Vector2(320, 320)
+[node name="PreviewCard" type="Control" parent="EnemyArea/EnemyMargin/EnemyCard/CardMargin/CardVBox/ImagePanel/ImageMargin/ImageCenter"]
+custom_minimum_size = Vector2(380, 538)
 layout_mode = 2
+
+[node name="EnemyImage" type="TextureRect" parent="EnemyArea/EnemyMargin/EnemyCard/CardMargin/CardVBox/ImagePanel/ImageMargin/ImageCenter/PreviewCard"]
+layout_mode = 1
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+grow_horizontal = 2
+grow_vertical = 2
 expand_mode = 1
 stretch_mode = 5
 
-[node name="StatsGrid" type="GridContainer" parent="EnemyArea/EnemyMargin/EnemyCard/CardMargin/CardVBox"]
-layout_mode = 2
-columns = 2
+[node name="CardName" type="Label" parent="EnemyArea/EnemyMargin/EnemyCard/CardMargin/CardVBox/ImagePanel/ImageMargin/ImageCenter/PreviewCard"]
+layout_mode = 1
+offset_left = 24.0
+offset_top = 16.0
+offset_right = 356.0
+offset_bottom = 48.0
+theme_override_font_sizes/font_size = 28
+theme_override_colors/font_color = Color(1, 1, 1, 1)
+theme_override_constants/outline_size = 4
+theme_override_colors/font_outline_color = Color(0, 0, 0, 1)
+horizontal_alignment = 1
+vertical_alignment = 1
+text = "Nemico"
 
-[node name="HpTitle" type="Label" parent="EnemyArea/EnemyMargin/EnemyCard/CardMargin/CardVBox/StatsGrid"]
-layout_mode = 2
-text = "Punti Vita"
+[node name="CardInfo" type="MarginContainer" parent="EnemyArea/EnemyMargin/EnemyCard/CardMargin/CardVBox/ImagePanel/ImageMargin/ImageCenter/PreviewCard"]
+layout_mode = 1
+offset_left = 28.0
+offset_top = 332.0
+offset_right = 352.0
+offset_bottom = 510.0
+theme_override_constants/margin_left = 6
+theme_override_constants/margin_top = 6
+theme_override_constants/margin_right = 6
+theme_override_constants/margin_bottom = 6
 
-[node name="HpValue" type="Label" parent="EnemyArea/EnemyMargin/EnemyCard/CardMargin/CardVBox/StatsGrid"]
+[node name="CardInfoVBox" type="VBoxContainer" parent="EnemyArea/EnemyMargin/EnemyCard/CardMargin/CardVBox/ImagePanel/ImageMargin/ImageCenter/PreviewCard/CardInfo"]
 layout_mode = 2
-horizontal_alignment = 2
-text = "0"
+theme_override_constants/separation = 4
 
-[node name="StrengthTitle" type="Label" parent="EnemyArea/EnemyMargin/EnemyCard/CardMargin/CardVBox/StatsGrid"]
+[node name="RequirementsTitle" type="Label" parent="EnemyArea/EnemyMargin/EnemyCard/CardMargin/CardVBox/ImagePanel/ImageMargin/ImageCenter/PreviewCard/CardInfo/CardInfoVBox"]
 layout_mode = 2
-text = "Forza"
+theme_override_font_sizes/font_size = 15
+theme_override_colors/font_color = Color(0.0823529, 0.0666667, 0.0431373, 1)
+text = "Per Sconfiggere"
 
-[node name="StrengthValue" type="Label" parent="EnemyArea/EnemyMargin/EnemyCard/CardMargin/CardVBox/StatsGrid"]
+[node name="RequirementsRow" type="HBoxContainer" parent="EnemyArea/EnemyMargin/EnemyCard/CardMargin/CardVBox/ImagePanel/ImageMargin/ImageCenter/PreviewCard/CardInfo/CardInfoVBox"]
 layout_mode = 2
-horizontal_alignment = 2
-text = "0"
+theme_override_constants/separation = 6
 
-[node name="RewardTitle" type="Label" parent="EnemyArea/EnemyMargin/EnemyCard/CardMargin/CardVBox/StatsGrid"]
+[node name="DamageLine" type="Label" parent="EnemyArea/EnemyMargin/EnemyCard/CardMargin/CardVBox/ImagePanel/ImageMargin/ImageCenter/PreviewCard/CardInfo/CardInfoVBox"]
+layout_mode = 2
+theme_override_font_sizes/font_size = 18
+theme_override_colors/font_color = Color(0.0823529, 0.0666667, 0.0431373, 1)
+text = "Danno: 1"
+visible = false
+
+[node name="FleeLine" type="Label" parent="EnemyArea/EnemyMargin/EnemyCard/CardMargin/CardVBox/ImagePanel/ImageMargin/ImageCenter/PreviewCard/CardInfo/CardInfoVBox"]
+layout_mode = 2
+theme_override_font_sizes/font_size = 15
+theme_override_colors/font_color = Color(0.0823529, 0.0666667, 0.0431373, 1)
+autowrap_mode = 3
+text = "Fuga: -"
+
+[node name="RewardLine" type="Label" parent="EnemyArea/EnemyMargin/EnemyCard/CardMargin/CardVBox/ImagePanel/ImageMargin/ImageCenter/PreviewCard/CardInfo/CardInfoVBox"]
+layout_mode = 2
+theme_override_font_sizes/font_size = 15
+theme_override_colors/font_color = Color(0.0823529, 0.0666667, 0.0431373, 1)
+autowrap_mode = 3
+text = "Premio: -"
+
+[node name="InfoVBox" type="VBoxContainer" parent="EnemyArea/EnemyMargin/EnemyCard/CardMargin/CardVBox"]
+layout_mode = 2
+theme_override_constants/separation = 10
+visible = false
+
+[node name="RequirementsTitle" type="Label" parent="EnemyArea/EnemyMargin/EnemyCard/CardMargin/CardVBox/InfoVBox"]
+layout_mode = 2
+text = "Per Sconfiggere"
+
+[node name="RequirementsRow" type="HBoxContainer" parent="EnemyArea/EnemyMargin/EnemyCard/CardMargin/CardVBox/InfoVBox"]
+layout_mode = 2
+theme_override_constants/separation = 8
+
+[node name="FleeTitle" type="Label" parent="EnemyArea/EnemyMargin/EnemyCard/CardMargin/CardVBox/InfoVBox"]
+layout_mode = 2
+text = "Fuga"
+
+[node name="FleeValue" type="Label" parent="EnemyArea/EnemyMargin/EnemyCard/CardMargin/CardVBox/InfoVBox"]
+layout_mode = 2
+autowrap_mode = 3
+text = "-"
+
+[node name="RewardTitle" type="Label" parent="EnemyArea/EnemyMargin/EnemyCard/CardMargin/CardVBox/InfoVBox"]
 layout_mode = 2
 text = "Premio"
 
-[node name="RewardValue" type="Label" parent="EnemyArea/EnemyMargin/EnemyCard/CardMargin/CardVBox/StatsGrid"]
+[node name="RewardValue" type="Label" parent="EnemyArea/EnemyMargin/EnemyCard/CardMargin/CardVBox/InfoVBox"]
 layout_mode = 2
-horizontal_alignment = 2
-text = "0"
+autowrap_mode = 3
+text = "-"
+
+[node name="RevealHint" type="Label" parent="EnemyArea/EnemyMargin"]
+layout_mode = 2
+autowrap_mode = 3
+horizontal_alignment = 1
+theme_override_font_sizes/font_size = 16
+text = "Piazza tutti i risultati, poi clicca direttamente la carta a destra per scoprire il nemico."
 
 [node name="BoardArea" type="Control" parent="."]
 layout_mode = 1
@@ -168,6 +244,47 @@ size_flags_vertical = 3
 [node name="GridLayer" type="Control" parent="BoardArea/BoardVBox/BoardCenter"]
 custom_minimum_size = Vector2(520, 300)
 layout_mode = 2
+
+[node name="AbilityPanel" type="PanelContainer" parent="BoardArea/BoardVBox"]
+custom_minimum_size = Vector2(0, 86)
+layout_mode = 2
+theme_override_styles/panel = SubResource("3")
+
+[node name="AbilityMargin" type="MarginContainer" parent="BoardArea/BoardVBox/AbilityPanel"]
+layout_mode = 2
+theme_override_constants/margin_left = 14
+theme_override_constants/margin_top = 12
+theme_override_constants/margin_right = 14
+theme_override_constants/margin_bottom = 12
+
+[node name="AbilityHBox" type="HBoxContainer" parent="BoardArea/BoardVBox/AbilityPanel/AbilityMargin"]
+layout_mode = 2
+theme_override_constants/separation = 12
+
+[node name="AbilityLabel" type="Label" parent="BoardArea/BoardVBox/AbilityPanel/AbilityMargin/AbilityHBox"]
+layout_mode = 2
+size_flags_horizontal = 3
+autowrap_mode = 3
+text = "Abilita: -"
+
+[node name="ActionButtons" type="VBoxContainer" parent="BoardArea/BoardVBox/AbilityPanel/AbilityMargin/AbilityHBox"]
+layout_mode = 2
+theme_override_constants/separation = 8
+
+[node name="RestButton" type="Button" parent="BoardArea/BoardVBox/AbilityPanel/AbilityMargin/AbilityHBox/ActionButtons"]
+custom_minimum_size = Vector2(140, 42)
+layout_mode = 2
+text = "Riposa"
+
+[node name="AbilityButton" type="Button" parent="BoardArea/BoardVBox/AbilityPanel/AbilityMargin/AbilityHBox/ActionButtons"]
+custom_minimum_size = Vector2(140, 42)
+layout_mode = 2
+text = "Abilita"
+
+[node name="FleeButton" type="Button" parent="BoardArea/BoardVBox/AbilityPanel/AbilityMargin/AbilityHBox/ActionButtons"]
+custom_minimum_size = Vector2(140, 42)
+layout_mode = 2
+text = "Fuga"
 
 [node name="ResultsPanel" type="PanelContainer" parent="BoardArea/BoardVBox"]
 custom_minimum_size = Vector2(0, 150)

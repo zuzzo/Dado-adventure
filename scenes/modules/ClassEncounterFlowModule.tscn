@@ -8,6 +8,8 @@
 [ext_resource type="PackedScene" path="res://scenes/MagiaDice.tscn" id="6"]
 [ext_resource type="PackedScene" path="res://scenes/LadroDice.tscn" id="7"]
 [ext_resource type="PackedScene" path="res://scenes/MonetaDice.tscn" id="8"]
+[ext_resource type="PackedScene" path="res://scenes/MistoDice.tscn" id="9"]
+[ext_resource type="Texture2D" path="res://assets/dice/cuore1.png" id="10"]
 
 [node name="ClassEncounterFlowModule" type="Node"]
 script = ExtResource("1")
@@ -16,12 +18,71 @@ scudo_dice_scene = ExtResource("5")
 magia_dice_scene = ExtResource("6")
 ladro_dice_scene = ExtResource("7")
 moneta_dice_scene = ExtResource("8")
+base_dice_scene = ExtResource("9")
 
 [node name="DiceRollModule" parent="." instance=ExtResource("2")]
 visible = false
 
 [node name="BattleBoardModule" parent="." instance=ExtResource("3")]
 visible = false
+
+[node name="HudOverlay" type="Control" parent="."]
+visible = false
+layout_mode = 3
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+grow_horizontal = 2
+grow_vertical = 2
+mouse_filter = 2
+
+[node name="HudMargin" type="MarginContainer" parent="HudOverlay"]
+layout_mode = 1
+anchors_preset = 1
+anchor_right = 0.0
+anchor_bottom = 0.0
+offset_left = 10.0
+offset_top = 10.0
+offset_right = 290.0
+offset_bottom = 86.0
+
+[node name="HudPanel" type="PanelContainer" parent="HudOverlay/HudMargin"]
+layout_mode = 2
+
+[node name="HudPanelMargin" type="MarginContainer" parent="HudOverlay/HudMargin/HudPanel"]
+layout_mode = 2
+theme_override_constants/margin_left = 10
+theme_override_constants/margin_top = 8
+theme_override_constants/margin_right = 10
+theme_override_constants/margin_bottom = 8
+
+[node name="HudHBox" type="HBoxContainer" parent="HudOverlay/HudMargin/HudPanel/HudPanelMargin"]
+layout_mode = 2
+alignment = 0
+theme_override_constants/separation = 10
+
+[node name="HeartIcon" type="TextureRect" parent="HudOverlay/HudMargin/HudPanel/HudPanelMargin/HudHBox"]
+custom_minimum_size = Vector2(34, 34)
+layout_mode = 2
+texture = ExtResource("10")
+expand_mode = 1
+stretch_mode = 5
+
+[node name="HpValue" type="Label" parent="HudOverlay/HudMargin/HudPanel/HudPanelMargin/HudHBox"]
+layout_mode = 2
+theme_override_font_sizes/font_size = 26
+theme_override_colors/font_color = Color(1, 1, 1, 1)
+theme_override_constants/outline_size = 4
+theme_override_colors/font_outline_color = Color(0, 0, 0, 1)
+text = "10"
+
+[node name="GoldValue" type="Label" parent="HudOverlay/HudMargin/HudPanel/HudPanelMargin/HudHBox"]
+layout_mode = 2
+theme_override_font_sizes/font_size = 22
+theme_override_colors/font_color = Color(1, 0.901961, 0.517647, 1)
+theme_override_constants/outline_size = 3
+theme_override_colors/font_outline_color = Color(0, 0, 0, 1)
+text = "Oro: 0"
 
 [node name="SelectionScreen" type="Control" parent="."]
 layout_mode = 3
@@ -120,7 +181,6 @@ text = "Guerriero"
 [node name="CharacterImagePanel" type="PanelContainer" parent="SelectionScreen/Center/SelectionRow/PreviewPanel/PreviewMargin/PreviewVBox"]
 custom_minimum_size = Vector2(0, 420)
 layout_mode = 2
-size_flags_vertical = 3
 
 [node name="CharacterImageMargin" type="MarginContainer" parent="SelectionScreen/Center/SelectionRow/PreviewPanel/PreviewMargin/PreviewVBox/CharacterImagePanel"]
 layout_mode = 2
@@ -133,7 +193,7 @@ theme_override_constants/margin_bottom = 16
 layout_mode = 2
 
 [node name="CharacterImage" type="TextureRect" parent="SelectionScreen/Center/SelectionRow/PreviewPanel/PreviewMargin/PreviewVBox/CharacterImagePanel/CharacterImageMargin/CharacterImageCenter"]
-custom_minimum_size = Vector2(320, 320)
+custom_minimum_size = Vector2(340, 340)
 layout_mode = 2
 expand_mode = 1
 stretch_mode = 5
@@ -155,6 +215,13 @@ horizontal_alignment = 1
 theme_override_font_sizes/font_size = 18
 text = "Punti Vita: 10"
 
+[node name="CharacterAbility" type="Label" parent="SelectionScreen/Center/SelectionRow/PreviewPanel/PreviewMargin/PreviewVBox"]
+custom_minimum_size = Vector2(0, 64)
+layout_mode = 2
+autowrap_mode = 3
+theme_override_font_sizes/font_size = 16
+text = "Abilita: -"
+
 [node name="LoadoutRow" type="HBoxContainer" parent="SelectionScreen/Center/SelectionRow/PreviewPanel/PreviewMargin/PreviewVBox"]
 layout_mode = 2
 alignment = 1
@@ -172,20 +239,58 @@ mouse_filter = 2
 
 [node name="OverlayTop" type="MarginContainer" parent="RollOverlay"]
 layout_mode = 1
-anchors_preset = 10
-anchor_right = 1.0
-offset_left = 24.0
-offset_top = 24.0
-offset_right = -24.0
+anchors_preset = 8
+anchor_left = 0.5
+anchor_top = 0.5
+anchor_right = 0.5
+anchor_bottom = 0.5
+offset_left = -250.0
+offset_top = -120.0
+offset_right = 250.0
 offset_bottom = 120.0
-grow_horizontal = 2
 
-[node name="RollInfo" type="Label" parent="RollOverlay/OverlayTop"]
+[node name="OverlayPanel" type="PanelContainer" parent="RollOverlay/OverlayTop"]
 layout_mode = 2
+
+[node name="OverlayPanelMargin" type="MarginContainer" parent="RollOverlay/OverlayTop/OverlayPanel"]
+layout_mode = 2
+theme_override_constants/margin_left = 20
+theme_override_constants/margin_top = 20
+theme_override_constants/margin_right = 20
+theme_override_constants/margin_bottom = 20
+
+[node name="OverlayPanelVBox" type="VBoxContainer" parent="RollOverlay/OverlayTop/OverlayPanel/OverlayPanelMargin"]
+layout_mode = 2
+theme_override_constants/separation = 14
+
+[node name="RollInfo" type="Label" parent="RollOverlay/OverlayTop/OverlayPanel/OverlayPanelMargin/OverlayPanelVBox"]
+layout_mode = 2
+horizontal_alignment = 1
 theme_override_font_sizes/font_size = 28
-visible = false
+text = "Risultato del lancio"
 
-[node name="ContinueHint" type="Label" parent="RollOverlay/OverlayTop"]
+[node name="ContinueHint" type="Label" parent="RollOverlay/OverlayTop/OverlayPanel/OverlayPanelMargin/OverlayPanelVBox"]
 layout_mode = 2
+horizontal_alignment = 1
 theme_override_font_sizes/font_size = 18
-visible = false
+text = "Accetti il risultato o paghi 1 PV per rilanciare?"
+
+[node name="RollResultsRow" type="HBoxContainer" parent="RollOverlay/OverlayTop/OverlayPanel/OverlayPanelMargin/OverlayPanelVBox"]
+layout_mode = 2
+alignment = 1
+theme_override_constants/separation = 10
+
+[node name="RollActionRow" type="HBoxContainer" parent="RollOverlay/OverlayTop/OverlayPanel/OverlayPanelMargin/OverlayPanelVBox"]
+layout_mode = 2
+alignment = 1
+theme_override_constants/separation = 12
+
+[node name="AcceptRollButton" type="Button" parent="RollOverlay/OverlayTop/OverlayPanel/OverlayPanelMargin/OverlayPanelVBox/RollActionRow"]
+custom_minimum_size = Vector2(180, 52)
+layout_mode = 2
+text = "Risultato OK"
+
+[node name="RerollButton" type="Button" parent="RollOverlay/OverlayTop/OverlayPanel/OverlayPanelMargin/OverlayPanelVBox/RollActionRow"]
+custom_minimum_size = Vector2(220, 52)
+layout_mode = 2
+text = "Paga 1 PV e rilancia"

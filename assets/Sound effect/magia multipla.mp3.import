@@ -1,0 +1,19 @@
+[remap]
+
+importer="mp3"
+type="AudioStreamMP3"
+uid="uid://dhfavxxmf8j5v"
+path="res://.godot/imported/magia multipla.mp3-e25c16e21bbbdc5761f19b4c17ec4368.mp3str"
+
+[deps]
+
+source_file="res://assets/Sound effect/magia multipla.mp3"
+dest_files=["res://.godot/imported/magia multipla.mp3-e25c16e21bbbdc5761f19b4c17ec4368.mp3str"]
+
+[params]
+
+loop=false
+loop_offset=0
+bpm=0
+beat_count=0
+bar_beats=4

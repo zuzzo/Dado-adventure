@@ -1,0 +1,75 @@
+[
+	{
+		"id": "guerriero",
+		"name": "Guerriero",
+		"image": "res://assets/characters/Guerriero.png",
+		"hp": 10,
+		"starting_dice_count": 4,
+		"ability_text": "Paga un punto vita, riattiva un dado esausto.",
+		"ability_effects": [
+			{
+				"type": "pay_hp_cost",
+				"amount": 1
+			},
+			{
+				"type": "reactivate_exhausted_die",
+				"target": "chosen_die"
+			}
+		]
+	},
+	{
+		"id": "mago",
+		"name": "Mago",
+		"image": "res://assets/characters/Mago.png",
+		"hp": 7,
+		"starting_dice_count": 3,
+		"ability_text": "Paga un punto vita. Puoi creare un simbolo effimero (si distrugge dopo l'uso).",
+		"ability_effects": [
+			{
+				"type": "pay_hp_cost",
+				"amount": 1
+			},
+			{
+				"type": "create_ephemeral_symbol",
+				"lifetime": "until_used"
+			}
+		]
+	},
+	{
+		"id": "ladro",
+		"name": "Ladro",
+		"image": "res://assets/characters/Ladro.png",
+		"hp": 8,
+		"starting_dice_count": 3,
+		"ability_text": "Paga un punto vita. Puoi settare un dado esausto sul simbolo che preferisci.",
+		"ability_effects": [
+			{
+				"type": "pay_hp_cost",
+				"amount": 1
+			},
+			{
+				"type": "set_exhausted_die_symbol",
+				"target": "chosen_die",
+				"symbol": "chosen_symbol"
+			}
+		]
+	},
+	{
+		"id": "stregone",
+		"name": "Stregone",
+		"image": "res://assets/characters/Warlock.png",
+		"hp": 7,
+		"starting_dice_count": 4,
+		"ability_text": "Paga un punto vita. Puoi scegliere una riga/colonna in più oltre alla prima.",
+		"ability_effects": [
+			{
+				"type": "pay_hp_cost",
+				"amount": 1
+			},
+			{
+				"type": "select_extra_line",
+				"amount": 1
+			}
+		]
+	}
+]

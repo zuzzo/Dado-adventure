@@ -1,0 +1,19 @@
+[remap]
+
+importer="mp3"
+type="AudioStreamMP3"
+uid="uid://vnow4lo2bgwa"
+path="res://.godot/imported/fiammata.mp3-38a8d750e83049df41551a5ebca08bff.mp3str"
+
+[deps]
+
+source_file="res://assets/Sound effect/fiammata.mp3"
+dest_files=["res://.godot/imported/fiammata.mp3-38a8d750e83049df41551a5ebca08bff.mp3str"]
+
+[params]
+
+loop=false
+loop_offset=0
+bpm=0
+beat_count=0
+bar_beats=4

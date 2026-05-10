@@ -1,16 +1,68 @@
 [
 	{
+		"attempt_limit": 0,
+		"category": "monster",
+		"difficulty": 3,
+		"enemy_damage": 1,
+		"exhaustion_limit": 0,
+		"failure_effects": [
+			{
+				"amount": 4.0,
+				"type": "lose_hp"
+			}
+		],
+		"failure_outcomes": [],
+		"failure_text": "-4 P.V.",
+		"flee_effects": [
+			{
+				"amount": 4.0,
+				"type": "lose_hp"
+			}
+		],
 		"flee_text": "-4 P.V.",
 		"id": "scheletro_guerriero",
 		"image": "res://assets/enemies/skeleton.png",
 		"name": "Scheletro guerriero",
 		"requirements": [
 			"spada",
-			"scudo"
+			"arco",
+			"spada"
 		],
-		"reward_text": "10 monete, 10 EXP."
+		"reward_effects": [
+			{
+				"amount": 10.0,
+				"type": "gain_coins"
+			},
+			{
+				"amount": 1.0,
+				"type": "add_blank_die"
+			}
+		],
+		"reward_text": "10 monete, Aggiungi un dado vuoto al tuo zaino.",
+		"success_outcomes": []
 	},
 	{
+		"attempt_limit": 0,
+		"category": "monster",
+		"difficulty": 2,
+		"enemy_damage": 1,
+		"exhaustion_limit": 0,
+		"failure_effects": [
+			{
+				"target": "random_die",
+				"turns": 3.0,
+				"type": "disable_random_die_for_turns"
+			}
+		],
+		"failure_outcomes": [],
+		"failure_text": "Per 3 turni un dado casuale, è inutilizzabile.",
+		"flee_effects": [
+			{
+				"target": "random_die",
+				"turns": 3.0,
+				"type": "disable_random_die_for_turns"
+			}
+		],
 		"flee_text": "Per 3 turni un dado casuale, è inutilizzabile.",
 		"id": "goblin",
 		"image": "res://assets/enemies/goblin.png",
@@ -19,14 +71,126 @@
 			"ladro",
 			"arco"
 		],
-		"reward_text": "15 monete, 5 EXP."
+		"reward_effects": [
+			{
+				"amount": 15.0,
+				"type": "gain_coins"
+			},
+			{
+				"amount": 5.0,
+				"type": "gain_exp"
+			}
+		],
+		"reward_text": "15 monete, 5 EXP.",
+		"success_outcomes": []
 	},
 	{
-		"flee_text": "",
+		"attempt_limit": 0,
+		"category": "monster",
+		"difficulty": 4,
+		"enemy_damage": 2,
+		"exhaustion_limit": 0,
+		"failure_effects": [
+			{
+				"amount": 1.0,
+				"target": "chosen_die",
+				"type": "remove_symbol_from_die"
+			}
+		],
+		"failure_outcomes": [],
+		"failure_text": "Rimuovi un simbolo da un dado.",
+		"flee_effects": [
+			{
+				"amount": 1.0,
+				"target": "chosen_die",
+				"type": "remove_symbol_from_die"
+			}
+		],
+		"flee_text": "Rimuovi un simbolo da un dado.",
 		"id": "licantropo",
 		"image": "res://assets/enemies/werewolf.png",
 		"name": "Licantropo",
-		"requirements": [],
-		"reward_text": "2.0"
+		"requirements": [
+			"ladro",
+			"magia",
+			"magia",
+			"arco"
+		],
+		"reward_effects": [
+			{
+				"target": "chosen_die_face",
+				"type": "double_symbol_on_die_face"
+			}
+		],
+		"reward_text": "Raddoppia un simbolo ad una faccia di un dado.",
+		"success_outcomes": []
+	},
+	{
+		"attempt_limit": 0,
+		"category": "trap",
+		"difficulty": 1,
+		"enemy_damage": 3,
+		"exhaustion_limit": 1,
+		"failure_effects": [],
+		"failure_outcomes": [],
+		"failure_text": "Scartala dopo che ti ha fatto danno",
+		"flee_effects": [],
+		"flee_text": "Scartala dopo che ti ha fatto danno",
+		"id": "spuntoni",
+		"image": "res://assets/enemies/spuntoni.png",
+		"name": "Spuntoni",
+		"requirements": [
+			"ladro"
+		],
+		"reward_effects": [],
+		"reward_text": "",
+		"success_outcomes": []
+	},
+	{
+		"attempt_limit": 0,
+		"category": "door",
+		"difficulty": 1,
+		"enemy_damage": 0,
+		"exhaustion_limit": 0,
+		"failure_effects": [],
+		"failure_outcomes": [
+			"Hai bisogno di una chiave per aprirla."
+		],
+		"failure_text": "Hai bisogno di una chiave per aprirla.",
+		"flee_effects": [],
+		"flee_text": "Hai bisogno di una chiave per aprirla.",
+		"id": "inferiata",
+		"image": "res://assets/enemies/inferiata.png",
+		"name": "Inferiata",
+		"requirements": [
+			"chiave"
+		],
+		"reward_effects": [],
+		"reward_text": "La porta si apre",
+		"success_outcomes": [
+			"La porta si apre"
+		]
+	},
+	{
+		"attempt_limit": 0,
+		"category": "event",
+		"difficulty": 2,
+		"enemy_damage": 0,
+		"exhaustion_limit": 0,
+		"failure_effects": [],
+		"failure_outcomes": [],
+		"failure_text": "",
+		"flee_effects": [],
+		"flee_text": "",
+		"id": "mercante",
+		"image": "res://assets/enemies/mercante.png",
+		"name": "Mercante",
+		"requirements": [
+			"moneta",
+			"moneta"
+		],
+		"reward_effects": [],
+		"reward_text": "Scondo del 50%",
+		"success_outcomes": []
 	}
 ]

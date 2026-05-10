@@ -5,6 +5,7 @@ extends Node
 @onready var modules_root: Node = $Modules
 
 func _ready() -> void:
+	DisplayServer.window_set_mode(DisplayServer.WINDOW_MODE_FULLSCREEN)
 	_load_modules()
 
 func _load_modules() -> void:

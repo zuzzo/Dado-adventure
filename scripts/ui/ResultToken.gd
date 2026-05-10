@@ -11,14 +11,31 @@ func _ready() -> void:
 
 func setup(data: Dictionary) -> void:
 	result_data = data.duplicate(true)
+	_refresh_display()
+
+func _refresh_display() -> void:
 	texture = result_data.get("symbol_texture") as Texture2D
 	tooltip_text = str(result_data.get("label", ""))
+	modulate = Color(1, 1, 1, 1)
 
 func set_slot(slot: Control) -> void:
 	_slot = slot
 
 func get_slot() -> Control:
 	return _slot
+
+func get_result_data() -> Dictionary:
+	return result_data.duplicate(true)
+
+func set_exhausted(value: bool) -> void:
+	if value:
+		modulate = Color(0.55, 0.55, 0.55, 1)
+	else:
+		modulate = Color(1, 1, 1, 1)
+
+func set_result_data_value(key: String, value: Variant) -> void:
+	result_data[key] = value
+	_refresh_display()
 
 func _get_drag_data(_at_position: Vector2) -> Variant:
 	if texture == null:

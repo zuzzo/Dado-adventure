@@ -74,11 +74,15 @@ theme_override_constants/separation = 12
 [node name="Title" type="Label" parent="Margin/Root/LeftPanel/LeftMargin/LeftVBox"]
 layout_mode = 2
 theme_override_font_sizes/font_size = 28
-text = "Editor Nemici"
+text = "Editor Incontri"
 
 [node name="Toolbar" type="HBoxContainer" parent="Margin/Root/LeftPanel/LeftMargin/LeftVBox"]
 layout_mode = 2
 theme_override_constants/separation = 8
+
+[node name="BackButton" type="Button" parent="Margin/Root/LeftPanel/LeftMargin/LeftVBox/Toolbar"]
+layout_mode = 2
+text = "Menu"
 
 [node name="NewButton" type="Button" parent="Margin/Root/LeftPanel/LeftMargin/LeftVBox/Toolbar"]
 layout_mode = 2
@@ -130,7 +134,7 @@ theme_override_constants/separation = 14
 [node name="FormTitle" type="Label" parent="Margin/Root/RightPanel/RightMargin/RightScroll/RightVBox"]
 layout_mode = 2
 theme_override_font_sizes/font_size = 24
-text = "Scheda Nemico"
+text = "Scheda Incontro"
 
 [node name="NameLabel" type="Label" parent="Margin/Root/RightPanel/RightMargin/RightScroll/RightVBox"]
 layout_mode = 2
@@ -156,11 +160,46 @@ editable = false
 layout_mode = 2
 text = "Scegli Immagine"
 
+[node name="CategoryLabel" type="Label" parent="Margin/Root/RightPanel/RightMargin/RightScroll/RightVBox"]
+layout_mode = 2
+text = "Categoria"
+
+[node name="CategoryInput" type="OptionButton" parent="Margin/Root/RightPanel/RightMargin/RightScroll/RightVBox"]
+layout_mode = 2
+
+[node name="DamageLabel" type="Label" parent="Margin/Root/RightPanel/RightMargin/RightScroll/RightVBox"]
+layout_mode = 2
+text = "Danno Della Carta"
+
+[node name="DamageInput" type="SpinBox" parent="Margin/Root/RightPanel/RightMargin/RightScroll/RightVBox"]
+layout_mode = 2
+min_value = 0.0
+max_value = 9.0
+step = 1.0
+
+[node name="ExhaustionLabel" type="Label" parent="Margin/Root/RightPanel/RightMargin/RightScroll/RightVBox"]
+layout_mode = 2
+text = "Esaurimento Carta"
+
+[node name="ExhaustionInput" type="SpinBox" parent="Margin/Root/RightPanel/RightMargin/RightScroll/RightVBox"]
+layout_mode = 2
+min_value = 0.0
+max_value = 99.0
+step = 1.0
+
+[node name="DifficultyLabel" type="Label" parent="Margin/Root/RightPanel/RightMargin/RightScroll/RightVBox"]
+layout_mode = 2
+text = "Difficolta Derivata Dalla Sequenza"
+
+[node name="DifficultyValue" type="Label" parent="Margin/Root/RightPanel/RightMargin/RightScroll/RightVBox"]
+layout_mode = 2
+text = "0 icone"
+
 [node name="RequirementTitle" type="Label" parent="Margin/Root/RightPanel/RightMargin/RightScroll/RightVBox"]
 layout_mode = 2
 text = "Sequenza Icone Per La Sconfitta"
 
-[node name="IconPalette" type="HBoxContainer" parent="Margin/Root/RightPanel/RightMargin/RightScroll/RightVBox"]
+[node name="IconPalette" type="FlowContainer" parent="Margin/Root/RightPanel/RightMargin/RightScroll/RightVBox"]
 layout_mode = 2
 theme_override_constants/separation = 10
 
@@ -176,7 +215,7 @@ text = "Aggiungi Slot"
 layout_mode = 2
 text = "Rimuovi Slot"
 
-[node name="SequenceSlots" type="HBoxContainer" parent="Margin/Root/RightPanel/RightMargin/RightScroll/RightVBox"]
+[node name="SequenceSlots" type="FlowContainer" parent="Margin/Root/RightPanel/RightMargin/RightScroll/RightVBox"]
 layout_mode = 2
 theme_override_constants/separation = 10
 
@@ -195,6 +234,26 @@ text = "Testo Premio"
 [node name="RewardText" type="TextEdit" parent="Margin/Root/RightPanel/RightMargin/RightScroll/RightVBox"]
 custom_minimum_size = Vector2(0, 110)
 layout_mode = 2
+
+[node name="TreasureSuccessLabel" type="Label" parent="Margin/Root/RightPanel/RightMargin/RightScroll/RightVBox"]
+layout_mode = 2
+text = "Esiti Possibili Di Successo"
+visible = false
+
+[node name="TreasureSuccessText" type="TextEdit" parent="Margin/Root/RightPanel/RightMargin/RightScroll/RightVBox"]
+custom_minimum_size = Vector2(0, 120)
+layout_mode = 2
+visible = false
+
+[node name="TreasureFailureLabel" type="Label" parent="Margin/Root/RightPanel/RightMargin/RightScroll/RightVBox"]
+layout_mode = 2
+text = "Esiti Possibili Di Fallimento"
+visible = false
+
+[node name="TreasureFailureText" type="TextEdit" parent="Margin/Root/RightPanel/RightMargin/RightScroll/RightVBox"]
+custom_minimum_size = Vector2(0, 120)
+layout_mode = 2
+visible = false
 
 [node name="PreviewTitle" type="Label" parent="Margin/Root/RightPanel/RightMargin/RightScroll/RightVBox"]
 layout_mode = 2
@@ -280,6 +339,19 @@ text = "Per Sconfiggere"
 layout_mode = 2
 theme_override_constants/separation = 4
 
+[node name="PreviewMetaLine" type="Label" parent="Margin/Root/RightPanel/RightMargin/RightScroll/RightVBox/PreviewPanel/PreviewMargin/PreviewVBox/PreviewImageCenter/PreviewCard/CardInfo/CardInfoVBox"]
+layout_mode = 2
+theme_override_font_sizes/font_size = 11
+theme_override_colors/font_color = Color(0.0823529, 0.0666667, 0.0431373, 1)
+text = "Categoria: Mostro | Danno: 1 | Difficolta: 1"
+
+[node name="PreviewExhaustionLine" type="Label" parent="Margin/Root/RightPanel/RightMargin/RightScroll/RightVBox/PreviewPanel/PreviewMargin/PreviewVBox/PreviewImageCenter/PreviewCard/CardInfo/CardInfoVBox"]
+layout_mode = 2
+theme_override_font_sizes/font_size = 11
+theme_override_colors/font_color = Color(0.0823529, 0.0666667, 0.0431373, 1)
+autowrap_mode = 3
+text = "Esaurimento: Permanente"
+
 [node name="PreviewFleeLine" type="Label" parent="Margin/Root/RightPanel/RightMargin/RightScroll/RightVBox/PreviewPanel/PreviewMargin/PreviewVBox/PreviewImageCenter/PreviewCard/CardInfo/CardInfoVBox"]
 layout_mode = 2
 theme_override_font_sizes/font_size = 11
@@ -310,7 +382,7 @@ theme_override_constants/separation = 10
 custom_minimum_size = Vector2(0, 56)
 layout_mode = 2
 size_flags_horizontal = 3
-text = "Salva Mostro Nel Database"
+text = "Salva Incontro Nel Database"
 
 [node name="ReloadButtonLarge" type="Button" parent="Margin/Root/RightPanel/RightMargin/RightScroll/RightVBox/BottomActions"]
 custom_minimum_size = Vector2(0, 56)
@@ -319,7 +391,7 @@ size_flags_horizontal = 3
 text = "Ricarica Database"
 
 [node name="FileDialog" type="FileDialog" parent="."]
-title = "Scegli immagine nemico"
+title = "Scegli immagine carta"
 file_mode = 0
 access = 2
 filters = PackedStringArray("*.png ; PNG Images", "*.jpg ; JPG Images", "*.jpeg ; JPEG Images", "*.webp ; WebP Images")
