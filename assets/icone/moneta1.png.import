@@ -2,16 +2,16 @@
 
 importer="texture"
 type="CompressedTexture2D"
-uid="uid://1vnbe76enng7"
-path="res://.godot/imported/ladro2.png-c2586f03feab1d6e11b800f0ac828e1a.ctex"
+uid="uid://dbohg6almgcvk"
+path="res://.godot/imported/moneta1.png-6f6c57639868f57fe990ba7a0a6af1b0.ctex"
 metadata={
 "vram_texture": false
 }
 
 [deps]
 
-source_file="res://assets/dice/ladro2.png"
-dest_files=["res://.godot/imported/ladro2.png-c2586f03feab1d6e11b800f0ac828e1a.ctex"]
+source_file="res://assets/icone/moneta1.png"
+dest_files=["res://.godot/imported/moneta1.png-6f6c57639868f57fe990ba7a0a6af1b0.ctex"]
 
 [params]
 

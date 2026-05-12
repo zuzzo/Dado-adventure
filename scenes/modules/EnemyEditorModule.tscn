@@ -235,6 +235,39 @@ text = "Testo Premio"
 custom_minimum_size = Vector2(0, 110)
 layout_mode = 2
 
+[node name="EquipmentSlotLabel" type="Label" parent="Margin/Root/RightPanel/RightMargin/RightScroll/RightVBox"]
+visible = false
+layout_mode = 2
+text = "Slot Equipaggiamento"
+
+[node name="EquipmentSlotInput" type="OptionButton" parent="Margin/Root/RightPanel/RightMargin/RightScroll/RightVBox"]
+visible = false
+layout_mode = 2
+
+[node name="AttackBonusLabel" type="Label" parent="Margin/Root/RightPanel/RightMargin/RightScroll/RightVBox"]
+visible = false
+layout_mode = 2
+text = "Bonus Danno Spada"
+
+[node name="AttackBonusInput" type="SpinBox" parent="Margin/Root/RightPanel/RightMargin/RightScroll/RightVBox"]
+visible = false
+layout_mode = 2
+min_value = 0.0
+max_value = 9.0
+step = 1.0
+
+[node name="ArmorValueLabel" type="Label" parent="Margin/Root/RightPanel/RightMargin/RightScroll/RightVBox"]
+visible = false
+layout_mode = 2
+text = "Assorbimento Armatura"
+
+[node name="ArmorValueInput" type="SpinBox" parent="Margin/Root/RightPanel/RightMargin/RightScroll/RightVBox"]
+visible = false
+layout_mode = 2
+min_value = 0.0
+max_value = 9.0
+step = 1.0
+
 [node name="TreasureSuccessLabel" type="Label" parent="Margin/Root/RightPanel/RightMargin/RightScroll/RightVBox"]
 layout_mode = 2
 text = "Esiti Possibili Di Successo"

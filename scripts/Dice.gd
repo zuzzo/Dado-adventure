@@ -153,14 +153,18 @@ func get_top_result_data() -> Dictionary:
 	if entry.is_empty():
 		return {}
 	var label = str(entry.get("label", ""))
+	var value = int(entry.get("value", 0))
 	return {
 		"face_id": int(entry.get("face_id", 1)),
-		"value": int(entry.get("value", 0)),
+		"value": value,
 		"label": label,
+		"base_label": label,
 		"symbol_id": _extract_symbol_id(label),
 		"symbol_texture": entry.get("symbol_texture"),
 		"dice_type": dice_type,
-		"dice_name": definition.definition_name if definition != null else ""
+		"dice_name": definition.definition_name if definition != null else "",
+		"durability_mode": "exhaustible",
+		"remaining_uses": value
 	}
 
 func _extract_symbol_id(label: String) -> String:

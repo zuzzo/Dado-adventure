@@ -2,16 +2,16 @@
 
 importer="texture"
 type="CompressedTexture2D"
-uid="uid://8h67ep2vmgmj"
-path="res://.godot/imported/scudo2.png-e25c07fd92e55f505dbfca6f86e70613.ctex"
+uid="uid://1vnbe76enng7"
+path="res://.godot/imported/ladro2.png-9bcb63765ff1c5a20fcdda49bb2ec0de.ctex"
 metadata={
 "vram_texture": false
 }
 
 [deps]
 
-source_file="res://assets/dice/scudo2.png"
-dest_files=["res://.godot/imported/scudo2.png-e25c07fd92e55f505dbfca6f86e70613.ctex"]
+source_file="res://assets/icone/ladro2.png"
+dest_files=["res://.godot/imported/ladro2.png-9bcb63765ff1c5a20fcdda49bb2ec0de.ctex"]
 
 [params]
 

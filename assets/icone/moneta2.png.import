@@ -2,16 +2,16 @@
 
 importer="texture"
 type="CompressedTexture2D"
-uid="uid://bnkyxwlg860bn"
-path="res://.godot/imported/pergamena.png-402a9ebfed15f0e8a7f1b9e24dcbe6dc.ctex"
+uid="uid://dfk8imjqm0r6f"
+path="res://.godot/imported/moneta2.png-420e0c18be9466f3ec3da1fa7f6552a0.ctex"
 metadata={
 "vram_texture": false
 }
 
 [deps]
 
-source_file="res://assets/item/pergamena.png"
-dest_files=["res://.godot/imported/pergamena.png-402a9ebfed15f0e8a7f1b9e24dcbe6dc.ctex"]
+source_file="res://assets/icone/moneta2.png"
+dest_files=["res://.godot/imported/moneta2.png-420e0c18be9466f3ec3da1fa7f6552a0.ctex"]
 
 [params]
 

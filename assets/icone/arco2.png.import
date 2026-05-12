@@ -2,16 +2,16 @@
 
 importer="texture"
 type="CompressedTexture2D"
-uid="uid://dyhneq1hjuetr"
-path="res://.godot/imported/spada2.png-93b878294bc65d5f0eb4215652b9a5f5.ctex"
+uid="uid://c7f7odd4guigw"
+path="res://.godot/imported/arco2.png-838a2a22d0a4b4d1746ebb82e7656063.ctex"
 metadata={
 "vram_texture": false
 }
 
 [deps]
 
-source_file="res://assets/dice/spada2.png"
-dest_files=["res://.godot/imported/spada2.png-93b878294bc65d5f0eb4215652b9a5f5.ctex"]
+source_file="res://assets/icone/arco2.png"
+dest_files=["res://.godot/imported/arco2.png-838a2a22d0a4b4d1746ebb82e7656063.ctex"]
 
 [params]
 

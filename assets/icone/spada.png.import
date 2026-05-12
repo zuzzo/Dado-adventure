@@ -3,15 +3,15 @@
 importer="texture"
 type="CompressedTexture2D"
 uid="uid://bphj8hvkvj4od"
-path="res://.godot/imported/spada.png-5d430a429a3b881214e658a7c657f3c0.ctex"
+path="res://.godot/imported/spada.png-4926b83f232b17926f5e3062428c027a.ctex"
 metadata={
 "vram_texture": false
 }
 
 [deps]
 
-source_file="res://assets/dice/spada.png"
-dest_files=["res://.godot/imported/spada.png-5d430a429a3b881214e658a7c657f3c0.ctex"]
+source_file="res://assets/icone/spada.png"
+dest_files=["res://.godot/imported/spada.png-4926b83f232b17926f5e3062428c027a.ctex"]
 
 [params]
 

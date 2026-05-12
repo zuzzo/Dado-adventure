@@ -2,16 +2,16 @@
 
 importer="texture"
 type="CompressedTexture2D"
-uid="uid://wuwyp27qrebr"
-path="res://.godot/imported/pozione.png-5ab7615bc71a212d4bc9c6ed46ac5ba2.ctex"
+uid="uid://2hederqacpdo"
+path="res://.godot/imported/scudo-legno.png-b07e658888e005277a146f6b25ca0309.ctex"
 metadata={
 "vram_texture": false
 }
 
 [deps]
 
-source_file="res://assets/item/pozione.png"
-dest_files=["res://.godot/imported/pozione.png-5ab7615bc71a212d4bc9c6ed46ac5ba2.ctex"]
+source_file="res://assets/item/scudo-legno.png"
+dest_files=["res://.godot/imported/scudo-legno.png-b07e658888e005277a146f6b25ca0309.ctex"]
 
 [params]
 

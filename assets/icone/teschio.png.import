@@ -2,16 +2,16 @@
 
 importer="texture"
 type="CompressedTexture2D"
-uid="uid://cfsju5wd8fyde"
-path="res://.godot/imported/chiave.png-46e53453578f87b8f339e1b0716f4382.ctex"
+uid="uid://bg8eo430a04sp"
+path="res://.godot/imported/teschio.png-ee1b8744fc2b70a683aeb9364a33967f.ctex"
 metadata={
 "vram_texture": false
 }
 
 [deps]
 
-source_file="res://assets/item/chiave.png"
-dest_files=["res://.godot/imported/chiave.png-46e53453578f87b8f339e1b0716f4382.ctex"]
+source_file="res://assets/icone/teschio.png"
+dest_files=["res://.godot/imported/teschio.png-ee1b8744fc2b70a683aeb9364a33967f.ctex"]
 
 [params]
 

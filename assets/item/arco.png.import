@@ -2,16 +2,16 @@
 
 importer="texture"
 type="CompressedTexture2D"
-uid="uid://dfk8imjqm0r6f"
-path="res://.godot/imported/moneta2.png-e8c881b3d5f23c55adbc8e3ecd1d2f92.ctex"
+uid="uid://ch7yf701hbvhb"
+path="res://.godot/imported/arco.png-a572474278304cbc916d5b93f0472fcc.ctex"
 metadata={
 "vram_texture": false
 }
 
 [deps]
 
-source_file="res://assets/dice/moneta2.png"
-dest_files=["res://.godot/imported/moneta2.png-e8c881b3d5f23c55adbc8e3ecd1d2f92.ctex"]
+source_file="res://assets/item/arco.png"
+dest_files=["res://.godot/imported/arco.png-a572474278304cbc916d5b93f0472fcc.ctex"]
 
 [params]
 

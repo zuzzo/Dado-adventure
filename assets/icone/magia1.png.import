@@ -2,16 +2,16 @@
 
 importer="texture"
 type="CompressedTexture2D"
-uid="uid://bg8eo430a04sp"
-path="res://.godot/imported/teschio.png-36c7007c1ea1d2b686bdaa248af8c18b.ctex"
+uid="uid://c1t2ebvd36oxv"
+path="res://.godot/imported/magia1.png-7bf2f47cb09e705bd578b7dfdacf731b.ctex"
 metadata={
 "vram_texture": false
 }
 
 [deps]
 
-source_file="res://assets/item/teschio.png"
-dest_files=["res://.godot/imported/teschio.png-36c7007c1ea1d2b686bdaa248af8c18b.ctex"]
+source_file="res://assets/icone/magia1.png"
+dest_files=["res://.godot/imported/magia1.png-7bf2f47cb09e705bd578b7dfdacf731b.ctex"]
 
 [params]
 

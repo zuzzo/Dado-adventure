@@ -2,16 +2,16 @@
 
 importer="texture"
 type="CompressedTexture2D"
-uid="uid://dim4gftqrtg4q"
-path="res://.godot/imported/arco1.png-4971a251af4ce6e88a0bd90062aebfc5.ctex"
+uid="uid://bdik3olgs84mk"
+path="res://.godot/imported/ladro1.png-6023d251244d29ab6b277090330a744c.ctex"
 metadata={
 "vram_texture": false
 }
 
 [deps]
 
-source_file="res://assets/dice/arco1.png"
-dest_files=["res://.godot/imported/arco1.png-4971a251af4ce6e88a0bd90062aebfc5.ctex"]
+source_file="res://assets/icone/ladro1.png"
+dest_files=["res://.godot/imported/ladro1.png-6023d251244d29ab6b277090330a744c.ctex"]
 
 [params]
 

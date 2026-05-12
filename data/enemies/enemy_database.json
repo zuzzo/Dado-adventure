@@ -1,9 +1,12 @@
 [
 	{
+		"armor_value": 0,
+		"attack_bonus": 0,
 		"attempt_limit": 0,
 		"category": "monster",
 		"difficulty": 3,
 		"enemy_damage": 1,
+		"equipment_slot": "weapon",
 		"exhaustion_limit": 0,
 		"failure_effects": [
 			{
@@ -20,6 +23,13 @@
 			}
 		],
 		"flee_text": "-4 P.V.",
+		"granted_durability_mode": "exhaustible",
+		"granted_icons": [
+			"spada",
+			"arco",
+			"spada"
+		],
+		"granted_remaining_uses": 1,
 		"id": "scheletro_guerriero",
 		"image": "res://assets/enemies/skeleton.png",
 		"name": "Scheletro guerriero",
@@ -42,10 +52,13 @@
 		"success_outcomes": []
 	},
 	{
+		"armor_value": 0,
+		"attack_bonus": 0,
 		"attempt_limit": 0,
 		"category": "monster",
 		"difficulty": 2,
 		"enemy_damage": 1,
+		"equipment_slot": "weapon",
 		"exhaustion_limit": 0,
 		"failure_effects": [
 			{
@@ -64,6 +77,12 @@
 			}
 		],
 		"flee_text": "Per 3 turni un dado casuale, è inutilizzabile.",
+		"granted_durability_mode": "exhaustible",
+		"granted_icons": [
+			"ladro",
+			"arco"
+		],
+		"granted_remaining_uses": 1,
 		"id": "goblin",
 		"image": "res://assets/enemies/goblin.png",
 		"name": "Goblin",
@@ -85,10 +104,13 @@
 		"success_outcomes": []
 	},
 	{
+		"armor_value": 0,
+		"attack_bonus": 0,
 		"attempt_limit": 0,
 		"category": "monster",
 		"difficulty": 4,
 		"enemy_damage": 2,
+		"equipment_slot": "weapon",
 		"exhaustion_limit": 0,
 		"failure_effects": [
 			{
@@ -107,6 +129,14 @@
 			}
 		],
 		"flee_text": "Rimuovi un simbolo da un dado.",
+		"granted_durability_mode": "exhaustible",
+		"granted_icons": [
+			"ladro",
+			"magia",
+			"magia",
+			"arco"
+		],
+		"granted_remaining_uses": 1,
 		"id": "licantropo",
 		"image": "res://assets/enemies/werewolf.png",
 		"name": "Licantropo",
@@ -126,16 +156,24 @@
 		"success_outcomes": []
 	},
 	{
+		"armor_value": 0,
+		"attack_bonus": 0,
 		"attempt_limit": 0,
 		"category": "trap",
 		"difficulty": 1,
 		"enemy_damage": 3,
+		"equipment_slot": "weapon",
 		"exhaustion_limit": 1,
 		"failure_effects": [],
 		"failure_outcomes": [],
 		"failure_text": "Scartala dopo che ti ha fatto danno",
 		"flee_effects": [],
 		"flee_text": "Scartala dopo che ti ha fatto danno",
+		"granted_durability_mode": "exhaustible",
+		"granted_icons": [
+			"ladro"
+		],
+		"granted_remaining_uses": 1,
 		"id": "spuntoni",
 		"image": "res://assets/enemies/spuntoni.png",
 		"name": "Spuntoni",
@@ -147,10 +185,13 @@
 		"success_outcomes": []
 	},
 	{
+		"armor_value": 0,
+		"attack_bonus": 0,
 		"attempt_limit": 0,
 		"category": "door",
 		"difficulty": 1,
 		"enemy_damage": 0,
+		"equipment_slot": "weapon",
 		"exhaustion_limit": 0,
 		"failure_effects": [],
 		"failure_outcomes": [
@@ -159,6 +200,11 @@
 		"failure_text": "Hai bisogno di una chiave per aprirla.",
 		"flee_effects": [],
 		"flee_text": "Hai bisogno di una chiave per aprirla.",
+		"granted_durability_mode": "exhaustible",
+		"granted_icons": [
+			"chiave"
+		],
+		"granted_remaining_uses": 1,
 		"id": "inferiata",
 		"image": "res://assets/enemies/inferiata.png",
 		"name": "Inferiata",
@@ -172,16 +218,25 @@
 		]
 	},
 	{
+		"armor_value": 0,
+		"attack_bonus": 0,
 		"attempt_limit": 0,
 		"category": "event",
 		"difficulty": 2,
 		"enemy_damage": 0,
+		"equipment_slot": "weapon",
 		"exhaustion_limit": 0,
 		"failure_effects": [],
 		"failure_outcomes": [],
 		"failure_text": "",
 		"flee_effects": [],
 		"flee_text": "",
+		"granted_durability_mode": "exhaustible",
+		"granted_icons": [
+			"moneta",
+			"moneta"
+		],
+		"granted_remaining_uses": 1,
 		"id": "mercante",
 		"image": "res://assets/enemies/mercante.png",
 		"name": "Mercante",
@@ -191,6 +246,93 @@
 		],
 		"reward_effects": [],
 		"reward_text": "Scondo del 50%",
+		"success_outcomes": []
+	},
+	{
+		"armor_value": 0,
+		"attack_bonus": 2,
+		"attempt_limit": 0,
+		"category": "object",
+		"difficulty": 1,
+		"enemy_damage": 1,
+		"equipment_slot": "weapon",
+		"exhaustion_limit": 0,
+		"failure_effects": [],
+		"failure_outcomes": [],
+		"failure_text": "",
+		"flee_effects": [],
+		"flee_text": "",
+		"granted_durability_mode": "perennial",
+		"granted_icons": [
+			"spada"
+		],
+		"granted_remaining_uses": 1,
+		"id": "spada",
+		"image": "res://assets/enemies/spada.png",
+		"name": "Spada",
+		"requirements": [
+			"spada"
+		],
+		"reward_effects": [],
+		"reward_text": "",
+		"success_outcomes": []
+	},
+	{
+		"armor_value": 1,
+		"attack_bonus": 0,
+		"attempt_limit": 0,
+		"category": "object",
+		"difficulty": 1,
+		"enemy_damage": 1,
+		"equipment_slot": "armor",
+		"exhaustion_limit": 0,
+		"failure_effects": [],
+		"failure_outcomes": [],
+		"failure_text": "",
+		"flee_effects": [],
+		"flee_text": "",
+		"granted_durability_mode": "ephemeral",
+		"granted_icons": [
+			"scudo"
+		],
+		"granted_remaining_uses": 3,
+		"id": "scudo",
+		"image": "res://assets/icone/scudo1.png",
+		"name": "Scudo",
+		"requirements": [
+			"scudo"
+		],
+		"reward_effects": [],
+		"reward_text": "Concede un'icona scudo effimera da 3 usi.",
+		"success_outcomes": []
+	},
+	{
+		"armor_value": 3,
+		"attack_bonus": 0,
+		"attempt_limit": 0,
+		"category": "object",
+		"difficulty": 1,
+		"enemy_damage": 0,
+		"equipment_slot": "armor",
+		"exhaustion_limit": 3,
+		"failure_effects": [],
+		"failure_outcomes": [],
+		"failure_text": "",
+		"flee_effects": [],
+		"flee_text": "",
+		"granted_durability_mode": "exhaustible",
+		"granted_icons": [
+			"scudo"
+		],
+		"granted_remaining_uses": 1,
+		"id": "armatura_di_pelle",
+		"image": "res://assets/enemies/armatura pelle.png",
+		"name": "Armatura di pelle",
+		"requirements": [
+			"scudo"
+		],
+		"reward_effects": [],
+		"reward_text": "",
 		"success_outcomes": []
 	}
 ]

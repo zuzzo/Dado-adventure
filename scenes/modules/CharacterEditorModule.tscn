@@ -172,13 +172,12 @@ value = 6.0
 
 [node name="DiceCountLabel" type="Label" parent="Margin/Root/RightPanel/RightMargin/RightScroll/RightVBox"]
 layout_mode = 2
-text = "Quantita Dadi Di Partenza"
+text = "Set Iniziale Simboli"
 
-[node name="DiceCountInput" type="SpinBox" parent="Margin/Root/RightPanel/RightMargin/RightScroll/RightVBox"]
+[node name="StartingLoadoutText" type="TextEdit" parent="Margin/Root/RightPanel/RightMargin/RightScroll/RightVBox"]
+custom_minimum_size = Vector2(0, 140)
 layout_mode = 2
-min_value = 1.0
-max_value = 20.0
-value = 3.0
+placeholder_text = "Un simbolo per riga oppure separati da virgole. Esempio:\nspada\nspada\ncuore\n+1"
 
 [node name="AbilityLabel" type="Label" parent="Margin/Root/RightPanel/RightMargin/RightScroll/RightVBox"]
 layout_mode = 2
@@ -280,7 +279,8 @@ theme_override_constants/separation = 2
 layout_mode = 2
 theme_override_font_sizes/font_size = 11
 theme_override_colors/font_color = Color(0.0823529, 0.0666667, 0.0431373, 1)
-text = "Dadi Di Partenza: 0"
+autowrap_mode = 3
+text = "Set Iniziale: -"
 
 [node name="PreviewAbilityTitle" type="Label" parent="Margin/Root/RightPanel/RightMargin/RightScroll/RightVBox/PreviewPanel/PreviewMargin/PreviewVBox/PreviewImageCenter/PreviewCard/CardInfo/CardInfoVBox"]
 layout_mode = 2

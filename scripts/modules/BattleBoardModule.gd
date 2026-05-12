@@ -7,17 +7,33 @@ signal player_stats_changed(hp, gold)
 const MAX_GRID_SIZE := 5
 const ENEMY_DATABASE_PATH := "res://data/enemies/enemy_database.json"
 const ENEMY_BACK_IMAGE_PATH := "res://assets/enemies/dorso.png"
+const TRACE_DEBUG_LOG_PATH := "res://trace_debug_log.txt"
 const ENEMY_ICON_PATHS := {
-	"spada": "res://assets/dice/spada.png",
-	"scudo": "res://assets/dice/cuore1.png",
-	"cuore": "res://assets/dice/cuore1.png",
-	"moneta": "res://assets/dice/moneta1.png",
-	"magia": "res://assets/dice/magia1.png",
-	"ladro": "res://assets/dice/ladro1.png",
-	"arco": "res://assets/dice/arco1.png"
+	"spada": "res://assets/icone/spada.png",
+	"scudo": "res://assets/icone/scudo1.png",
+	"cuore": "res://assets/icone/cuore1.png",
+	"moneta": "res://assets/icone/moneta1.png",
+	"magia": "res://assets/icone/magia1.png",
+	"ladro": "res://assets/icone/ladro1.png",
+	"arco": "res://assets/icone/arco1.png",
+	"chiave": "res://assets/icone/chiave.png",
+	"corona": "res://assets/icone/corona.png",
+	"cristallo": "res://assets/icone/cristallo.png",
+	"monete": "res://assets/icone/monete.png",
+	"pergamena": "res://assets/icone/pergamena.png",
+	"pozione": "res://assets/icone/pozione.png",
+	"teschio": "res://assets/icone/teschio.png",
+	"torcia": "res://assets/icone/torcia.png",
+	"+1": "res://assets/icone/+1.png",
+	"x2": "res://assets/icone/+1.png"
 }
 const DROP_SLOT_SCRIPT := preload("res://scripts/ui/DropSlot.gd")
+const DRAG_PATH_OVERLAY_SCRIPT := preload("res://scripts/ui/DragPathOverlay.gd")
 const RESULT_TOKEN_SCRIPT := preload("res://scripts/ui/ResultToken.gd")
+const MODIFIER_SYMBOLS := {
+	"+1": true,
+	"x2": true
+}
 const DEFAULT_UNLOCKED_CELLS: Array[Vector2i] = [
 	Vector2i(0, 0),
 	Vector2i(0, 1),
@@ -53,26 +69,44 @@ const DEFAULT_UNLOCKED_CELLS: Array[Vector2i] = [
 @onready var flee_value_label: Label = $EnemyArea/EnemyMargin/EnemyCard/CardMargin/CardVBox/ImagePanel/ImageMargin/ImageCenter/PreviewCard/CardInfo/CardInfoVBox/FleeLine
 @onready var reward_value_label: Label = $EnemyArea/EnemyMargin/EnemyCard/CardMargin/CardVBox/ImagePanel/ImageMargin/ImageCenter/PreviewCard/CardInfo/CardInfoVBox/RewardLine
 @onready var reveal_hint_label: Label = $EnemyArea/EnemyMargin/RevealHint
+@onready var results_title_label: Label = $BoardArea/BoardVBox/ResultsPanel/ResultsMargin/ResultsVBox/ResultsTitle
+var _drag_path_overlay: Control
 
 var current_results: Array[Dictionary] = []
 var current_enemy: Dictionary = {}
 var current_enemy_requirements: Array = []
 var enemy_revealed := false
-var current_character_name := ""
-var current_character_hp := 0
-var current_character_ability := ""
+var current_character_name: String = ""
+var current_character_hp: int = 0
+var current_character_mp: int = 0
+var current_max_trace_length: int = 4
+var current_character_ability: String = ""
 var current_character_ability_effects: Array = []
-var current_gold := 0
-var _slot_by_cell := {}
-var _hover_line_type := ""
-var _hover_line_index := -1
-var _exhausted_cells := []
-var _reroll_locked_cells := []
-var _pending_reroll_resolution := false
-var _pending_reroll_cells := []
+var current_gold: int = 0
+var current_equipment := {
+	"weapon": {},
+	"armor": {},
+	"accessory": {}
+}
+var current_attack_bonus: int = 0
+var current_armor: int = 0
+var current_pending_defense: int = 0
+var _slot_by_cell: Dictionary = {}
+var _hover_line_type: String = ""
+var _hover_line_index: int = -1
+var _exhausted_cells: Array = []
+var _reroll_locked_cells: Array = []
+var _pending_reroll_resolution: bool = false
+var _pending_reroll_cells: Array = []
+var _dragging_path: bool = false
+var _drag_path: Array[Vector2i] = []
+var _pending_status_messages: Array[String] = []
+var _board_layout_locked: bool = false
 
 func _ready() -> void:
+	_reset_trace_debug_log()
 	_build_grid()
+	_ensure_drag_path_lines()
 	randomize()
 	enemy_card.gui_input.connect(_on_enemy_card_gui_input)
 	rest_button.pressed.connect(_on_rest_button_pressed)
@@ -85,6 +119,39 @@ func _ready() -> void:
 	_prepare_hidden_enemy()
 	_build_result_tray()
 	resized.connect(_on_resized)
+
+func _input(event: InputEvent) -> void:
+	_handle_trace_input(event)
+
+func _unhandled_input(event: InputEvent) -> void:
+	_handle_trace_input(event)
+
+func _handle_trace_input(event: InputEvent) -> void:
+	if not enemy_revealed or _pending_reroll_resolution:
+		return
+	if event is InputEventMouseButton:
+		var mouse_button = event as InputEventMouseButton
+		if mouse_button.button_index != MOUSE_BUTTON_LEFT:
+			return
+		if mouse_button.pressed:
+			var pressed_cell = _get_cell_at_global_position(mouse_button.global_position)
+			_log_trace_debug("mouse_down global=%s cell=%s dragging=%s" % [str(mouse_button.global_position), str(pressed_cell), str(_dragging_path)])
+			if pressed_cell != null:
+				var slot = _slot_by_cell.get(pressed_cell, null) as PanelContainer
+				_begin_drag_path(pressed_cell, slot)
+			return
+		if _dragging_path:
+			_log_trace_debug("mouse_up path=%s" % str(_drag_path))
+			_finalize_drag_path()
+		return
+	if event is InputEventMouseMotion and _dragging_path:
+		var mouse_motion = event as InputEventMouseMotion
+		if (mouse_motion.button_mask & MOUSE_BUTTON_MASK_LEFT) == 0:
+			return
+		var hovered_cell = _get_cell_at_global_position(mouse_motion.global_position)
+		_log_trace_debug("mouse_motion global=%s cell=%s path=%s" % [str(mouse_motion.global_position), str(hovered_cell), str(_drag_path)])
+		if hovered_cell != null:
+			_extend_drag_path(hovered_cell)
 
 func _on_resized() -> void:
 	_build_grid()
@@ -104,23 +171,56 @@ func unlock_cell(cell: Vector2i) -> void:
 func set_roll_results(results: Array[Dictionary]) -> void:
 	current_results.clear()
 	for result in results:
-		current_results.append(result.duplicate(true))
-	current_gold = 0
+		current_results.append(_normalize_result_data(result))
 	_exhausted_cells.clear()
+	current_pending_defense = 0
 	_reroll_locked_cells.clear()
 	_pending_reroll_resolution = false
 	_pending_reroll_cells.clear()
 	_hover_line_type = ""
 	_hover_line_index = -1
+	_dragging_path = false
+	_drag_path.clear()
+	_pending_status_messages.clear()
+	_board_layout_locked = false
 	_build_result_tray()
 	_prepare_hidden_enemy()
 	_refresh_grid_visuals()
 
-func set_character_context(character_name: String, hp: int, ability_text: String, ability_effects: Array = []) -> void:
+func set_character_context(character_name: String, hp: int, mp: int, max_trace_length: int, ability_text: String, ability_effects: Array = []) -> void:
 	current_character_name = character_name
 	current_character_hp = hp
+	current_character_mp = mp
+	current_max_trace_length = max(2, int(max_trace_length))
 	current_character_ability = ability_text
 	current_character_ability_effects = ability_effects.duplicate(true)
+	_update_ability_label()
+	player_stats_changed.emit(current_character_hp, current_gold)
+
+func start_battle(character_name: String, hp: int, mp: int, max_trace_length: int, ability_text: String, ability_effects: Array, starting_loadout: Array, starting_objects: Array = []) -> void:
+	set_character_context(character_name, hp, mp, max_trace_length, ability_text, ability_effects)
+	var starting_results: Array[Dictionary] = []
+	for entry in starting_loadout:
+		var result = _create_loadout_result_data(entry)
+		if not result.is_empty():
+			starting_results.append(result)
+	if starting_results.is_empty():
+		starting_results.append(_create_loadout_result_data({"symbol_id": "spada"}))
+	set_roll_results(starting_results)
+	_apply_starting_objects(starting_objects)
+	if results_title_label != null:
+		results_title_label.text = "Simboli Da Piazzare"
+
+func reset_run_state() -> void:
+	current_gold = 0
+	current_equipment = {
+		"weapon": {},
+		"armor": {},
+		"accessory": {}
+	}
+	current_attack_bonus = 0
+	current_armor = 0
+	current_pending_defense = 0
 	_update_ability_label()
 	player_stats_changed.emit(current_character_hp, current_gold)
 
@@ -130,6 +230,7 @@ func refresh_random_enemy() -> void:
 func _build_grid() -> void:
 	if grid_layer == null:
 		return
+	_drag_path_overlay = null
 	for child in grid_layer.get_children():
 		child.queue_free()
 	_slot_by_cell.clear()
@@ -164,6 +265,7 @@ func _build_grid() -> void:
 				slot.custom_minimum_size = cell_size
 				slot.set_meta("board_module", self)
 				slot.gui_input.connect(_on_grid_slot_gui_input.bind(slot, original_cell))
+				slot.mouse_entered.connect(_on_grid_slot_mouse_entered.bind(original_cell))
 				slot.mouse_exited.connect(_on_grid_slot_mouse_exited)
 				grid.add_child(slot)
 				_slot_by_cell[original_cell] = slot
@@ -171,7 +273,9 @@ func _build_grid() -> void:
 				var spacer := Control.new()
 				spacer.custom_minimum_size = cell_size
 				grid.add_child(spacer)
+	_ensure_drag_path_lines()
 	_refresh_grid_visuals()
+	_refresh_board_token_drag_state()
 
 func _build_result_tray() -> void:
 	if token_tray == null:
@@ -189,9 +293,10 @@ func _build_result_tray() -> void:
 		token.call("setup", result)
 		slot.call("place_token", token)
 
-func _prepare_hidden_enemy(hint_text: String = "Piazza tutti i risultati, poi clicca direttamente la carta a destra per scoprire il nemico.") -> void:
+func _prepare_hidden_enemy(hint_text: String = "Piazza tutti i simboli, poi clicca la carta a destra per scoprire il nemico.") -> void:
 	current_enemy = _pick_random_enemy()
 	current_enemy_requirements.clear()
+	current_pending_defense = 0
 	var raw_requirements = current_enemy.get("requirements", [])
 	if raw_requirements is Array:
 		for requirement in raw_requirements:
@@ -209,6 +314,7 @@ func _prepare_hidden_enemy(hint_text: String = "Piazza tutti i risultati, poi cl
 	rest_button.disabled = true
 	ability_button.disabled = true
 	flee_button.disabled = true
+	_refresh_board_token_drag_state()
 	_clear_requirements_row()
 	if ResourceLoader.exists(ENEMY_BACK_IMAGE_PATH):
 		enemy_image.texture = load(ENEMY_BACK_IMAGE_PATH)
@@ -224,16 +330,21 @@ func _reveal_enemy() -> void:
 	enemy_name_label.text = str(current_enemy.get("name", "Nemico"))
 	card_name_label.text = enemy_name_label.text
 	var enemy_damage = int(current_enemy.get("enemy_damage", 0))
-	damage_line_label.visible = enemy_damage > 0
-	damage_line_label.text = "Danno: %d" % enemy_damage
+	var is_object = str(current_enemy.get("category", "")) == "object"
+	if is_object:
+		enemy_damage = 0
+	damage_line_label.visible = is_object or enemy_damage > 0
+	damage_line_label.text = _get_enemy_meta_text(enemy_damage)
 	flee_value_label.text = "Fuga: %s" % str(current_enemy.get("flee_text", "-"))
 	reward_value_label.text = "Premio: %s" % str(current_enemy.get("reward_text", "-"))
 	flee_value_label.visible = false
 	reward_value_label.visible = false
-	reveal_hint_label.text = "Nemico scoperto."
+	reveal_hint_label.text = "Nemico scoperto. Traccia una linea ortogonale di 2 fino a %d caselle per attaccare." % current_max_trace_length
 	rest_button.disabled = false
 	ability_button.disabled = false
 	flee_button.disabled = false
+	_refresh_board_token_drag_state()
+	_log_trace_debug("enemy_revealed name=%s board_tokens=%d max_trace=%d" % [str(current_enemy.get("name", "")), _count_board_tokens(), current_max_trace_length])
 	_build_requirements_row()
 	var image_path := str(current_enemy.get("image", ""))
 	if not image_path.is_empty() and ResourceLoader.exists(image_path):
@@ -285,7 +396,7 @@ func _on_enemy_card_gui_input(event: InputEvent) -> void:
 	if enemy_revealed:
 		return
 	if not _all_results_placed():
-		reveal_hint_label.text = "Prima piazza tutti i risultati nella griglia, poi clicca la carta."
+		reveal_hint_label.text = "Prima piazza tutti i simboli nella griglia, poi clicca la carta."
 		return
 	reveal_hint_label.text = "Clicca la carta per scoprire il nemico."
 	if event is InputEventMouseButton and event.pressed and event.button_index == MOUSE_BUTTON_LEFT:
@@ -326,6 +437,8 @@ func _set_children_mouse_ignore(node: Node) -> void:
 func can_drop_token_into_slot(slot: PanelContainer, token: Control) -> bool:
 	if token == null:
 		return false
+	if _board_layout_locked and not _pending_reroll_resolution:
+		return false
 	if token.has_method("get_result_data"):
 		var data = token.call("get_result_data") as Dictionary
 		var allowed_cells = data.get("allowed_cells", [])
@@ -342,10 +455,11 @@ func apply_rerolled_results(cells: Array, results: Array) -> void:
 	_pending_reroll_resolution = true
 	_pending_reroll_cells = cells.duplicate(true)
 	_reroll_locked_cells = cells.duplicate(true)
+	_refresh_board_token_drag_state()
 	for result in results:
 		var token := TextureRect.new()
 		token.set_script(RESULT_TOKEN_SCRIPT)
-		var result_data = result.duplicate(true)
+		var result_data = _normalize_result_data(result)
 		result_data["allowed_cells"] = cells.duplicate(true)
 		token.call("setup", result_data)
 		var tray_slot := _create_drop_slot(tray_slot_color)
@@ -362,28 +476,23 @@ func _get_cell_for_slot(slot: PanelContainer):
 	return null
 
 func _on_grid_slot_gui_input(event: InputEvent, slot: PanelContainer, cell: Vector2i) -> void:
-	if not enemy_revealed:
-		return
-	if _pending_reroll_resolution:
-		return
-	if event is InputEventMouseMotion:
-		var motion = event as InputEventMouseMotion
-		var line_data = _get_line_from_slot_position(motion.position, cell)
-		_set_hover_line(str(line_data.get("type", "")), int(line_data.get("index", -1)))
-	elif event is InputEventMouseButton:
-		var mouse_event = event as InputEventMouseButton
-		if not mouse_event.pressed:
-			return
-		var line_data = _get_line_from_slot_position(mouse_event.position, cell)
-		var line_type = str(line_data.get("type", ""))
-		var line_index = int(line_data.get("index", -1))
-		if mouse_event.button_index == MOUSE_BUTTON_LEFT:
-			_commit_line_selection(line_type, line_index)
-		elif mouse_event.button_index == MOUSE_BUTTON_RIGHT:
-			_request_line_reroll(line_type, line_index)
+	pass
 
 func _on_grid_slot_mouse_exited() -> void:
-	_set_hover_line("", -1)
+	if not _dragging_path:
+		_set_hover_line("", -1)
+
+func _on_grid_slot_mouse_entered(cell: Vector2i) -> void:
+	pass
+
+func _get_cell_at_global_position(global_position: Vector2):
+	for cell in _slot_by_cell.keys():
+		var slot = _slot_by_cell[cell] as Control
+		if slot == null:
+			continue
+		if slot.get_global_rect().has_point(global_position):
+			return cell
+	return null
 
 func _get_line_from_slot_position(local_position: Vector2, cell: Vector2i) -> Dictionary:
 	var left_distance = local_position.x
@@ -409,6 +518,8 @@ func _refresh_grid_visuals() -> void:
 		var fill = active_cell_color
 		if _exhausted_cells.has(cell):
 			fill = exhausted_cell_color
+		elif _drag_path.has(cell):
+			fill = highlight_cell_color
 		elif _pending_reroll_resolution and _pending_reroll_cells.has(cell):
 			fill = reroll_target_cell_color
 		elif _hover_line_type == "row" and cell.y == _hover_line_index:
@@ -416,6 +527,7 @@ func _refresh_grid_visuals() -> void:
 		elif _hover_line_type == "column" and cell.x == _hover_line_index:
 			fill = highlight_cell_color
 		_apply_slot_fill(slot, fill)
+	_refresh_drag_path_line()
 
 func _apply_slot_fill(slot: PanelContainer, fill_color: Color) -> void:
 	var style := StyleBoxFlat.new()
@@ -431,13 +543,180 @@ func _apply_slot_fill(slot: PanelContainer, fill_color: Color) -> void:
 	style.corner_radius_bottom_left = 4
 	slot.add_theme_stylebox_override("panel", style)
 
+func _begin_drag_path(cell: Vector2i, slot: PanelContainer) -> void:
+	if slot == null or not slot.has_method("has_token") or not slot.call("has_token"):
+		_log_trace_debug("begin_rejected cell=%s reason=no_token" % str(cell))
+		return
+	var token = slot.call("get_token") as Control
+	if token == null or not _token_can_be_used(token):
+		_log_trace_debug("begin_rejected cell=%s reason=token_unusable" % str(cell))
+		return
+	_dragging_path = true
+	_drag_path = [cell]
+	_log_trace_debug("begin_ok cell=%s symbol=%s" % [str(cell), _get_token_debug_symbol(token)])
+	reveal_hint_label.text = "Traccia una sequenza ortogonale di 2 fino a %d caselle." % current_max_trace_length
+	_refresh_grid_visuals()
+
+func _extend_drag_path(cell: Vector2i) -> void:
+	if not _dragging_path:
+		_log_trace_debug("extend_rejected cell=%s reason=not_dragging" % str(cell))
+		return
+	if _drag_path.is_empty():
+		_drag_path = [cell]
+		_log_trace_debug("extend_seed cell=%s" % str(cell))
+		return
+	var last_cell = _drag_path[_drag_path.size() - 1]
+	if cell == last_cell:
+		_log_trace_debug("extend_ignored cell=%s reason=same_cell" % str(cell))
+		return
+	if _drag_path.has(cell):
+		_log_trace_debug("extend_ignored cell=%s reason=already_in_path" % str(cell))
+		return
+	if _drag_path.size() >= current_max_trace_length:
+		_log_trace_debug("extend_rejected cell=%s reason=max_length path=%s" % [str(cell), str(_drag_path)])
+		return
+	if not _are_cells_orthogonally_adjacent(last_cell, cell):
+		_log_trace_debug("extend_rejected cell=%s reason=not_adjacent last=%s" % [str(cell), str(last_cell)])
+		return
+	var slot = _slot_by_cell.get(cell, null) as PanelContainer
+	if slot == null or not slot.has_method("has_token") or not slot.call("has_token"):
+		_log_trace_debug("extend_rejected cell=%s reason=no_token" % str(cell))
+		return
+	var token = slot.call("get_token") as Control
+	if token == null or not _token_can_be_used(token):
+		_log_trace_debug("extend_rejected cell=%s reason=token_unusable" % str(cell))
+		return
+	_drag_path.append(cell)
+	_log_trace_debug("extend_ok cell=%s symbol=%s path=%s" % [str(cell), _get_token_debug_symbol(token), str(_drag_path)])
+	_refresh_grid_visuals()
+
+func _finalize_drag_path() -> void:
+	if not _dragging_path:
+		_log_trace_debug("finalize_ignored reason=not_dragging")
+		return
+	_dragging_path = false
+	var final_path = _drag_path.duplicate()
+	_drag_path.clear()
+	_refresh_drag_path_line()
+	if final_path.size() < 2 or final_path.size() > current_max_trace_length:
+		_log_trace_debug("finalize_invalid path=%s size=%d" % [str(final_path), final_path.size()])
+		reveal_hint_label.text = "La traccia deve usare da 2 a %d caselle ortogonali." % current_max_trace_length
+		_refresh_grid_visuals()
+		return
+	_log_trace_debug("finalize_ok path=%s" % str(final_path))
+	_resolve_path_selection(final_path, true)
+
+func _ensure_drag_path_lines() -> void:
+	if grid_layer == null:
+		return
+	if _drag_path_overlay == null:
+		_drag_path_overlay = Control.new()
+		_drag_path_overlay.name = "DragPathOverlay"
+		_drag_path_overlay.set_script(DRAG_PATH_OVERLAY_SCRIPT)
+		_drag_path_overlay.mouse_filter = Control.MOUSE_FILTER_IGNORE
+		_drag_path_overlay.set_anchors_and_offsets_preset(Control.PRESET_FULL_RECT)
+		_drag_path_overlay.custom_minimum_size = grid_layer.custom_minimum_size
+		_drag_path_overlay.size = grid_layer.size
+		_drag_path_overlay.z_index = 50
+		grid_layer.add_child(_drag_path_overlay)
+	else:
+		_drag_path_overlay.custom_minimum_size = grid_layer.custom_minimum_size
+		_drag_path_overlay.size = grid_layer.size
+	_refresh_drag_path_line()
+
+func _refresh_drag_path_line() -> void:
+	if _drag_path_overlay == null:
+		return
+	if _drag_path.size() < 2:
+		_drag_path_overlay.visible = false
+		if _drag_path_overlay.has_method("set_path_points"):
+			_drag_path_overlay.call("set_path_points", PackedVector2Array())
+		return
+	var points: PackedVector2Array = PackedVector2Array()
+	for cell in _drag_path:
+		var point = _get_cell_center_in_grid(cell)
+		if point == null:
+			continue
+		points.append(point)
+	_drag_path_overlay.visible = points.size() >= 2
+	if _drag_path_overlay.has_method("set_path_points"):
+		_drag_path_overlay.call("set_path_points", points)
+
+func _get_cell_center_in_grid(cell: Vector2i):
+	var slot = _slot_by_cell.get(cell, null) as Control
+	if slot == null:
+		return null
+	var slot_rect = slot.get_global_rect()
+	var layer_rect = grid_layer.get_global_rect()
+	return slot_rect.position + slot_rect.size * 0.5 - layer_rect.position
+
+func _are_cells_orthogonally_adjacent(a: Vector2i, b: Vector2i) -> bool:
+	var delta = a - b
+	return abs(delta.x) + abs(delta.y) == 1
+
+func _resolve_path_selection(path: Array, finish_action: bool) -> void:
+	if path.is_empty():
+		_log_trace_debug("resolve_ignored reason=empty_path")
+		return
+	var used_symbol_entries: Array = []
+	for raw_cell in path:
+		var cell: Vector2i = raw_cell
+		var slot = _slot_by_cell.get(cell, null) as PanelContainer
+		if slot != null and slot.has_method("has_token") and slot.call("has_token"):
+			var token = slot.call("get_token") as Control
+			if token != null:
+				var entry = _consume_token_use(cell, token)
+				if not entry.is_empty():
+					used_symbol_entries.append(entry)
+	var resolved_outputs = _resolve_formula_outputs(used_symbol_entries)
+	_log_trace_debug("resolve path=%s entries=%s outputs=%s" % [str(path), str(used_symbol_entries), str(resolved_outputs)])
+	_apply_resolved_outputs(resolved_outputs)
+	var summary = _summarize_outputs(resolved_outputs)
+	if not finish_action and not summary.is_empty():
+		reveal_hint_label.text = _compose_status_text("Formula risolta: %s" % summary)
+	elif not finish_action:
+		reveal_hint_label.text = _compose_status_text("")
+	_set_hover_line("", -1)
+	_refresh_grid_visuals()
+	if finish_action:
+		_end_player_action()
+
+func _get_token_debug_symbol(token: Control) -> String:
+	if token == null or not token.has_method("get_result_data"):
+		return "?"
+	var token_data = token.call("get_result_data") as Dictionary
+	return str(token_data.get("symbol_id", token_data.get("label", "?")))
+
+func _count_board_tokens() -> int:
+	var count := 0
+	for slot in _slot_by_cell.values():
+		if slot != null and slot.has_method("has_token") and slot.call("has_token"):
+			count += 1
+	return count
+
+func _reset_trace_debug_log() -> void:
+	var absolute_path = ProjectSettings.globalize_path(TRACE_DEBUG_LOG_PATH)
+	var file = FileAccess.open(absolute_path, FileAccess.WRITE)
+	if file == null:
+		return
+	file.store_line("=== TRACE DEBUG START %s ===" % Time.get_datetime_string_from_system())
+	file.store_line("absolute_path=%s" % absolute_path)
+
+func _log_trace_debug(message: String) -> void:
+	var absolute_path = ProjectSettings.globalize_path(TRACE_DEBUG_LOG_PATH)
+	var file = FileAccess.open(absolute_path, FileAccess.READ_WRITE)
+	if file == null:
+		return
+	file.seek_end()
+	file.store_line("[%s] %s" % [Time.get_time_string_from_system(), message])
+
 func _commit_line_selection(line_type: String, line_index: int) -> void:
 	_resolve_line_selection(line_type, line_index, true)
 
 func _resolve_line_selection(line_type: String, line_index: int, finish_action: bool) -> void:
 	if line_type.is_empty():
 		return
-	var line_cells: Array = []
+	var line_cells: Array[Vector2i] = []
 	for cell in _slot_by_cell.keys():
 		if line_type == "row" and cell.y == line_index:
 			line_cells.append(cell)
@@ -445,58 +724,17 @@ func _resolve_line_selection(line_type: String, line_index: int, finish_action: 
 			line_cells.append(cell)
 	if line_cells.is_empty():
 		return
-	var used_symbol_entries: Array = []
-	for cell in line_cells:
-		if _exhausted_cells.has(cell):
-			continue
-		_exhausted_cells.append(cell)
-		var slot = _slot_by_cell[cell] as PanelContainer
-		if slot != null and slot.has_method("has_token") and slot.call("has_token"):
-			var token = slot.call("get_token") as Control
-			if token != null:
-				if token.has_method("set_exhausted"):
-					token.call("set_exhausted", true)
-				if token.has_method("get_result_data"):
-					used_symbol_entries.append(token.call("get_result_data"))
-	_collect_gold_from_symbols(used_symbol_entries)
-	_collect_healing_from_symbols(used_symbol_entries)
-	_consume_enemy_requirements(used_symbol_entries)
-	_set_hover_line("", -1)
-	_refresh_grid_visuals()
-	if finish_action:
-		_end_player_action()
+	line_cells.sort_custom(func(a: Vector2i, b: Vector2i) -> bool:
+		if line_type == "row":
+			return a.x < b.x
+		return a.y < b.y
+	)
+	if line_cells.size() > 4:
+		line_cells = line_cells.slice(0, 4)
+	_resolve_path_selection(line_cells, finish_action)
 
 func _request_line_reroll(line_type: String, line_index: int) -> void:
-	if line_type.is_empty():
-		return
-	if _pending_reroll_resolution:
-		return
-	var reroll_cells: Array = []
-	for cell in _slot_by_cell.keys():
-		if _exhausted_cells.has(cell):
-			continue
-		if line_type == "row" and cell.y == line_index:
-			var row_slot = _slot_by_cell[cell] as PanelContainer
-			if row_slot != null and row_slot.has_method("has_token") and row_slot.call("has_token"):
-				reroll_cells.append(cell)
-		elif line_type == "column" and cell.x == line_index:
-			var column_slot = _slot_by_cell[cell] as PanelContainer
-			if column_slot != null and column_slot.has_method("has_token") and column_slot.call("has_token"):
-				reroll_cells.append(cell)
-	if reroll_cells.is_empty():
-		return
-	_reroll_locked_cells.clear()
-	for cell in reroll_cells:
-		var slot = _slot_by_cell[cell] as PanelContainer
-		if slot != null and slot.has_method("clear_token"):
-			var token = slot.call("clear_token") as Control
-			if token != null:
-				token.queue_free()
-		_reroll_locked_cells.append(cell)
-	_set_hover_line("", -1)
-	_refresh_grid_visuals()
-	reveal_hint_label.text = "Caselle marcate. Rilancia e poi trascina i nuovi risultati solo in queste posizioni."
-	reroll_requested.emit(reroll_cells.size(), reroll_cells)
+	reveal_hint_label.text = "Il rilancio non fa piu parte di questo sistema."
 
 func _on_rest_button_pressed() -> void:
 	if not enemy_revealed:
@@ -550,7 +788,10 @@ func _consume_enemy_requirements(used_symbol_entries: Array) -> void:
 		var amount = int(entry.get("value", 1))
 		if symbol_id.is_empty():
 			symbol_id = _infer_symbol_id_from_label(str(entry.get("label", "")))
-		for i in amount:
+		var total_consumption = amount
+		if symbol_id == "spada" and current_attack_bonus > 0:
+			total_consumption += amount * current_attack_bonus
+		for i in total_consumption:
 			var requirement_index = current_enemy_requirements.find(symbol_id)
 			if requirement_index >= 0:
 				current_enemy_requirements.remove_at(requirement_index)
@@ -618,7 +859,9 @@ func _disable_random_active_die() -> void:
 			continue
 		var slot = _slot_by_cell[cell] as PanelContainer
 		if slot != null and slot.has_method("has_token") and slot.call("has_token"):
-			available_cells.append(cell)
+			var token = slot.call("get_token") as Control
+			if token != null and _token_is_exhaustible(token):
+				available_cells.append(cell)
 	if available_cells.is_empty():
 		return
 	var chosen_cell = available_cells[randi() % available_cells.size()]
@@ -653,16 +896,24 @@ func _restore_exhausted_dice() -> void:
 			continue
 		if slot.has_method("has_token") and slot.call("has_token"):
 			var token = slot.call("get_token") as Control
-			if token != null and token.has_method("set_exhausted"):
+			if token != null and token.has_method("set_exhausted") and _token_is_exhaustible(token):
 				token.call("set_exhausted", false)
 	_set_hover_line("", -1)
 	_refresh_grid_visuals()
 
 func _handle_enemy_defeated() -> void:
+	var equip_text := ""
+	if str(current_enemy.get("category", "")) == "object":
+		equip_text = _equip_current_object()
 	var reward_text = str(current_enemy.get("reward_text", "")).strip_edges()
 	var next_hint = "Nemico sconfitto. Nuova carta pronta da scoprire."
+	if not equip_text.is_empty():
+		next_hint = equip_text
 	if not reward_text.is_empty():
-		next_hint = "Nemico sconfitto. Premio incassato: %s. Nuova carta pronta da scoprire." % reward_text
+		next_hint = "%s Premio: %s." % [next_hint, reward_text]
+	next_hint = _compose_status_text(next_hint)
+	if not next_hint.ends_with("Nuova carta pronta da scoprire."):
+		next_hint = "%s Nuova carta pronta da scoprire." % next_hint
 	_restore_exhausted_dice()
 	_prepare_hidden_enemy(next_hint)
 
@@ -700,6 +951,9 @@ func _all_pending_reroll_cells_filled() -> bool:
 
 func notify_token_placed(_slot: PanelContainer) -> void:
 	if not _pending_reroll_resolution:
+		if _all_results_placed():
+			_board_layout_locked = true
+			_refresh_board_token_drag_state()
 		return
 	if not _all_results_placed():
 		return
@@ -707,22 +961,42 @@ func notify_token_placed(_slot: PanelContainer) -> void:
 		return
 	_pending_reroll_resolution = false
 	_pending_reroll_cells.clear()
+	_board_layout_locked = true
+	_refresh_board_token_drag_state()
 	_refresh_grid_visuals()
 	reveal_hint_label.text = "Rilancio confermato."
 	_end_player_action()
+
+func _refresh_board_token_drag_state() -> void:
+	var disable_drag := enemy_revealed or _board_layout_locked
+	_set_board_tokens_interaction(disable_drag)
+
+func _set_board_tokens_interaction(enabled: bool) -> void:
+	for slot in _slot_by_cell.values():
+		if slot == null or not slot.has_method("has_token") or not slot.call("has_token"):
+			continue
+		var token = slot.call("get_token") as Control
+		if token != null and token.has_method("set_board_interaction_enabled"):
+			token.call("set_board_interaction_enabled", enabled)
 
 func _end_player_action() -> void:
 	if not _enemy_survived_player_action():
 		_handle_enemy_defeated()
 		return
-	current_character_hp = max(current_character_hp - 1, 0)
+	var mitigated_damage = current_pending_defense + current_armor
+	var incoming_damage = max(int(current_enemy.get("enemy_damage", 1)) - mitigated_damage, 0)
+	current_pending_defense = 0
+	current_character_hp = max(current_character_hp - incoming_damage, 0)
 	character_hp_changed.emit(current_character_hp)
 	_update_ability_label()
 	player_stats_changed.emit(current_character_hp, current_gold)
-	reveal_hint_label.text = "Il nemico colpisce per 1 danno. Ora tocca di nuovo a te."
+	if incoming_damage > 0:
+		reveal_hint_label.text = _compose_status_text("Il nemico colpisce per %d danni. Ora tocca di nuovo a te." % incoming_damage)
+	else:
+		reveal_hint_label.text = _compose_status_text("La tua armatura assorbe il colpo. Ora tocca di nuovo a te.")
 
 func _update_ability_label() -> void:
-	ability_label.text = "%s | PV: %d | Oro: %d | Abilita: %s" % [current_character_name, current_character_hp, current_gold, current_character_ability]
+	ability_label.text = "%s | PV: %d | PM: %d | Oro: %d | Difesa: %d | Spada: +%d | Armatura: %d | Abilita: %s" % [current_character_name, current_character_hp, current_character_mp, current_gold, current_pending_defense, current_attack_bonus, current_armor, current_character_ability]
 
 func _get_ability_hp_cost() -> int:
 	for effect in current_character_ability_effects:
@@ -772,7 +1046,8 @@ func _ability_create_ephemeral_symbol() -> bool:
 	var token_data = _create_symbol_result_data(symbol_id)
 	if token_data.is_empty():
 		return false
-	token_data["ephemeral"] = true
+	token_data["durability_mode"] = "ephemeral"
+	token_data["remaining_uses"] = int(token_data.get("value", 1))
 	var tray_slot := _create_drop_slot(tray_slot_color)
 	tray_slot.custom_minimum_size = Vector2(96, 96)
 	tray_slot.set_meta("remove_when_empty", true)
@@ -808,12 +1083,12 @@ func _ability_set_exhausted_die_symbol() -> bool:
 	return true
 
 func _ability_select_extra_line() -> bool:
-	var best_line = _find_best_active_line()
-	if best_line.is_empty():
-		reveal_hint_label.text = "Non ci sono altre righe o colonne utilizzabili."
+	var best_path = _find_best_drag_path()
+	if best_path.is_empty():
+		reveal_hint_label.text = "Non ci sono altre sequenze utilizzabili."
 		return false
-	_resolve_line_selection(str(best_line.get("type", "")), int(best_line.get("index", -1)), false)
-	reveal_hint_label.text = "Abilita usata: hai risolto una linea aggiuntiva."
+	_resolve_path_selection(best_path, false)
+	reveal_hint_label.text = "Abilita usata: hai risolto una sequenza aggiuntiva."
 	return true
 
 func _get_priority_symbol_for_ability() -> String:
@@ -830,25 +1105,157 @@ func _create_symbol_result_data(symbol_id: String) -> Dictionary:
 		"face_id": 0,
 		"value": 1,
 		"label": label,
+		"base_label": label,
 		"symbol_id": symbol_id,
 		"symbol_texture": load(icon_path),
 		"dice_type": "ability",
-		"dice_name": "Ability"
+		"dice_name": "Ability",
+		"durability_mode": "exhaustible",
+		"remaining_uses": 1
 	}
 
-func _find_best_active_line() -> Dictionary:
-	var best_line := {}
-	var best_score := -1
-	for cell in _slot_by_cell.keys():
-		var row_score = _count_active_tokens_in_line("row", cell.y)
-		if row_score > best_score:
-			best_score = row_score
-			best_line = {"type": "row", "index": cell.y}
-		var column_score = _count_active_tokens_in_line("column", cell.x)
-		if column_score > best_score:
-			best_score = column_score
-			best_line = {"type": "column", "index": cell.x}
-	return best_line
+func _create_loadout_result_data(loadout_entry) -> Dictionary:
+	var entry: Dictionary = {}
+	if loadout_entry is Dictionary:
+		entry = loadout_entry.duplicate(true)
+	else:
+		entry = {"symbol_id": str(loadout_entry)}
+	var normalized_symbol = str(entry.get("symbol_id", entry.get("id", ""))).strip_edges().to_lower()
+	if normalized_symbol.is_empty():
+		return {}
+	var label = normalized_symbol
+	var value = 1
+	if normalized_symbol == "x2":
+		value = 2
+	var durability_mode = str(entry.get("durability_mode", "exhaustible")).strip_edges().to_lower()
+	if durability_mode != "ephemeral" and durability_mode != "perennial":
+		durability_mode = "exhaustible"
+	var remaining_uses = max(1, int(entry.get("remaining_uses", 1)))
+	if durability_mode != "ephemeral":
+		remaining_uses = 1
+	var icon_path = str(ENEMY_ICON_PATHS.get(normalized_symbol, ""))
+	var texture: Texture2D = null
+	if not icon_path.is_empty() and ResourceLoader.exists(icon_path):
+		texture = load(icon_path)
+	return {
+		"face_id": 0,
+		"value": value,
+		"label": label,
+		"base_label": label,
+		"symbol_id": normalized_symbol,
+		"symbol_texture": texture,
+		"dice_type": "loadout",
+		"dice_name": "Loadout",
+		"durability_mode": durability_mode,
+		"remaining_uses": remaining_uses
+	}
+
+func _resolve_formula_outputs(entries: Array) -> Array:
+	var outputs: Array = []
+	var current_block: Dictionary = {}
+	var can_merge_same_symbol := true
+	for entry in entries:
+		if not (entry is Dictionary):
+			continue
+		var symbol_id = str(entry.get("symbol_id", "")).strip_edges().to_lower()
+		if symbol_id.is_empty():
+			symbol_id = _infer_symbol_id_from_label(str(entry.get("label", "")))
+		var amount = int(entry.get("value", 1))
+		if MODIFIER_SYMBOLS.has(symbol_id):
+			if not current_block.is_empty():
+				outputs.append(current_block.duplicate(true))
+				current_block.clear()
+			if outputs.is_empty():
+				continue
+			var last_output = outputs[outputs.size() - 1]
+			if symbol_id == "+1":
+				last_output["value"] = int(last_output.get("value", 0)) + 1
+			elif symbol_id == "x2":
+				last_output["value"] = int(last_output.get("value", 0)) * 2
+			outputs[outputs.size() - 1] = last_output
+			can_merge_same_symbol = false
+			continue
+		if current_block.is_empty():
+			current_block = {"symbol_id": symbol_id, "value": amount}
+			can_merge_same_symbol = true
+			continue
+		if can_merge_same_symbol and str(current_block.get("symbol_id", "")) == symbol_id:
+			current_block["value"] = int(current_block.get("value", 0)) + amount
+		else:
+			outputs.append(current_block.duplicate(true))
+			current_block = {"symbol_id": symbol_id, "value": amount}
+		can_merge_same_symbol = true
+	if not current_block.is_empty():
+		outputs.append(current_block.duplicate(true))
+	return outputs
+
+func _apply_resolved_outputs(outputs: Array) -> void:
+	current_pending_defense = 0
+	var requirement_entries: Array = []
+	var healing_entries: Array = []
+	var gold_entries: Array = []
+	for output in outputs:
+		if not (output is Dictionary):
+			continue
+		var symbol_id = str(output.get("symbol_id", ""))
+		match symbol_id:
+			"scudo":
+				current_pending_defense += int(output.get("value", 0))
+			"cuore":
+				healing_entries.append(output)
+			"moneta":
+				gold_entries.append(output)
+			_:
+				requirement_entries.append(output)
+	_collect_healing_from_symbols(healing_entries)
+	_collect_gold_from_symbols(gold_entries)
+	_consume_enemy_requirements(requirement_entries)
+
+func _summarize_outputs(outputs: Array) -> String:
+	var parts: Array[String] = []
+	for output in outputs:
+		if not (output is Dictionary):
+			continue
+		parts.append("%s(%d)" % [str(output.get("symbol_id", "")), int(output.get("value", 0))])
+	return ", ".join(parts)
+
+func _find_best_drag_path() -> Array:
+	var best_path: Array = []
+	for start_cell in _slot_by_cell.keys():
+		var candidate = _find_best_drag_path_from(start_cell, [], 4)
+		if candidate.size() > best_path.size():
+			best_path = candidate.duplicate()
+	return best_path
+
+func _find_best_drag_path_from(cell: Vector2i, path: Array, remaining_steps: int) -> Array:
+	var slot = _slot_by_cell.get(cell, null) as PanelContainer
+	if slot == null or not slot.has_method("has_token") or not slot.call("has_token"):
+		return path
+	var token = slot.call("get_token") as Control
+	if token == null or not _token_can_be_used(token):
+		return path
+	var current_path = path.duplicate()
+	if current_path.has(cell):
+		return current_path
+	current_path.append(cell)
+	if remaining_steps <= 1:
+		return current_path
+	var best_path = current_path.duplicate()
+	for neighbor in _get_adjacent_cells(cell):
+		if current_path.has(neighbor):
+			continue
+		var candidate = _find_best_drag_path_from(neighbor, current_path, remaining_steps - 1)
+		if candidate.size() > best_path.size():
+			best_path = candidate
+	return best_path
+
+func _get_adjacent_cells(cell: Vector2i) -> Array:
+	return [
+		Vector2i(cell.x + 1, cell.y),
+		Vector2i(cell.x - 1, cell.y),
+		Vector2i(cell.x, cell.y + 1),
+		Vector2i(cell.x, cell.y - 1)
+	]
 
 func _count_active_tokens_in_line(line_type: String, line_index: int) -> int:
 	var count := 0
@@ -861,5 +1268,241 @@ func _count_active_tokens_in_line(line_type: String, line_index: int) -> int:
 			continue
 		var slot = _slot_by_cell[cell] as PanelContainer
 		if slot != null and slot.has_method("has_token") and slot.call("has_token"):
-			count += 1
+			var token = slot.call("get_token") as Control
+			if token != null and _token_can_be_used(token):
+				count += 1
 	return count
+
+func _consume_token_use(cell: Vector2i, token: Control) -> Dictionary:
+	if token == null or not _token_can_be_used(token):
+		return {}
+	if not token.has_method("consume_use"):
+		if _token_is_exhaustible(token) and not _exhausted_cells.has(cell):
+			_exhausted_cells.append(cell)
+		if token.has_method("set_exhausted"):
+			token.call("set_exhausted", true)
+		if token.has_method("get_result_data"):
+			return token.call("get_result_data")
+		return {}
+	var used_entry = token.call("consume_use") as Dictionary
+	if _token_is_exhaustible(token) and not _exhausted_cells.has(cell):
+		_exhausted_cells.append(cell)
+	if token.has_method("should_be_removed_after_use") and bool(token.call("should_be_removed_after_use")):
+		var token_data = used_entry.duplicate(true)
+		var slot = _slot_by_cell.get(cell, null) as PanelContainer
+		if slot != null and slot.has_method("clear_token"):
+			var removed = slot.call("clear_token") as Control
+			if removed != null:
+				removed.queue_free()
+		_handle_destroyed_object_token(token_data)
+	return used_entry
+
+func _normalize_result_data(result: Dictionary) -> Dictionary:
+	var normalized = result.duplicate(true)
+	if not normalized.has("durability_mode"):
+		normalized["durability_mode"] = "exhaustible"
+	if not normalized.has("base_label"):
+		normalized["base_label"] = str(normalized.get("label", ""))
+	if not normalized.has("remaining_uses"):
+		normalized["remaining_uses"] = int(normalized.get("value", 1))
+	return normalized
+
+func _token_can_be_used(token: Control) -> bool:
+	if token == null:
+		return false
+	if token.has_method("can_be_used"):
+		return bool(token.call("can_be_used"))
+	return true
+
+func _token_is_exhaustible(token: Control) -> bool:
+	if token == null:
+		return false
+	if token.has_method("get_durability_mode"):
+		return str(token.call("get_durability_mode")) == "exhaustible"
+	return true
+
+func _slot_token_is_rerollable(slot: PanelContainer) -> bool:
+	if slot == null or not slot.has_method("has_token") or not slot.call("has_token"):
+		return false
+	var token = slot.call("get_token") as Control
+	return token != null and _token_is_exhaustible(token)
+
+func _get_enemy_meta_text(enemy_damage: int) -> String:
+	if str(current_enemy.get("category", "")) != "object":
+		return "Danno: %d" % enemy_damage
+	var slot_id = str(current_enemy.get("equipment_slot", "weapon"))
+	var parts: Array[String] = ["Oggetto: %s" % _get_equipment_slot_label(slot_id)]
+	var attack_bonus = int(current_enemy.get("attack_bonus", 0))
+	var armor_value = int(current_enemy.get("armor_value", 0))
+	var granted_icons = current_enemy.get("granted_icons", current_enemy.get("requirements", []))
+	if granted_icons is Array and not granted_icons.is_empty():
+		parts.append("Icone %s" % ", ".join(granted_icons))
+	var granted_durability_mode = str(current_enemy.get("granted_durability_mode", "exhaustible"))
+	if granted_durability_mode == "ephemeral":
+		parts.append("Effimera %d usi" % max(1, int(current_enemy.get("granted_remaining_uses", 1))))
+	elif granted_durability_mode == "perennial":
+		parts.append("Perenne")
+	else:
+		parts.append("Esauribile")
+	if attack_bonus > 0:
+		parts.append("Spada +%d" % attack_bonus)
+	if armor_value > 0:
+		parts.append("Armatura %d" % armor_value)
+	if parts.size() == 1:
+		parts.append("Nessun bonus")
+	return " | ".join(parts)
+
+func _equip_current_object() -> String:
+	var slot_id = _normalize_equipment_slot(str(current_enemy.get("equipment_slot", "weapon")))
+	var object_data = current_enemy.duplicate(true)
+	_remove_existing_equipment_tokens(slot_id)
+	current_equipment[slot_id] = object_data
+	_add_object_granted_tokens(object_data)
+	_recalculate_equipment_stats()
+	_update_ability_label()
+	player_stats_changed.emit(current_character_hp, current_gold)
+	return "Oggetto equipaggiato: %s (%s)." % [str(current_enemy.get("name", "Oggetto")), _get_equipment_slot_label(slot_id)]
+
+func _recalculate_equipment_stats() -> void:
+	current_attack_bonus = 0
+	current_armor = 0
+	for slot_id in current_equipment.keys():
+		var item = current_equipment[slot_id]
+		if item is Dictionary:
+			current_attack_bonus += int(item.get("attack_bonus", 0))
+			current_armor += int(item.get("armor_value", 0))
+
+func _normalize_equipment_slot(slot_id: String) -> String:
+	if slot_id == "armor" or slot_id == "accessory":
+		return slot_id
+	return "weapon"
+
+func _get_equipment_slot_label(slot_id: String) -> String:
+	match _normalize_equipment_slot(slot_id):
+		"armor":
+			return "Armatura"
+		"accessory":
+			return "Accessorio"
+		_:
+			return "Arma"
+
+func _apply_starting_objects(starting_objects: Array) -> void:
+	if starting_objects.is_empty():
+		_recalculate_equipment_stats()
+		_update_ability_label()
+		return
+	var object_index: Dictionary = {}
+	for enemy_entry in _read_enemy_database():
+		if str(enemy_entry.get("category", "")) != "object":
+			continue
+		object_index[str(enemy_entry.get("id", ""))] = enemy_entry
+	for object_id in starting_objects:
+		var object_data = object_index.get(str(object_id), {})
+		if not (object_data is Dictionary) or object_data.is_empty():
+			continue
+		var slot_id = _normalize_equipment_slot(str(object_data.get("equipment_slot", "weapon")))
+		_remove_existing_equipment_tokens(slot_id)
+		current_equipment[slot_id] = object_data.duplicate(true)
+		_add_object_granted_tokens(object_data)
+	_recalculate_equipment_stats()
+	_update_ability_label()
+
+func _add_object_granted_tokens(object_data: Dictionary) -> void:
+	var granted_icons = object_data.get("granted_icons", object_data.get("requirements", []))
+	if not (granted_icons is Array):
+		return
+	var durability_mode = str(object_data.get("granted_durability_mode", "exhaustible")).strip_edges().to_lower()
+	if durability_mode != "ephemeral" and durability_mode != "perennial":
+		durability_mode = "exhaustible"
+	var remaining_uses = max(1, int(object_data.get("granted_remaining_uses", 1)))
+	if durability_mode != "ephemeral":
+		remaining_uses = 1
+	var object_id = str(object_data.get("id", ""))
+	var object_name = str(object_data.get("name", "Oggetto"))
+	var slot_id = _normalize_equipment_slot(str(object_data.get("equipment_slot", "weapon")))
+	for raw_icon in granted_icons:
+		var token_data = _create_loadout_result_data({
+			"symbol_id": str(raw_icon),
+			"durability_mode": durability_mode,
+			"remaining_uses": remaining_uses
+		})
+		if token_data.is_empty():
+			continue
+		token_data["source_object_id"] = object_id
+		token_data["source_object_name"] = object_name
+		token_data["source_equipment_slot"] = slot_id
+		_add_token_to_tray(token_data)
+
+func _add_token_to_tray(result: Dictionary) -> void:
+	var tray_slot := _create_drop_slot(tray_slot_color)
+	tray_slot.custom_minimum_size = Vector2(96, 96)
+	tray_slot.set_meta("remove_when_empty", true)
+	token_tray.add_child(tray_slot)
+	var token := TextureRect.new()
+	token.set_script(RESULT_TOKEN_SCRIPT)
+	token.call("setup", _normalize_result_data(result))
+	tray_slot.call("place_token", token)
+
+func _handle_destroyed_object_token(token_data: Dictionary) -> void:
+	var object_id = str(token_data.get("source_object_id", ""))
+	if object_id.is_empty():
+		return
+	var object_name = str(token_data.get("source_object_name", "Oggetto"))
+	var slot_id = _normalize_equipment_slot(str(token_data.get("source_equipment_slot", "weapon")))
+	_destroy_equipment_object(slot_id, object_id, object_name)
+
+func _destroy_equipment_object(slot_id: String, object_id: String, object_name: String) -> void:
+	var equipped = current_equipment.get(slot_id, {})
+	if not (equipped is Dictionary):
+		return
+	if str(equipped.get("id", "")) != object_id:
+		return
+	current_equipment[slot_id] = {}
+	_remove_tokens_from_source_object(object_id)
+	_recalculate_equipment_stats()
+	_update_ability_label()
+	player_stats_changed.emit(current_character_hp, current_gold)
+	_pending_status_messages.append("L'oggetto %s e stato distrutto." % object_name)
+
+func _remove_tokens_from_source_object(object_id: String) -> void:
+	for slot in token_tray.get_children():
+		_remove_source_token_from_slot(slot, object_id)
+	for slot in _slot_by_cell.values():
+		_remove_source_token_from_slot(slot, object_id)
+
+func _remove_source_token_from_slot(slot, object_id: String) -> void:
+	if slot == null or not slot.has_method("has_token") or not slot.call("has_token"):
+		return
+	var token = slot.call("get_token") as Control
+	if token == null or not token.has_method("get_result_data"):
+		return
+	var token_data = token.call("get_result_data") as Dictionary
+	if str(token_data.get("source_object_id", "")) != object_id:
+		return
+	var removed = slot.call("clear_token") as Control
+	if removed != null:
+		removed.queue_free()
+	if slot.get_parent() == token_tray and bool(slot.get_meta("remove_when_empty", false)):
+		token_tray.remove_child(slot)
+		slot.queue_free()
+
+func _remove_existing_equipment_tokens(slot_id: String) -> void:
+	var equipped = current_equipment.get(slot_id, {})
+	if not (equipped is Dictionary) or equipped.is_empty():
+		return
+	var object_id = str(equipped.get("id", ""))
+	if object_id.is_empty():
+		return
+	_remove_tokens_from_source_object(object_id)
+
+func _compose_status_text(base_text: String) -> String:
+	var parts: Array[String] = []
+	var cleaned_base = base_text.strip_edges()
+	if not cleaned_base.is_empty():
+		parts.append(cleaned_base)
+	for message in _pending_status_messages:
+		if message.strip_edges().is_empty():
+			continue
+		parts.append(message.strip_edges())
+	_pending_status_messages.clear()
+	return " ".join(parts)

@@ -2,16 +2,16 @@
 
 importer="texture"
 type="CompressedTexture2D"
-uid="uid://dbohg6almgcvk"
-path="res://.godot/imported/moneta1.png-27661ff71602be85aa8a87c4579914ad.ctex"
+uid="uid://wuwyp27qrebr"
+path="res://.godot/imported/pozione.png-9b2d0c72e2dfc18fd598e0968b82e578.ctex"
 metadata={
 "vram_texture": false
 }
 
 [deps]
 
-source_file="res://assets/dice/moneta1.png"
-dest_files=["res://.godot/imported/moneta1.png-27661ff71602be85aa8a87c4579914ad.ctex"]
+source_file="res://assets/icone/pozione.png"
+dest_files=["res://.godot/imported/pozione.png-9b2d0c72e2dfc18fd598e0968b82e578.ctex"]
 
 [params]
 

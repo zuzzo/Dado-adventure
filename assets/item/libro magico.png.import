@@ -2,16 +2,16 @@
 
 importer="texture"
 type="CompressedTexture2D"
-uid="uid://c7f7odd4guigw"
-path="res://.godot/imported/arco2.png-84446b26ae3b61c388a99918ce1b40e9.ctex"
+uid="uid://bv1nuuk1tpj43"
+path="res://.godot/imported/libro magico.png-df22f7911eec44bf645469462641fbf4.ctex"
 metadata={
 "vram_texture": false
 }
 
 [deps]
 
-source_file="res://assets/dice/arco2.png"
-dest_files=["res://.godot/imported/arco2.png-84446b26ae3b61c388a99918ce1b40e9.ctex"]
+source_file="res://assets/item/libro magico.png"
+dest_files=["res://.godot/imported/libro magico.png-df22f7911eec44bf645469462641fbf4.ctex"]
 
 [params]
 

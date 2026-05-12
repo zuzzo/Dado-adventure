@@ -2,16 +2,16 @@
 
 importer="texture"
 type="CompressedTexture2D"
-uid="uid://cc35fcg67r3sl"
-path="res://.godot/imported/monete.png-d168152861507ca8de37a2171645be1d.ctex"
+uid="uid://cfsju5wd8fyde"
+path="res://.godot/imported/chiave.png-16d7bb56acc307023a7562b1850c6062.ctex"
 metadata={
 "vram_texture": false
 }
 
 [deps]
 
-source_file="res://assets/item/monete.png"
-dest_files=["res://.godot/imported/monete.png-d168152861507ca8de37a2171645be1d.ctex"]
+source_file="res://assets/icone/chiave.png"
+dest_files=["res://.godot/imported/chiave.png-16d7bb56acc307023a7562b1850c6062.ctex"]
 
 [params]
 

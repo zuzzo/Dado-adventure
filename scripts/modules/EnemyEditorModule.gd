@@ -14,25 +14,37 @@ const CATEGORY_OPTIONS := [
 	{"id": "trap", "label": "Trappola"},
 	{"id": "stairs", "label": "Scala"},
 	{"id": "event", "label": "Evento"},
-	{"id": "door", "label": "Porta"}
+	{"id": "door", "label": "Porta"},
+	{"id": "object", "label": "Oggetto"}
+]
+const EQUIPMENT_SLOT_OPTIONS := [
+	{"id": "weapon", "label": "Arma"},
+	{"id": "armor", "label": "Armatura"},
+	{"id": "accessory", "label": "Accessorio"}
+]
+const DURABILITY_OPTIONS := [
+	{"id": "exhaustible", "label": "Esauribile"},
+	{"id": "ephemeral", "label": "Effimera"},
+	{"id": "perennial", "label": "Perenne"}
 ]
 const DICE_ICON_PALETTE := [
-	{"id": "spada", "path": "res://assets/dice/spada.png"},
-	{"id": "cuore", "path": "res://assets/dice/cuore1.png"},
-	{"id": "moneta", "path": "res://assets/dice/moneta1.png"},
-	{"id": "magia", "path": "res://assets/dice/magia1.png"},
-	{"id": "ladro", "path": "res://assets/dice/ladro1.png"},
-	{"id": "arco", "path": "res://assets/dice/arco1.png"}
+	{"id": "spada", "path": "res://assets/icone/spada.png"},
+	{"id": "scudo", "path": "res://assets/icone/scudo1.png"},
+	{"id": "cuore", "path": "res://assets/icone/cuore1.png"},
+	{"id": "moneta", "path": "res://assets/icone/moneta1.png"},
+	{"id": "magia", "path": "res://assets/icone/magia1.png"},
+	{"id": "ladro", "path": "res://assets/icone/ladro1.png"},
+	{"id": "arco", "path": "res://assets/icone/arco1.png"}
 ]
 const ITEM_ICON_PALETTE := [
-	{"id": "chiave", "path": "res://assets/item/chiave.png"},
-	{"id": "corona", "path": "res://assets/item/corona.png"},
-	{"id": "cristallo", "path": "res://assets/item/cristallo.png"},
-	{"id": "monete", "path": "res://assets/item/monete.png"},
-	{"id": "pergamena", "path": "res://assets/item/pergamena.png"},
-	{"id": "pozione", "path": "res://assets/item/pozione.png"},
-	{"id": "teschio", "path": "res://assets/item/teschio.png"},
-	{"id": "torcia", "path": "res://assets/item/torcia.png"}
+	{"id": "chiave", "path": "res://assets/icone/chiave.png"},
+	{"id": "corona", "path": "res://assets/icone/corona.png"},
+	{"id": "cristallo", "path": "res://assets/icone/cristallo.png"},
+	{"id": "monete", "path": "res://assets/icone/monete.png"},
+	{"id": "pergamena", "path": "res://assets/icone/pergamena.png"},
+	{"id": "pozione", "path": "res://assets/icone/pozione.png"},
+	{"id": "teschio", "path": "res://assets/icone/teschio.png"},
+	{"id": "torcia", "path": "res://assets/icone/torcia.png"}
 ]
 
 @onready var enemy_list = $Margin/Root/LeftPanel/LeftMargin/LeftVBox/EnemyList
@@ -49,6 +61,12 @@ const ITEM_ICON_PALETTE := [
 @onready var difficulty_value = $Margin/Root/RightPanel/RightMargin/RightScroll/RightVBox/DifficultyValue
 @onready var flee_text = $Margin/Root/RightPanel/RightMargin/RightScroll/RightVBox/FleeText
 @onready var reward_text = $Margin/Root/RightPanel/RightMargin/RightScroll/RightVBox/RewardText
+@onready var equipment_slot_label = $Margin/Root/RightPanel/RightMargin/RightScroll/RightVBox/EquipmentSlotLabel
+@onready var equipment_slot_input = $Margin/Root/RightPanel/RightMargin/RightScroll/RightVBox/EquipmentSlotInput
+@onready var attack_bonus_label = $Margin/Root/RightPanel/RightMargin/RightScroll/RightVBox/AttackBonusLabel
+@onready var attack_bonus_input = $Margin/Root/RightPanel/RightMargin/RightScroll/RightVBox/AttackBonusInput
+@onready var armor_value_label = $Margin/Root/RightPanel/RightMargin/RightScroll/RightVBox/ArmorValueLabel
+@onready var armor_value_input = $Margin/Root/RightPanel/RightMargin/RightScroll/RightVBox/ArmorValueInput
 @onready var enemy_preview = $Margin/Root/RightPanel/RightMargin/RightScroll/RightVBox/PreviewPanel/PreviewMargin/PreviewVBox/PreviewImageCenter/PreviewCard/EnemyPreview
 @onready var preview_name = $Margin/Root/RightPanel/RightMargin/RightScroll/RightVBox/PreviewPanel/PreviewMargin/PreviewVBox/PreviewName
 @onready var card_name = $Margin/Root/RightPanel/RightMargin/RightScroll/RightVBox/PreviewPanel/PreviewMargin/PreviewVBox/PreviewImageCenter/PreviewCard/CardName
@@ -60,18 +78,31 @@ const ITEM_ICON_PALETTE := [
 @onready var preview_reward_line = $Margin/Root/RightPanel/RightMargin/RightScroll/RightVBox/PreviewPanel/PreviewMargin/PreviewVBox/PreviewImageCenter/PreviewCard/CardInfo/CardInfoVBox/PreviewRewardLine
 @onready var icon_palette = $Margin/Root/RightPanel/RightMargin/RightScroll/RightVBox/IconPalette
 @onready var sequence_slots = $Margin/Root/RightPanel/RightMargin/RightScroll/RightVBox/SequenceSlots
+@onready var right_vbox = $Margin/Root/RightPanel/RightMargin/RightScroll/RightVBox
 @onready var file_dialog = $FileDialog
 
 var enemy_database: Array = []
 var selected_index := -1
 var pending_image_source_path := ""
 var pending_image_project_path := ""
+var object_icons_label: Label
+var object_icons_palette: FlowContainer
+var object_icons_slots: FlowContainer
+var object_icons_buttons: HBoxContainer
+var object_add_icon_button: Button
+var object_remove_icon_button: Button
+var object_durability_label: Label
+var object_durability_input: OptionButton
+var object_uses_label: Label
+var object_uses_input: SpinBox
 
 func _ready():
 	_bind_events()
 	_ensure_directories()
 	_build_category_options()
+	_build_equipment_slot_options()
 	_build_icon_palette()
+	_build_object_icon_runtime_ui()
 	_load_database()
 	if sequence_slots.get_child_count() == 0:
 		_add_sequence_slot()
@@ -99,6 +130,17 @@ func _bind_events():
 	exhaustion_input.value_changed.connect(_on_exhaustion_changed)
 	flee_text.text_changed.connect(_update_preview)
 	reward_text.text_changed.connect(_update_preview)
+	equipment_slot_input.item_selected.connect(_on_equipment_slot_changed)
+	attack_bonus_input.value_changed.connect(_on_attack_bonus_changed)
+	armor_value_input.value_changed.connect(_on_armor_value_changed)
+	if object_durability_input != null:
+		object_durability_input.item_selected.connect(_on_object_durability_changed)
+	if object_uses_input != null:
+		object_uses_input.value_changed.connect(_on_object_uses_changed)
+	if object_add_icon_button != null:
+		object_add_icon_button.pressed.connect(_add_object_icon_slot)
+	if object_remove_icon_button != null:
+		object_remove_icon_button.pressed.connect(_remove_object_icon_slot)
 
 func _ensure_directories():
 	DirAccess.make_dir_recursive_absolute(ProjectSettings.globalize_path(ENEMIES_DIR))
@@ -119,6 +161,93 @@ func _build_category_options():
 	category_input.clear()
 	for option in CATEGORY_OPTIONS:
 		category_input.add_item(str(option["label"]))
+
+func _build_equipment_slot_options():
+	equipment_slot_input.clear()
+	for option in EQUIPMENT_SLOT_OPTIONS:
+		equipment_slot_input.add_item(str(option["label"]))
+
+func _build_object_icon_runtime_ui():
+	object_icons_label = Label.new()
+	object_icons_label.text = "Icone Conferite Quando Equipaggiato"
+	right_vbox.add_child(object_icons_label)
+	right_vbox.move_child(object_icons_label, armor_value_input.get_index() + 1)
+
+	object_icons_palette = FlowContainer.new()
+	object_icons_palette.add_theme_constant_override("h_separation", 10)
+	object_icons_palette.add_theme_constant_override("v_separation", 10)
+	right_vbox.add_child(object_icons_palette)
+	right_vbox.move_child(object_icons_palette, object_icons_label.get_index() + 1)
+
+	object_icons_buttons = HBoxContainer.new()
+	object_icons_buttons.add_theme_constant_override("separation", 8)
+	right_vbox.add_child(object_icons_buttons)
+	right_vbox.move_child(object_icons_buttons, object_icons_palette.get_index() + 1)
+
+	object_add_icon_button = Button.new()
+	object_add_icon_button.text = "Aggiungi Icona Oggetto"
+	object_icons_buttons.add_child(object_add_icon_button)
+
+	object_remove_icon_button = Button.new()
+	object_remove_icon_button.text = "Rimuovi Icona Oggetto"
+	object_icons_buttons.add_child(object_remove_icon_button)
+
+	object_icons_slots = FlowContainer.new()
+	object_icons_slots.add_theme_constant_override("separation", 10)
+	right_vbox.add_child(object_icons_slots)
+	right_vbox.move_child(object_icons_slots, object_icons_buttons.get_index() + 1)
+
+	object_durability_label = Label.new()
+	object_durability_label.text = "Durata Icone Oggetto"
+	right_vbox.add_child(object_durability_label)
+	right_vbox.move_child(object_durability_label, object_icons_slots.get_index() + 1)
+
+	object_durability_input = OptionButton.new()
+	for option in DURABILITY_OPTIONS:
+		object_durability_input.add_item(str(option["label"]))
+	right_vbox.add_child(object_durability_input)
+	right_vbox.move_child(object_durability_input, object_durability_label.get_index() + 1)
+
+	object_uses_label = Label.new()
+	object_uses_label.text = "Usi Icona Effimera"
+	right_vbox.add_child(object_uses_label)
+	right_vbox.move_child(object_uses_label, object_durability_input.get_index() + 1)
+
+	object_uses_input = SpinBox.new()
+	object_uses_input.min_value = 1
+	object_uses_input.max_value = 12
+	object_uses_input.step = 1
+	object_uses_input.value = 3
+	right_vbox.add_child(object_uses_input)
+	right_vbox.move_child(object_uses_input, object_uses_label.get_index() + 1)
+
+	_rebuild_object_icon_palette()
+	if object_icons_slots.get_child_count() == 0:
+		_add_object_icon_slot()
+
+func _rebuild_object_icon_palette():
+	_clear_children_now(object_icons_palette)
+	for icon_data in _get_available_icon_palette():
+		var slot = _create_slot()
+		slot.custom_minimum_size = Vector2(78, 78)
+		object_icons_palette.add_child(slot)
+		var token = TextureRect.new()
+		token.set_script(REQUIREMENT_TOKEN_SCRIPT)
+		token.call("setup", icon_data["id"], icon_data["path"], true)
+		slot.call("place_token", token)
+
+func _add_object_icon_slot():
+	var slot = _create_slot()
+	slot.custom_minimum_size = Vector2(78, 78)
+	object_icons_slots.add_child(slot)
+	_update_preview()
+
+func _remove_object_icon_slot():
+	if object_icons_slots.get_child_count() <= 1:
+		return
+	var last_slot = object_icons_slots.get_child(object_icons_slots.get_child_count() - 1)
+	last_slot.queue_free()
+	_update_preview()
 
 func _add_sequence_slot():
 	var slot = _create_slot()
@@ -212,6 +341,16 @@ func _on_damage_changed(_value):
 func _on_exhaustion_changed(_value):
 	_update_preview()
 
+func _on_equipment_slot_changed(_index):
+	_update_form_for_category()
+	_update_preview()
+
+func _on_attack_bonus_changed(_value):
+	_update_preview()
+
+func _on_armor_value_changed(_value):
+	_update_preview()
+
 func _on_file_selected(path):
 	pending_image_source_path = path
 	var file_name = path.get_file()
@@ -240,9 +379,22 @@ func _save_current_enemy():
 	var reward_value = reward_text.text
 	var success_outcomes = _parse_outcome_lines(reward_text.text)
 	var failure_outcomes = _parse_outcome_lines(flee_text.text)
+	var equipment_slot = _get_selected_equipment_slot_id()
+	var attack_bonus = int(attack_bonus_input.value)
+	var armor_value = int(armor_value_input.value)
+	var granted_icons = _get_object_icon_sequence_data()
+	var granted_durability_mode = _get_selected_object_durability_id()
+	var granted_remaining_uses = int(object_uses_input.value)
 	if category_id == "treasure":
 		outcome_text = flee_text.text
 		reward_value = reward_text.text
+	if category_id != "object":
+		equipment_slot = ""
+		attack_bonus = 0
+		armor_value = 0
+		granted_icons = []
+		granted_durability_mode = "exhaustible"
+		granted_remaining_uses = 1
 	var enemy_record = {
 		"id": _slugify(enemy_name),
 		"name": enemy_name,
@@ -260,7 +412,13 @@ func _save_current_enemy():
 		"reward_text": reward_value,
 		"reward_effects": EffectTextParser.parse_enemy_reward_effects(reward_value),
 		"success_outcomes": success_outcomes,
-		"failure_outcomes": failure_outcomes
+		"failure_outcomes": failure_outcomes,
+		"equipment_slot": equipment_slot,
+		"attack_bonus": attack_bonus,
+		"armor_value": armor_value,
+		"granted_icons": granted_icons,
+		"granted_durability_mode": granted_durability_mode,
+		"granted_remaining_uses": granted_remaining_uses
 	}
 	if selected_index >= 0 and selected_index < enemy_database.size():
 		enemy_database[selected_index] = enemy_record
@@ -307,6 +465,11 @@ func _load_enemy_into_form(index):
 	var loaded_attempt_limit = int(enemy.get("attempt_limit", 0))
 	var loaded_exhaustion_limit = int(enemy.get("exhaustion_limit", 0))
 	exhaustion_input.value = float(_get_editor_limit_value(str(enemy.get("category", "monster")), loaded_exhaustion_limit, loaded_attempt_limit))
+	_select_equipment_slot(str(enemy.get("equipment_slot", "")))
+	attack_bonus_input.value = float(enemy.get("attack_bonus", 0))
+	armor_value_input.value = float(enemy.get("armor_value", 0))
+	_select_object_durability(str(enemy.get("granted_durability_mode", "exhaustible")))
+	object_uses_input.value = float(enemy.get("granted_remaining_uses", 1))
 	var outcome_text = str(enemy.get("failure_text", enemy.get("flee_text", "")))
 	flee_text.text = outcome_text
 	reward_text.text = str(enemy.get("reward_text", ""))
@@ -321,6 +484,7 @@ func _load_enemy_into_form(index):
 	pending_image_project_path = ""
 	_update_preview_from_project(image_path_input.text)
 	_load_sequence(enemy.get("requirements", []))
+	_load_object_icon_sequence(enemy.get("granted_icons", enemy.get("requirements", [])))
 	_update_form_for_category()
 	_update_preview()
 
@@ -330,6 +494,11 @@ func _clear_form():
 	_select_category("monster")
 	damage_input.value = 1
 	exhaustion_input.value = 0
+	_select_equipment_slot("weapon")
+	attack_bonus_input.value = 0
+	armor_value_input.value = 0
+	_select_object_durability("exhaustible")
+	object_uses_input.value = 3
 	flee_text.text = ""
 	reward_text.text = ""
 	pending_image_source_path = ""
@@ -337,6 +506,8 @@ func _clear_form():
 	enemy_preview.texture = null
 	_clear_children_now(sequence_slots)
 	_add_sequence_slot()
+	_clear_children_now(object_icons_slots)
+	_add_object_icon_slot()
 	_update_form_for_category()
 	_update_preview()
 
@@ -366,6 +537,32 @@ func _get_sequence_data():
 				sequence.append(str(token.get("icon_id")))
 	return sequence
 
+func _load_object_icon_sequence(requirements):
+	_clear_children_now(object_icons_slots)
+	for requirement in requirements:
+		var slot = _create_slot()
+		slot.custom_minimum_size = Vector2(78, 78)
+		object_icons_slots.add_child(slot)
+		var icon_id = str(requirement)
+		var texture_path = _get_icon_path(icon_id)
+		if texture_path.is_empty():
+			continue
+		var token = TextureRect.new()
+		token.set_script(REQUIREMENT_TOKEN_SCRIPT)
+		token.call("setup", icon_id, texture_path, false)
+		slot.call("place_token", token)
+	if object_icons_slots.get_child_count() == 0:
+		_add_object_icon_slot()
+
+func _get_object_icon_sequence_data() -> Array:
+	var sequence: Array = []
+	for slot in object_icons_slots.get_children():
+		if slot.has_method("has_token") and slot.call("has_token"):
+			var token = slot.call("get_token")
+			if token != null:
+				sequence.append(str(token.get("icon_id")))
+	return sequence
+
 func _update_preview():
 	preview_name.text = name_input.text if not name_input.text.is_empty() else "Nome Carta"
 	card_name.text = preview_name.text
@@ -379,6 +576,9 @@ func _update_preview():
 	else:
 		preview_meta_line.visible = false
 		preview_meta_line.text = ""
+	if category_id == "object":
+		preview_meta_line.visible = true
+		preview_meta_line.text = _get_object_preview_meta()
 	preview_exhaustion_line.visible = false
 	preview_flee_line.visible = false
 	preview_reward_line.visible = false
@@ -400,10 +600,18 @@ func _update_preview():
 		preview_requirement_row.add_child(icon)
 
 func _update_preview_from_project(project_path):
-	if project_path.is_empty() or not ResourceLoader.exists(project_path):
+	if project_path.is_empty():
 		enemy_preview.texture = null
 		return
-	enemy_preview.texture = load(project_path)
+	if ResourceLoader.exists(project_path):
+		enemy_preview.texture = load(project_path)
+		return
+	var absolute_path = ProjectSettings.globalize_path(project_path)
+	var image := Image.new()
+	if image.load(absolute_path) == OK:
+		enemy_preview.texture = ImageTexture.create_from_image(image)
+		return
+	enemy_preview.texture = null
 
 func _update_preview_from_absolute(abs_path):
 	var image := Image.new()
@@ -433,8 +641,6 @@ func _normalize_enemy_record(enemy):
 	if raw_requirements is Array:
 		for requirement in raw_requirements:
 			var requirement_id = str(requirement)
-			if requirement_id == "scudo":
-				requirement_id = "cuore"
 			requirements.append(requirement_id)
 	var damage_default = 1 if category_id == "monster" else 0
 	var enemy_damage = int(enemy.get("enemy_damage", damage_default))
@@ -447,6 +653,18 @@ func _normalize_enemy_record(enemy):
 	var flee_effects = enemy.get("flee_effects", EffectTextParser.parse_enemy_flee_effects(flee_value))
 	var reward_effects = enemy.get("reward_effects", EffectTextParser.parse_enemy_reward_effects(str(reward_value)))
 	var difficulty = int(enemy.get("difficulty", requirements.size()))
+	var equipment_slot = _normalize_equipment_slot(str(enemy.get("equipment_slot", "")))
+	var attack_bonus = int(enemy.get("attack_bonus", 0))
+	var armor_value = int(enemy.get("armor_value", 0))
+	var granted_icons: Array = []
+	var raw_granted_icons = enemy.get("granted_icons", enemy.get("requirements", []))
+	if raw_granted_icons is Array:
+		for requirement in raw_granted_icons:
+			var granted_id = str(requirement)
+			if not granted_id.is_empty():
+				granted_icons.append(granted_id)
+	var granted_durability_mode = _normalize_object_durability(str(enemy.get("granted_durability_mode", "exhaustible")))
+	var granted_remaining_uses = max(1, int(enemy.get("granted_remaining_uses", 1)))
 	var success_outcomes: Array = []
 	var raw_success_outcomes = enemy.get("success_outcomes", [])
 	if raw_success_outcomes is Array:
@@ -474,12 +692,19 @@ func _normalize_enemy_record(enemy):
 		"reward_text": str(reward_value),
 		"reward_effects": reward_effects,
 		"success_outcomes": success_outcomes,
-		"failure_outcomes": failure_outcomes
+		"failure_outcomes": failure_outcomes,
+		"equipment_slot": equipment_slot,
+		"attack_bonus": attack_bonus,
+		"armor_value": armor_value,
+		"granted_icons": granted_icons,
+		"granted_durability_mode": granted_durability_mode,
+		"granted_remaining_uses": granted_remaining_uses
 	}
 
 func _create_slot():
 	var slot = PanelContainer.new()
 	slot.set_script(REQUIREMENT_SLOT_SCRIPT)
+	slot.set_meta("editor_module", self)
 	var style := StyleBoxFlat.new()
 	style.bg_color = Color(0.145098, 0.184314, 0.247059, 1)
 	style.border_width_left = 2
@@ -494,9 +719,10 @@ func _create_slot():
 	slot.add_theme_stylebox_override("panel", style)
 	return slot
 
+func notify_requirement_slot_changed():
+	_update_preview()
+
 func _get_icon_path(icon_id):
-	if icon_id == "scudo":
-		icon_id = "cuore"
 	for icon_data in _get_available_icon_palette():
 		if str(icon_data["id"]) == icon_id:
 			return str(icon_data["path"])
@@ -530,6 +756,60 @@ func _normalize_category(category_id):
 			return category_id
 	return "monster"
 
+func _get_selected_equipment_slot_id():
+	var selected = equipment_slot_input.selected
+	if selected < 0 or selected >= EQUIPMENT_SLOT_OPTIONS.size():
+		return "weapon"
+	return str(EQUIPMENT_SLOT_OPTIONS[selected]["id"])
+
+func _get_selected_object_durability_id():
+	var selected = object_durability_input.selected
+	if selected < 0 or selected >= DURABILITY_OPTIONS.size():
+		return "exhaustible"
+	return str(DURABILITY_OPTIONS[selected]["id"])
+
+func _select_equipment_slot(slot_id):
+	var normalized = _normalize_equipment_slot(slot_id)
+	for index in range(EQUIPMENT_SLOT_OPTIONS.size()):
+		if str(EQUIPMENT_SLOT_OPTIONS[index]["id"]) == normalized:
+			equipment_slot_input.select(index)
+			return
+	equipment_slot_input.select(0)
+
+func _select_object_durability(durability_id):
+	var normalized = _normalize_object_durability(durability_id)
+	for index in range(DURABILITY_OPTIONS.size()):
+		if str(DURABILITY_OPTIONS[index]["id"]) == normalized:
+			object_durability_input.select(index)
+			return
+	object_durability_input.select(0)
+
+func _normalize_equipment_slot(slot_id):
+	for option in EQUIPMENT_SLOT_OPTIONS:
+		if str(option["id"]) == slot_id:
+			return slot_id
+	return "weapon"
+
+func _normalize_object_durability(durability_id):
+	for option in DURABILITY_OPTIONS:
+		if str(option["id"]) == durability_id:
+			return durability_id
+	return "exhaustible"
+
+func _get_object_durability_label(durability_id):
+	var normalized = _normalize_object_durability(durability_id)
+	for option in DURABILITY_OPTIONS:
+		if str(option["id"]) == normalized:
+			return str(option["label"])
+	return "Esauribile"
+
+func _get_equipment_slot_label(slot_id):
+	var normalized = _normalize_equipment_slot(slot_id)
+	for option in EQUIPMENT_SLOT_OPTIONS:
+		if str(option["id"]) == normalized:
+			return str(option["label"])
+	return "Arma"
+
 func _get_category_label(category_id):
 	var normalized = _normalize_category(category_id)
 	for option in CATEGORY_OPTIONS:
@@ -554,13 +834,45 @@ func _update_form_for_category():
 	flee_label.text = _get_outcome_label(category_id)
 	reward_label.text = _get_reward_label(category_id)
 	var is_treasure = category_id == "treasure"
+	var is_object = category_id == "object"
 	flee_label.visible = true
 	flee_text.visible = true
 	reward_label.visible = true
 	reward_text.visible = true
+	equipment_slot_label.visible = is_object
+	equipment_slot_input.visible = is_object
+	attack_bonus_label.visible = is_object
+	attack_bonus_input.visible = is_object
+	armor_value_label.visible = is_object
+	armor_value_input.visible = is_object
+	object_icons_label.visible = is_object
+	object_icons_palette.visible = is_object
+	object_icons_buttons.visible = is_object
+	object_icons_slots.visible = is_object
+	object_durability_label.visible = is_object
+	object_durability_input.visible = is_object
+	object_uses_label.visible = is_object
+	object_uses_input.visible = is_object
+	attack_bonus_label.text = "Bonus Danno Spada"
+	armor_value_label.text = "Assorbimento Armatura"
 	if is_treasure:
 		flee_label.text = "Esiti Possibili Di Fallimento"
 		reward_label.text = "Esiti Possibili Di Successo"
+	if is_object:
+		damage_label.visible = false
+		damage_input.visible = false
+		exhaustion_label.text = "Durata Carta"
+		flee_label.text = "Testo Se Non Recuperato"
+		reward_label.text = "Testo Equipaggiamento"
+		attack_bonus_input.editable = _get_selected_equipment_slot_id() == "weapon"
+		armor_value_input.editable = _get_selected_equipment_slot_id() == "armor"
+		object_uses_input.editable = _get_selected_object_durability_id() == "ephemeral"
+		if not attack_bonus_input.editable:
+			attack_bonus_input.value = 0
+		if not armor_value_input.editable:
+			armor_value_input.value = 0
+		if not object_uses_input.editable:
+			object_uses_input.value = 1
 
 func _uses_damage(category_id):
 	return category_id == "monster" or category_id == "trap"
@@ -582,6 +894,8 @@ func _get_requirement_title(category_id):
 		return "Per Risolvere"
 	if category_id == "stairs":
 		return "Per Attivare"
+	if category_id == "object":
+		return "Per Recuperare"
 	return "Per Sconfiggere"
 
 func _get_outcome_label(category_id):
@@ -595,6 +909,8 @@ func _get_outcome_label(category_id):
 		return "Testo Fallimento"
 	if category_id == "stairs":
 		return "Testo Mancata Attivazione"
+	if category_id == "object":
+		return "Testo Mancato Recupero"
 	return "Testo Fuga"
 
 func _get_outcome_prefix(category_id):
@@ -613,7 +929,35 @@ func _get_outcome_prefix(category_id):
 func _get_reward_label(category_id):
 	if category_id == "stairs":
 		return "Effetto Successo"
+	if category_id == "object":
+		return "Testo Oggetto Equipaggiato"
 	return "Testo Premio"
+
+func _get_object_preview_meta():
+	var slot_id = _get_selected_equipment_slot_id()
+	var parts: Array[String] = ["Slot: %s" % _get_equipment_slot_label(slot_id)]
+	var granted_icons = _get_object_icon_sequence_data()
+	if not granted_icons.is_empty():
+		parts.append("Icone: %s" % ", ".join(granted_icons))
+	var durability_id = _get_selected_object_durability_id()
+	if durability_id == "ephemeral":
+		parts.append("%s %d usi" % [_get_object_durability_label(durability_id), int(object_uses_input.value)])
+	else:
+		parts.append(_get_object_durability_label(durability_id))
+	if int(attack_bonus_input.value) > 0:
+		parts.append("Spada +%d" % int(attack_bonus_input.value))
+	if int(armor_value_input.value) > 0:
+		parts.append("Armatura %d" % int(armor_value_input.value))
+	if parts.size() == 1:
+		parts.append("Nessun bonus")
+	return " | ".join(parts)
+
+func _on_object_durability_changed(_index):
+	_update_form_for_category()
+	_update_preview()
+
+func _on_object_uses_changed(_value):
+	_update_preview()
 
 func _get_reward_prefix(category_id):
 	if category_id == "stairs":

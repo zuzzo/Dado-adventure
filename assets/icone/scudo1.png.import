@@ -2,16 +2,16 @@
 
 importer="texture"
 type="CompressedTexture2D"
-uid="uid://ddpoet5cjt60w"
-path="res://.godot/imported/corona.png-7a5f4847229eb82a0807dc00c53349cd.ctex"
+uid="uid://br3s5bnp764tv"
+path="res://.godot/imported/scudo1.png-e81504355120bcd1d2ae61ad4980a5b2.ctex"
 metadata={
 "vram_texture": false
 }
 
 [deps]
 
-source_file="res://assets/item/corona.png"
-dest_files=["res://.godot/imported/corona.png-7a5f4847229eb82a0807dc00c53349cd.ctex"]
+source_file="res://assets/icone/scudo1.png"
+dest_files=["res://.godot/imported/scudo1.png-e81504355120bcd1d2ae61ad4980a5b2.ctex"]
 
 [params]
 

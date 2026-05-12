@@ -2,16 +2,16 @@
 
 importer="texture"
 type="CompressedTexture2D"
-uid="uid://jk1hsa88l07s"
-path="res://.godot/imported/cuore1.png-6d2b715b74b6f77968d5652aba3a40af.ctex"
+uid="uid://bst1j6o8as3vh"
+path="res://.godot/imported/armatura pelle.png-99d0800435080173f52a8dcc9dd96f57.ctex"
 metadata={
 "vram_texture": false
 }
 
 [deps]
 
-source_file="res://assets/dice/cuore1.png"
-dest_files=["res://.godot/imported/cuore1.png-6d2b715b74b6f77968d5652aba3a40af.ctex"]
+source_file="res://assets/enemies/armatura pelle.png"
+dest_files=["res://.godot/imported/armatura pelle.png-99d0800435080173f52a8dcc9dd96f57.ctex"]
 
 [params]
 

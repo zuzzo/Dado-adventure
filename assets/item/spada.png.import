@@ -2,16 +2,16 @@
 
 importer="texture"
 type="CompressedTexture2D"
-uid="uid://qy6e76xv8ne5"
-path="res://.godot/imported/torcia.png-60b19fff59dd06e0d204cf642869c944.ctex"
+uid="uid://bkhdop0f64syf"
+path="res://.godot/imported/spada.png-9432f108d2e98c23546c02b7438adb15.ctex"
 metadata={
 "vram_texture": false
 }
 
 [deps]
 
-source_file="res://assets/item/torcia.png"
-dest_files=["res://.godot/imported/torcia.png-60b19fff59dd06e0d204cf642869c944.ctex"]
+source_file="res://assets/item/spada.png"
+dest_files=["res://.godot/imported/spada.png-9432f108d2e98c23546c02b7438adb15.ctex"]
 
 [params]
 

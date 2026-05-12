@@ -2,16 +2,16 @@
 
 importer="texture"
 type="CompressedTexture2D"
-uid="uid://c1t2ebvd36oxv"
-path="res://.godot/imported/magia1.png-5b744387a2567824c8b98792947cb92a.ctex"
+uid="uid://bnkyxwlg860bn"
+path="res://.godot/imported/pergamena.png-80ec416f10113e36531028d8cb3c7bdc.ctex"
 metadata={
 "vram_texture": false
 }
 
 [deps]
 
-source_file="res://assets/dice/magia1.png"
-dest_files=["res://.godot/imported/magia1.png-5b744387a2567824c8b98792947cb92a.ctex"]
+source_file="res://assets/icone/pergamena.png"
+dest_files=["res://.godot/imported/pergamena.png-80ec416f10113e36531028d8cb3c7bdc.ctex"]
 
 [params]
 

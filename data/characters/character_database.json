@@ -1,75 +1,154 @@
 [
 	{
-		"id": "guerriero",
-		"name": "Guerriero",
-		"image": "res://assets/characters/Guerriero.png",
-		"hp": 10,
-		"starting_dice_count": 4,
-		"ability_text": "Paga un punto vita, riattiva un dado esausto.",
 		"ability_effects": [
 			{
-				"type": "pay_hp_cost",
-				"amount": 1
+				"amount": 1,
+				"type": "pay_hp_cost"
 			},
 			{
-				"type": "reactivate_exhausted_die",
-				"target": "chosen_die"
-			}
-		]
-	},
-	{
-		"id": "mago",
-		"name": "Mago",
-		"image": "res://assets/characters/Mago.png",
-		"hp": 7,
-		"starting_dice_count": 3,
-		"ability_text": "Paga un punto vita. Puoi creare un simbolo effimero (si distrugge dopo l'uso).",
-		"ability_effects": [
-			{
-				"type": "pay_hp_cost",
-				"amount": 1
-			},
-			{
-				"type": "create_ephemeral_symbol",
-				"lifetime": "until_used"
-			}
-		]
-	},
-	{
-		"id": "ladro",
-		"name": "Ladro",
-		"image": "res://assets/characters/Ladro.png",
-		"hp": 8,
-		"starting_dice_count": 3,
-		"ability_text": "Paga un punto vita. Puoi settare un dado esausto sul simbolo che preferisci.",
-		"ability_effects": [
-			{
-				"type": "pay_hp_cost",
-				"amount": 1
-			},
-			{
-				"type": "set_exhausted_die_symbol",
 				"target": "chosen_die",
-				"symbol": "chosen_symbol"
+				"type": "reactivate_exhausted_die"
 			}
+		],
+		"ability_text": "Paga un punto vita, riattiva un dado esausto.",
+		"hp": 10,
+		"id": "guerriero",
+		"image": "res://assets/characters/Guerriero.png",
+		"max_trace_length": 2,
+		"mp": 0,
+		"name": "Guerriero",
+		"starting_loadout": [
+			{
+				"durability_mode": "perennial",
+				"remaining_uses": 1,
+				"symbol_id": "spada"
+			},
+			{
+				"durability_mode": "exhaustible",
+				"remaining_uses": 1,
+				"symbol_id": "cuore"
+			}
+		],
+		"starting_objects": [
+			"spada",
+			"armatura_di_pelle"
 		]
 	},
 	{
-		"id": "stregone",
-		"name": "Stregone",
-		"image": "res://assets/characters/Warlock.png",
-		"hp": 7,
-		"starting_dice_count": 4,
-		"ability_text": "Paga un punto vita. Puoi scegliere una riga/colonna in più oltre alla prima.",
 		"ability_effects": [
 			{
-				"type": "pay_hp_cost",
-				"amount": 1
+				"amount": 1.0,
+				"type": "pay_hp_cost"
 			},
 			{
-				"type": "select_extra_line",
-				"amount": 1
+				"lifetime": "until_used",
+				"type": "create_ephemeral_symbol"
 			}
-		]
+		],
+		"ability_text": "Paga un punto vita. Puoi creare un simbolo effimero (si distrugge dopo l'uso).",
+		"hp": 7,
+		"id": "mago",
+		"image": "res://assets/characters/Mago.png",
+		"max_trace_length": 4,
+		"mp": 3,
+		"name": "Mago",
+		"starting_loadout": [
+			{
+				"durability_mode": "exhaustible",
+				"remaining_uses": 1,
+				"symbol_id": "magia"
+			},
+			{
+				"durability_mode": "exhaustible",
+				"remaining_uses": 1,
+				"symbol_id": "magia"
+			},
+			{
+				"durability_mode": "exhaustible",
+				"remaining_uses": 1,
+				"symbol_id": "cuore"
+			}
+		],
+		"starting_objects": []
+	},
+	{
+		"ability_effects": [
+			{
+				"amount": 1.0,
+				"type": "pay_hp_cost"
+			},
+			{
+				"symbol": "chosen_symbol",
+				"target": "chosen_die",
+				"type": "set_exhausted_die_symbol"
+			}
+		],
+		"ability_text": "Paga un punto vita. Puoi settare un dado esausto sul simbolo che preferisci.",
+		"hp": 8,
+		"id": "ladro",
+		"image": "res://assets/characters/Ladro.png",
+		"max_trace_length": 4,
+		"mp": 1,
+		"name": "Ladro",
+		"starting_loadout": [
+			{
+				"durability_mode": "exhaustible",
+				"remaining_uses": 1,
+				"symbol_id": "ladro"
+			},
+			{
+				"durability_mode": "exhaustible",
+				"remaining_uses": 1,
+				"symbol_id": "arco"
+			},
+			{
+				"durability_mode": "exhaustible",
+				"remaining_uses": 1,
+				"symbol_id": "moneta"
+			}
+		],
+		"starting_objects": []
+	},
+	{
+		"ability_effects": [
+			{
+				"amount": 1.0,
+				"type": "pay_hp_cost"
+			},
+			{
+				"amount": 1.0,
+				"type": "select_extra_line"
+			}
+		],
+		"ability_text": "Paga un punto vita. Puoi scegliere una riga/colonna in piÃ¹ oltre alla prima.",
+		"hp": 7,
+		"id": "stregone",
+		"image": "res://assets/characters/Warlock.png",
+		"max_trace_length": 4,
+		"mp": 3,
+		"name": "Stregone",
+		"starting_loadout": [
+			{
+				"durability_mode": "exhaustible",
+				"remaining_uses": 1,
+				"symbol_id": "magia"
+			},
+			{
+				"durability_mode": "exhaustible",
+				"remaining_uses": 1,
+				"symbol_id": "spada"
+			},
+			{
+				"durability_mode": "exhaustible",
+				"remaining_uses": 1,
+				"symbol_id": "cuore"
+			},
+			{
+				"durability_mode": "exhaustible",
+				"remaining_uses": 1,
+				"symbol_id": "moneta"
+			}
+		],
+		"starting_objects": []
 	}
 ]
