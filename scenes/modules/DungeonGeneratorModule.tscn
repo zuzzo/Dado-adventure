@@ -94,11 +94,11 @@ text = "Dungeon Test"
 [node name="Description" type="Label" parent="Margin/Root/LeftPanel/LeftMargin/LeftVBox"]
 layout_mode = 2
 autowrap_mode = 3
-text = "Genera una pianta casuale in base al livello e al numero di stanze."
+text = "Il livello definisce il numero minimo di stanze tra ingresso e uscita. Le altre stanze diventano diramazioni laterali."
 
 [node name="LevelLabel" type="Label" parent="Margin/Root/LeftPanel/LeftMargin/LeftVBox"]
 layout_mode = 2
-text = "Livello"
+text = "Livello / stanze minime tra ingresso e uscita"
 
 [node name="LevelSpin" type="SpinBox" parent="Margin/Root/LeftPanel/LeftMargin/LeftVBox"]
 custom_minimum_size = Vector2(0, 42)

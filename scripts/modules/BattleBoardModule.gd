@@ -89,8 +89,10 @@ var current_equipment := {
 	"accessory": {}
 }
 var current_attack_bonus: int = 0
+var current_weapon_damage_per_hit: int = 1
 var current_armor: int = 0
 var current_pending_defense: int = 0
+var current_enemy_blocks: int = 0
 var _slot_by_cell: Dictionary = {}
 var _hover_line_type: String = ""
 var _hover_line_index: int = -1
@@ -186,6 +188,7 @@ func set_roll_results(results: Array[Dictionary]) -> void:
 	_build_result_tray()
 	_prepare_hidden_enemy()
 	_refresh_grid_visuals()
+	_refresh_token_cost_states()
 
 func set_character_context(character_name: String, hp: int, mp: int, max_trace_length: int, ability_text: String, ability_effects: Array = []) -> void:
 	current_character_name = character_name
@@ -195,6 +198,7 @@ func set_character_context(character_name: String, hp: int, mp: int, max_trace_l
 	current_character_ability = ability_text
 	current_character_ability_effects = ability_effects.duplicate(true)
 	_update_ability_label()
+	_refresh_token_cost_states()
 	player_stats_changed.emit(current_character_hp, current_gold)
 
 func start_battle(character_name: String, hp: int, mp: int, max_trace_length: int, ability_text: String, ability_effects: Array, starting_loadout: Array, starting_objects: Array = []) -> void:
@@ -219,8 +223,10 @@ func reset_run_state() -> void:
 		"accessory": {}
 	}
 	current_attack_bonus = 0
+	current_weapon_damage_per_hit = 1
 	current_armor = 0
 	current_pending_defense = 0
+	current_enemy_blocks = 0
 	_update_ability_label()
 	player_stats_changed.emit(current_character_hp, current_gold)
 
@@ -297,6 +303,7 @@ func _prepare_hidden_enemy(hint_text: String = "Piazza tutti i simboli, poi clic
 	current_enemy = _pick_random_enemy()
 	current_enemy_requirements.clear()
 	current_pending_defense = 0
+	current_enemy_blocks = 0
 	var raw_requirements = current_enemy.get("requirements", [])
 	if raw_requirements is Array:
 		for requirement in raw_requirements:
@@ -678,6 +685,7 @@ func _resolve_path_selection(path: Array, finish_action: bool) -> void:
 		reveal_hint_label.text = _compose_status_text("")
 	_set_hover_line("", -1)
 	_refresh_grid_visuals()
+	_refresh_token_cost_states()
 	if finish_action:
 		_end_player_action()
 
@@ -789,13 +797,17 @@ func _consume_enemy_requirements(used_symbol_entries: Array) -> void:
 		if symbol_id.is_empty():
 			symbol_id = _infer_symbol_id_from_label(str(entry.get("label", "")))
 		var total_consumption = amount
-		if symbol_id == "spada" and current_attack_bonus > 0:
-			total_consumption += amount * current_attack_bonus
+		if symbol_id == "spada":
+			total_consumption = amount * max(1, current_weapon_damage_per_hit)
+			var blocked_consumption = min(current_enemy_blocks, total_consumption)
+			current_enemy_blocks -= blocked_consumption
+			total_consumption -= blocked_consumption
 		for i in total_consumption:
 			var requirement_index = current_enemy_requirements.find(symbol_id)
 			if requirement_index >= 0:
 				current_enemy_requirements.remove_at(requirement_index)
 	_build_requirements_row()
+	_update_ability_label()
 
 func _collect_gold_from_symbols(used_symbol_entries: Array) -> void:
 	var gained_gold := 0
@@ -812,6 +824,7 @@ func _collect_gold_from_symbols(used_symbol_entries: Array) -> void:
 		return
 	current_gold += gained_gold
 	_update_ability_label()
+	_refresh_token_cost_states()
 	player_stats_changed.emit(current_character_hp, current_gold)
 
 func _collect_healing_from_symbols(used_symbol_entries: Array) -> void:
@@ -983,20 +996,94 @@ func _end_player_action() -> void:
 	if not _enemy_survived_player_action():
 		_handle_enemy_defeated()
 		return
-	var mitigated_damage = current_pending_defense + current_armor
-	var incoming_damage = max(int(current_enemy.get("enemy_damage", 1)) - mitigated_damage, 0)
+	var attack_result = _choose_enemy_attack_result()
+	var attack_count = int(attack_result.get("attack_count", 0))
+	var block_count = int(attack_result.get("block_count", 0))
+	var sequence_summary = str(attack_result.get("summary", ""))
+	var damage_per_attack = max(1, int(current_enemy.get("enemy_damage", 1)))
+	var blocked_attacks = min(current_pending_defense, attack_count)
+	var unblocked_attacks = max(attack_count - blocked_attacks, 0)
+	var incoming_damage = max((unblocked_attacks * damage_per_attack) - current_armor, 0)
+	current_enemy_blocks += block_count
 	current_pending_defense = 0
 	current_character_hp = max(current_character_hp - incoming_damage, 0)
 	character_hp_changed.emit(current_character_hp)
 	_update_ability_label()
+	_refresh_token_cost_states()
 	player_stats_changed.emit(current_character_hp, current_gold)
+	var sequence_text = ""
+	if not sequence_summary.is_empty():
+		sequence_text = " Sequenza: %s." % sequence_summary
+	if block_count > 0:
+		sequence_text += " Il nemico prepara %d parate per il prossimo turno." % block_count
 	if incoming_damage > 0:
-		reveal_hint_label.text = _compose_status_text("Il nemico colpisce per %d danni. Ora tocca di nuovo a te." % incoming_damage)
+		reveal_hint_label.text = _compose_status_text("Il nemico colpisce per %d danni.%s Ora tocca di nuovo a te." % [incoming_damage, sequence_text])
 	else:
-		reveal_hint_label.text = _compose_status_text("La tua armatura assorbe il colpo. Ora tocca di nuovo a te.")
+		reveal_hint_label.text = _compose_status_text("Hai bloccato o assorbito l'attacco.%s Ora tocca di nuovo a te." % sequence_text)
+
+func _choose_enemy_attack_result() -> Dictionary:
+	var sequences = current_enemy.get("attack_sequences", [])
+	if not (sequences is Array) or sequences.is_empty():
+		var legacy_damage = max(0, int(current_enemy.get("enemy_damage", 1)))
+		return {
+			"attack_count": 1 if legacy_damage > 0 else 0,
+			"block_count": 0,
+			"summary": ""
+		}
+	var normalized_sequences = _normalize_enemy_attack_sequences(sequences)
+	if normalized_sequences.is_empty():
+		return {"attack_count": 0, "block_count": 0, "summary": ""}
+	var sequence = normalized_sequences[randi() % normalized_sequences.size()]
+	var attack_count := 0
+	var block_count := 0
+	for token in sequence:
+		match str(token):
+			"spada":
+				attack_count += 1
+			"scudo":
+				block_count += 1
+	return {
+		"attack_count": attack_count,
+		"block_count": block_count,
+		"summary": _summarize_enemy_attack_sequence(sequence)
+	}
+
+func _normalize_enemy_attack_sequences(raw_sequences) -> Array:
+	var sequences: Array = []
+	if not (raw_sequences is Array):
+		return sequences
+	for raw_sequence in raw_sequences:
+		var sequence: Array = []
+		if raw_sequence is Array:
+			for raw_token in raw_sequence:
+				var token = str(raw_token).strip_edges().to_lower()
+				if token == "attacco" or token == "attacca":
+					token = "spada"
+				elif token == "para" or token == "parata" or token == "blocco":
+					token = "scudo"
+				if token == "spada" or token == "scudo":
+					sequence.append(token)
+		if not sequence.is_empty():
+			sequences.append(sequence)
+	return sequences
+
+func _summarize_enemy_attack_sequence(sequence: Array) -> String:
+	var parts: Array[String] = []
+	for token in sequence:
+		match str(token):
+			"spada":
+				parts.append("attacco")
+			"scudo":
+				parts.append("para")
+			_:
+				parts.append(str(token))
+	return ", ".join(parts)
 
 func _update_ability_label() -> void:
-	ability_label.text = "%s | PV: %d | PM: %d | Oro: %d | Difesa: %d | Spada: +%d | Armatura: %d | Abilita: %s" % [current_character_name, current_character_hp, current_character_mp, current_gold, current_pending_defense, current_attack_bonus, current_armor, current_character_ability]
+	var enemy_block_text = ""
+	if current_enemy_blocks > 0:
+		enemy_block_text = " | Parate Nemico: %d" % current_enemy_blocks
+	ability_label.text = "%s | PV: %d | PM: %d | Oro: %d | Difesa: %d | Danno Arma: %d | Armatura: %d%s | Abilita: %s" % [current_character_name, current_character_hp, current_character_mp, current_gold, current_pending_defense, current_weapon_damage_per_hit, current_armor, enemy_block_text, current_character_ability]
 
 func _get_ability_hp_cost() -> int:
 	for effect in current_character_ability_effects:
@@ -1276,6 +1363,12 @@ func _count_active_tokens_in_line(line_type: String, line_index: int) -> int:
 func _consume_token_use(cell: Vector2i, token: Control) -> Dictionary:
 	if token == null or not _token_can_be_used(token):
 		return {}
+	var token_data: Dictionary = {}
+	if token.has_method("get_result_data"):
+		token_data = token.call("get_result_data") as Dictionary
+	if not _pay_token_activation_cost(token_data):
+		_refresh_token_cost_states()
+		return {}
 	if not token.has_method("consume_use"):
 		if _token_is_exhaustible(token) and not _exhausted_cells.has(cell):
 			_exhausted_cells.append(cell)
@@ -1288,13 +1381,14 @@ func _consume_token_use(cell: Vector2i, token: Control) -> Dictionary:
 	if _token_is_exhaustible(token) and not _exhausted_cells.has(cell):
 		_exhausted_cells.append(cell)
 	if token.has_method("should_be_removed_after_use") and bool(token.call("should_be_removed_after_use")):
-		var token_data = used_entry.duplicate(true)
+		var removed_token_data = used_entry.duplicate(true)
 		var slot = _slot_by_cell.get(cell, null) as PanelContainer
 		if slot != null and slot.has_method("clear_token"):
 			var removed = slot.call("clear_token") as Control
 			if removed != null:
 				removed.queue_free()
-		_handle_destroyed_object_token(token_data)
+		_handle_destroyed_object_token(removed_token_data)
+	_refresh_token_cost_states()
 	return used_entry
 
 func _normalize_result_data(result: Dictionary) -> Dictionary:
@@ -1305,14 +1399,61 @@ func _normalize_result_data(result: Dictionary) -> Dictionary:
 		normalized["base_label"] = str(normalized.get("label", ""))
 	if not normalized.has("remaining_uses"):
 		normalized["remaining_uses"] = int(normalized.get("value", 1))
+	if not normalized.has("activation_cost_type"):
+		normalized["activation_cost_type"] = "none"
+	if not normalized.has("activation_cost_amount"):
+		normalized["activation_cost_amount"] = 0
 	return normalized
 
 func _token_can_be_used(token: Control) -> bool:
 	if token == null:
 		return false
+	if token.has_method("get_result_data"):
+		var token_data = token.call("get_result_data") as Dictionary
+		if not _can_pay_token_activation_cost(token_data):
+			return false
 	if token.has_method("can_be_used"):
 		return bool(token.call("can_be_used"))
 	return true
+
+func _can_pay_token_activation_cost(token_data: Dictionary) -> bool:
+	var cost_type = str(token_data.get("activation_cost_type", "none")).strip_edges().to_lower()
+	var cost_amount = max(0, int(token_data.get("activation_cost_amount", 0)))
+	if cost_amount <= 0 or cost_type == "none":
+		return true
+	match cost_type:
+		"mana":
+			return current_character_mp >= cost_amount
+		_:
+			return true
+
+func _pay_token_activation_cost(token_data: Dictionary) -> bool:
+	var cost_type = str(token_data.get("activation_cost_type", "none")).strip_edges().to_lower()
+	var cost_amount = max(0, int(token_data.get("activation_cost_amount", 0)))
+	if cost_amount <= 0 or cost_type == "none":
+		return true
+	if not _can_pay_token_activation_cost(token_data):
+		return false
+	match cost_type:
+		"mana":
+			current_character_mp = max(current_character_mp - cost_amount, 0)
+			_update_ability_label()
+	return true
+
+func _refresh_token_cost_states() -> void:
+	for slot in token_tray.get_children():
+		_refresh_token_cost_state_in_slot(slot)
+	for slot in _slot_by_cell.values():
+		_refresh_token_cost_state_in_slot(slot)
+
+func _refresh_token_cost_state_in_slot(slot) -> void:
+	if slot == null or not slot.has_method("has_token") or not slot.call("has_token"):
+		return
+	var token = slot.call("get_token") as Control
+	if token == null or not token.has_method("get_result_data") or not token.has_method("set_disabled_by_cost"):
+		return
+	var token_data = token.call("get_result_data") as Dictionary
+	token.call("set_disabled_by_cost", not _can_pay_token_activation_cost(token_data))
 
 func _token_is_exhaustible(token: Control) -> bool:
 	if token == null:
@@ -1329,10 +1470,15 @@ func _slot_token_is_rerollable(slot: PanelContainer) -> bool:
 
 func _get_enemy_meta_text(enemy_damage: int) -> String:
 	if str(current_enemy.get("category", "")) != "object":
-		return "Danno: %d" % enemy_damage
+		var sequences = _normalize_enemy_attack_sequences(current_enemy.get("attack_sequences", []))
+		if sequences.is_empty():
+			return "Danno/attacco: %d" % enemy_damage
+		return "Danno/attacco: %d | Sequenze: %d" % [enemy_damage, sequences.size()]
 	var slot_id = str(current_enemy.get("equipment_slot", "weapon"))
 	var parts: Array[String] = ["Oggetto: %s" % _get_equipment_slot_label(slot_id)]
 	var attack_bonus = int(current_enemy.get("attack_bonus", 0))
+	var weapon_attack_count = int(current_enemy.get("weapon_attack_count", 0))
+	var weapon_damage_per_hit = int(current_enemy.get("weapon_damage_per_hit", attack_bonus + 1 if attack_bonus > 0 else 0))
 	var armor_value = int(current_enemy.get("armor_value", 0))
 	var granted_icons = current_enemy.get("granted_icons", current_enemy.get("requirements", []))
 	if granted_icons is Array and not granted_icons.is_empty():
@@ -1344,8 +1490,10 @@ func _get_enemy_meta_text(enemy_damage: int) -> String:
 		parts.append("Perenne")
 	else:
 		parts.append("Esauribile")
-	if attack_bonus > 0:
-		parts.append("Spada +%d" % attack_bonus)
+	if weapon_attack_count > 0:
+		parts.append("Attacchi %d" % weapon_attack_count)
+	if weapon_damage_per_hit > 0:
+		parts.append("Danno/colpo %d" % weapon_damage_per_hit)
 	if armor_value > 0:
 		parts.append("Armatura %d" % armor_value)
 	if parts.size() == 1:
@@ -1365,11 +1513,16 @@ func _equip_current_object() -> String:
 
 func _recalculate_equipment_stats() -> void:
 	current_attack_bonus = 0
+	current_weapon_damage_per_hit = 1
 	current_armor = 0
 	for slot_id in current_equipment.keys():
 		var item = current_equipment[slot_id]
 		if item is Dictionary:
-			current_attack_bonus += int(item.get("attack_bonus", 0))
+			var legacy_attack_bonus = int(item.get("attack_bonus", 0))
+			var weapon_damage = int(item.get("weapon_damage_per_hit", legacy_attack_bonus + 1 if legacy_attack_bonus > 0 else 0))
+			if _normalize_equipment_slot(str(item.get("equipment_slot", slot_id))) == "weapon" and weapon_damage > 0:
+				current_weapon_damage_per_hit = max(current_weapon_damage_per_hit, weapon_damage)
+				current_attack_bonus = max(current_attack_bonus, weapon_damage - 1)
 			current_armor += int(item.get("armor_value", 0))
 
 func _normalize_equipment_slot(slot_id: String) -> String:
@@ -1420,6 +1573,8 @@ func _add_object_granted_tokens(object_data: Dictionary) -> void:
 	var object_id = str(object_data.get("id", ""))
 	var object_name = str(object_data.get("name", "Oggetto"))
 	var slot_id = _normalize_equipment_slot(str(object_data.get("equipment_slot", "weapon")))
+	var activation_cost_type = str(object_data.get("activation_cost_type", "none")).strip_edges().to_lower()
+	var activation_cost_amount = max(0, int(object_data.get("activation_cost_amount", 0)))
 	for raw_icon in granted_icons:
 		var token_data = _create_loadout_result_data({
 			"symbol_id": str(raw_icon),
@@ -1431,6 +1586,8 @@ func _add_object_granted_tokens(object_data: Dictionary) -> void:
 		token_data["source_object_id"] = object_id
 		token_data["source_object_name"] = object_name
 		token_data["source_equipment_slot"] = slot_id
+		token_data["activation_cost_type"] = activation_cost_type
+		token_data["activation_cost_amount"] = activation_cost_amount
 		_add_token_to_tray(token_data)
 
 func _add_token_to_tray(result: Dictionary) -> void:
@@ -1442,6 +1599,7 @@ func _add_token_to_tray(result: Dictionary) -> void:
 	token.set_script(RESULT_TOKEN_SCRIPT)
 	token.call("setup", _normalize_result_data(result))
 	tray_slot.call("place_token", token)
+	_refresh_token_cost_state_in_slot(tray_slot)
 
 func _handle_destroyed_object_token(token_data: Dictionary) -> void:
 	var object_id = str(token_data.get("source_object_id", ""))

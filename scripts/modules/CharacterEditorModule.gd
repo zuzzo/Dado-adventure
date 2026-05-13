@@ -116,12 +116,12 @@ func _ensure_directories():
 	DirAccess.make_dir_recursive_absolute(ProjectSettings.globalize_path(DATABASE_DIR))
 
 func _build_runtime_editor_ui():
-	dice_count_label.text = "Icone Iniziali"
+	dice_count_label.text = "Icone Base"
 	starting_loadout_text.visible = false
 
 	var mp_label: Label = Label.new()
 	mp_label.name = "MpLabel"
-	mp_label.text = "Punti Magia"
+	mp_label.text = "Mana Iniziale"
 	right_vbox.add_child(mp_label)
 	right_vbox.move_child(mp_label, hp_input.get_index() + 1)
 
@@ -135,7 +135,7 @@ func _build_runtime_editor_ui():
 
 	var max_trace_label: Label = Label.new()
 	max_trace_label.name = "MaxTraceLabel"
-	max_trace_label.text = "Lunghezza Massima Spezzata"
+	max_trace_label.text = "Lunghezza Massima Traccia"
 	right_vbox.add_child(max_trace_label)
 	right_vbox.move_child(max_trace_label, mp_input.get_index() + 1)
 
@@ -149,7 +149,7 @@ func _build_runtime_editor_ui():
 
 	var objects_label: Label = Label.new()
 	objects_label.name = "StartingObjectsLabel"
-	objects_label.text = "Oggetti Iniziali"
+	objects_label.text = "Oggetti Di Partenza"
 	right_vbox.add_child(objects_label)
 	right_vbox.move_child(objects_label, max_trace_length_input.get_index() + 1)
 
@@ -196,7 +196,7 @@ func _build_runtime_editor_ui():
 	right_vbox.move_child(loadout_panel, starting_loadout_text.get_index() + 1)
 
 	var palette_label: Label = Label.new()
-	palette_label.text = "Trascina le icone negli spazi. Click destro su una icona per scegliere Effimera, Esauribile o Perenne."
+	palette_label.text = "Trascina le icone base negli spazi. Click destro su una icona per scegliere Effimera, Esauribile o Perenne."
 	palette_label.autowrap_mode = TextServer.AUTOWRAP_WORD_SMART
 	loadout_panel.add_child(palette_label)
 
@@ -474,7 +474,7 @@ func _update_preview():
 	card_name.text = preview_name.text
 	card_hp.text = "%d PV | %d PM | Traccia %d" % [int(hp_input.value), int(mp_input.value), int(max_trace_length_input.value)]
 	var loadout = _extract_loadout_from_slots()
-	preview_loadout_text.text = "Icone: %s\nOggetti: %s" % [_summarize_loadout(loadout), _summarize_starting_objects()]
+	preview_loadout_text.text = "Icone Base: %s\nOggetti Partenza: %s" % [_summarize_loadout(loadout), _summarize_starting_objects()]
 	preview_ability_text.text = ability_text.text if not ability_text.text.is_empty() else "-"
 
 func _update_preview_from_project(project_path):
@@ -617,7 +617,7 @@ func create_loadout_token_instance(symbol_id: String, texture_path: String, conf
 
 func notify_loadout_changed():
 	starting_loadout_text.text = JSON.stringify(_extract_loadout_from_slots())
-	loadout_help_label.text = "Icone attive: %d | Oggetti iniziali: %d" % [_extract_loadout_from_slots().size(), _selected_starting_objects.size()]
+	loadout_help_label.text = "Icone base: %d | Oggetti partenza: %d" % [_extract_loadout_from_slots().size(), _selected_starting_objects.size()]
 	_update_preview()
 
 func open_loadout_token_menu(token):

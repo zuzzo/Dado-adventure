@@ -162,7 +162,7 @@ text = "Scegli Immagine"
 
 [node name="HpLabel" type="Label" parent="Margin/Root/RightPanel/RightMargin/RightScroll/RightVBox"]
 layout_mode = 2
-text = "Punti Vita"
+text = "Punti Vita Iniziali"
 
 [node name="HpInput" type="SpinBox" parent="Margin/Root/RightPanel/RightMargin/RightScroll/RightVBox"]
 layout_mode = 2
@@ -172,7 +172,7 @@ value = 6.0
 
 [node name="DiceCountLabel" type="Label" parent="Margin/Root/RightPanel/RightMargin/RightScroll/RightVBox"]
 layout_mode = 2
-text = "Set Iniziale Simboli"
+text = "Icone Base"
 
 [node name="StartingLoadoutText" type="TextEdit" parent="Margin/Root/RightPanel/RightMargin/RightScroll/RightVBox"]
 custom_minimum_size = Vector2(0, 140)
@@ -181,7 +181,7 @@ placeholder_text = "Un simbolo per riga oppure separati da virgole. Esempio:\nsp
 
 [node name="AbilityLabel" type="Label" parent="Margin/Root/RightPanel/RightMargin/RightScroll/RightVBox"]
 layout_mode = 2
-text = "Abilita"
+text = "Abilita Opzionale"
 
 [node name="AbilityText" type="TextEdit" parent="Margin/Root/RightPanel/RightMargin/RightScroll/RightVBox"]
 custom_minimum_size = Vector2(0, 140)
@@ -280,13 +280,13 @@ layout_mode = 2
 theme_override_font_sizes/font_size = 11
 theme_override_colors/font_color = Color(0.0823529, 0.0666667, 0.0431373, 1)
 autowrap_mode = 3
-text = "Set Iniziale: -"
+text = "Icone Base: -"
 
 [node name="PreviewAbilityTitle" type="Label" parent="Margin/Root/RightPanel/RightMargin/RightScroll/RightVBox/PreviewPanel/PreviewMargin/PreviewVBox/PreviewImageCenter/PreviewCard/CardInfo/CardInfoVBox"]
 layout_mode = 2
 theme_override_font_sizes/font_size = 11
 theme_override_colors/font_color = Color(0.0823529, 0.0666667, 0.0431373, 1)
-text = "Abilita"
+text = "Abilita Opzionale"
 
 [node name="PreviewAbilityText" type="Label" parent="Margin/Root/RightPanel/RightMargin/RightScroll/RightVBox/PreviewPanel/PreviewMargin/PreviewVBox/PreviewImageCenter/PreviewCard/CardInfo/CardInfoVBox"]
 layout_mode = 2

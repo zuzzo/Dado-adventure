@@ -34,25 +34,58 @@ func _on_generate_pressed() -> void:
 	_generate_dungeon()
 
 func _generate_dungeon() -> void:
-	var room_target = int(room_count_spin.value)
-	_map_size = _estimate_map_size(room_target)
-	_rooms.clear()
-	_corridors.clear()
-	_graph.clear()
-	_start_room_index = -1
-	_exit_room_index = -1
-	var attempts = room_target * 30
-	while _rooms.size() < room_target and attempts > 0:
-		attempts -= 1
-		_try_add_random_room()
-	if _rooms.is_empty():
-		_fail_generation("Impossibile generare stanze valide.")
+	var requested_rooms = int(room_count_spin.value)
+	var required_rooms_between = _get_required_rooms_between()
+	var room_target = max(requested_rooms, required_rooms_between + 2)
+	var generated := false
+	for _generation_attempt in range(20):
+		_map_size = _estimate_map_size(room_target)
+		_rooms.clear()
+		_corridors.clear()
+		_graph.clear()
+		_start_room_index = -1
+		_exit_room_index = -1
+		var attempts = room_target * 30
+		while _rooms.size() < room_target and attempts > 0:
+			attempts -= 1
+			_try_add_random_room()
+		if _rooms.is_empty():
+			continue
+		_build_dungeon_connectivity(required_rooms_between)
+		if _is_graph_connected():
+			generated = true
+			break
+	if not generated:
+		_fail_generation("Impossibile generare un dungeon con corridoi non sovrapposti.")
 		return
-	_build_minimum_connectivity()
-	_start_room_index = 0
-	_choose_start_and_exit()
 	map_canvas.call("set_layout", _map_size, _rooms, _corridors, _graph, _start_room_index, _exit_room_index)
-	status_label.text = "Step 3: ingresso e uscita separati da %d stanze sul grafo." % _get_room_graph_distance(_start_room_index, _exit_room_index)
+	var graph_distance = _get_room_graph_distance(_start_room_index, _exit_room_index)
+	var rooms_between = max(0, graph_distance - 1)
+	var added_rooms_text = ""
+	if room_target > requested_rooms:
+		added_rooms_text = " Stanze aumentate a %d per rispettare il livello." % room_target
+	status_label.text = "Percorso principale: %d stanze tra ingresso e uscita. Livello richiesto: %d.%s" % [rooms_between, required_rooms_between, added_rooms_text]
+
+func _get_required_rooms_between() -> int:
+	return max(0, int(level_spin.value))
+
+func _is_graph_connected() -> bool:
+	if _rooms.is_empty():
+		return false
+	if _rooms.size() == 1:
+		return true
+	var visited := {}
+	visited[0] = true
+	var frontier: Array = [0]
+	while not frontier.is_empty():
+		var room_index = int(frontier.pop_front())
+		for neighbor in _graph.get(room_index, []):
+			var neighbor_index = int(neighbor)
+			if visited.has(neighbor_index):
+				continue
+			visited[neighbor_index] = true
+			frontier.append(neighbor_index)
+	return visited.size() == _rooms.size()
 
 func _estimate_map_size(room_count: int) -> Vector2i:
 	var width = max(14, room_count * 2 + 6)
@@ -148,19 +181,194 @@ func _build_minimum_connectivity() -> void:
 		connected.append(best_to)
 		remaining.erase(best_to)
 
+func _build_dungeon_connectivity(required_rooms_between: int) -> void:
+	_graph.clear()
+	_corridors.clear()
+	for index in range(_rooms.size()):
+		_graph[index] = []
+	if _rooms.size() <= 1:
+		_start_room_index = 0 if _rooms.size() == 1 else -1
+		_exit_room_index = _start_room_index
+		return
+	var main_path_room_count = clamp(required_rooms_between + 2, 2, _rooms.size())
+	var path = _build_main_path(main_path_room_count)
+	if path.size() < 2:
+		_build_minimum_connectivity()
+		_choose_start_and_exit()
+		return
+	for index in range(path.size() - 1):
+		_add_corridor(int(path[index]), int(path[index + 1]))
+	_start_room_index = int(path[0])
+	_exit_room_index = int(path[path.size() - 1])
+	var path_lookup := {}
+	for room_index in path:
+		path_lookup[int(room_index)] = true
+	var connected = path.duplicate()
+	var remaining: Array = []
+	for index in range(_rooms.size()):
+		if not path_lookup.has(index):
+			remaining.append(index)
+	while not remaining.is_empty():
+		var branch_room = int(remaining.pop_front())
+		var attach_to = _find_branch_attachment(branch_room, connected)
+		_add_corridor(attach_to, branch_room)
+		connected.append(branch_room)
+
+func _build_main_path(target_count: int) -> Array:
+	var endpoints = _find_spatially_distant_room_pair()
+	var path: Array = [int(endpoints[0])]
+	var used := {}
+	used[int(endpoints[0])] = true
+	while path.size() < target_count:
+		var current = int(path[path.size() - 1])
+		var next_room = _pick_next_main_path_room(current, used, int(endpoints[1]), target_count - path.size())
+		if next_room < 0:
+			break
+		path.append(next_room)
+		used[next_room] = true
+	if not path.has(int(endpoints[1])) and path.size() < target_count:
+		path.append(int(endpoints[1]))
+	return path
+
+func _find_spatially_distant_room_pair() -> Array:
+	var best_start = 0
+	var best_exit = 1
+	var best_distance = -1
+	for from_index in range(_rooms.size()):
+		for to_index in range(_rooms.size()):
+			if from_index == to_index:
+				continue
+			var distance = _room_distance(from_index, to_index)
+			if distance > best_distance:
+				best_distance = distance
+				best_start = from_index
+				best_exit = to_index
+	return [best_start, best_exit]
+
+func _pick_next_main_path_room(current: int, used: Dictionary, target: int, remaining_steps: int) -> int:
+	var best_room = -1
+	var best_score = -999999
+	for index in range(_rooms.size()):
+		if used.has(index):
+			continue
+		var score = -_room_distance(current, index)
+		if remaining_steps <= 1:
+			score -= _room_distance(index, target) * 2
+		else:
+			score += _room_distance(index, target)
+		if index == target:
+			score += 1000 if remaining_steps <= 1 else -1000
+		if score > best_score:
+			best_score = score
+			best_room = index
+	return best_room
+
+func _find_branch_attachment(branch_room: int, connected: Array) -> int:
+	var best_room = int(connected[0])
+	var best_distance = 999999
+	for connected_room in connected:
+		var distance = _room_distance(branch_room, int(connected_room))
+		if distance < best_distance:
+			best_distance = distance
+			best_room = int(connected_room)
+	return best_room
+
 func _add_corridor(from_index: int, to_index: int) -> void:
-	if _graph.get(from_index, []).has(to_index):
+	if from_index == to_index:
+		return
+	if _rooms_have_corridor(from_index, to_index):
 		return
 	var from_point = _get_room_connection_point(from_index, to_index)
 	var to_point = _get_room_connection_point(to_index, from_index)
-	var midpoint = Vector2i(to_point.x, from_point.y) if bool(randi() % 2) else Vector2i(from_point.x, to_point.y)
+	var candidate_paths: Array = []
+	var first_midpoint = Vector2i(to_point.x, from_point.y)
+	var second_midpoint = Vector2i(from_point.x, to_point.y)
+	if bool(randi() % 2):
+		candidate_paths.append([from_point, first_midpoint, to_point])
+		candidate_paths.append([from_point, second_midpoint, to_point])
+	else:
+		candidate_paths.append([from_point, second_midpoint, to_point])
+		candidate_paths.append([from_point, first_midpoint, to_point])
+	var chosen_points: Array = []
+	for points in candidate_paths:
+		if not _corridor_path_has_conflict(points, from_index, to_index):
+			chosen_points = points
+			break
+	if chosen_points.is_empty():
+		return
 	_corridors.append({
 		"from": from_index,
 		"to": to_index,
-		"points": [from_point, midpoint, to_point]
+		"points": chosen_points
 	})
 	_graph[from_index].append(to_index)
 	_graph[to_index].append(from_index)
+
+func _corridor_path_has_conflict(points: Array, from_index: int, to_index: int) -> bool:
+	var allowed_room_cells := {}
+	for cell in _get_room_cells(from_index):
+		allowed_room_cells[cell] = true
+	for cell in _get_room_cells(to_index):
+		allowed_room_cells[cell] = true
+	var candidate_cells = _corridor_cells_from_points(points)
+	for candidate_cell in candidate_cells:
+		if allowed_room_cells.has(candidate_cell):
+			continue
+		if _cell_belongs_to_other_room(candidate_cell, from_index, to_index):
+			return true
+		for corridor in _corridors:
+			if not (corridor is Dictionary):
+				continue
+			var existing_points = corridor.get("points", [])
+			if not (existing_points is Array):
+				continue
+			var existing_cells = _corridor_cells_from_points(existing_points)
+			if existing_cells.has(candidate_cell):
+				return true
+	return false
+
+func _cell_belongs_to_other_room(cell: Vector2i, from_index: int, to_index: int) -> bool:
+	for room_index in range(_rooms.size()):
+		if room_index == from_index or room_index == to_index:
+			continue
+		var room_cells = _get_room_cells(room_index)
+		if room_cells.has(cell):
+			return true
+	return false
+
+func _corridor_cells_from_points(points: Array) -> Dictionary:
+	var cells := {}
+	if points.size() < 2:
+		return cells
+	for index in range(points.size() - 1):
+		var from_point = points[index] as Vector2i
+		var to_point = points[index + 1] as Vector2i
+		var step = Vector2i(int(sign(to_point.x - from_point.x)), int(sign(to_point.y - from_point.y)))
+		var current = from_point
+		cells[current] = true
+		while current != to_point:
+			current += step
+			cells[current] = true
+	return cells
+
+func _get_room_cells(room_index: int) -> Array:
+	if room_index < 0 or room_index >= _rooms.size():
+		return []
+	return _rooms[room_index].get("cells", [])
+
+func _rooms_have_corridor(from_index: int, to_index: int) -> bool:
+	if _graph.get(from_index, []).has(to_index):
+		return true
+	if _graph.get(to_index, []).has(from_index):
+		return true
+	for corridor in _corridors:
+		if not (corridor is Dictionary):
+			continue
+		var a = int(corridor.get("from", -1))
+		var b = int(corridor.get("to", -1))
+		if (a == from_index and b == to_index) or (a == to_index and b == from_index):
+			return true
+	return false
 
 func _compute_room_center(cells: Array) -> Vector2i:
 	var sum_x = 0

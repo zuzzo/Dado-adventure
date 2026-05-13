@@ -3,6 +3,7 @@ extends TextureRect
 var result_data: Dictionary = {}
 var _slot: Control
 var _is_exhausted := false
+var _disabled_by_cost := false
 var _text_label: Label
 var _mode_label: Label
 var _board_interaction_enabled: bool = false
@@ -43,6 +44,10 @@ func set_exhausted(value: bool) -> void:
 	_is_exhausted = value
 	modulate = _get_display_modulate()
 
+func set_disabled_by_cost(value: bool) -> void:
+	_disabled_by_cost = value
+	_refresh_display()
+
 func set_result_data_value(key: String, value: Variant) -> void:
 	result_data[key] = value
 	_ensure_defaults()
@@ -62,6 +67,8 @@ func get_remaining_uses() -> int:
 	return int(result_data.get("remaining_uses", 1))
 
 func can_be_used() -> bool:
+	if _disabled_by_cost:
+		return false
 	var durability_mode = get_durability_mode()
 	if durability_mode == "ephemeral":
 		return get_remaining_uses() > 0
@@ -94,6 +101,8 @@ func should_be_removed_after_use() -> bool:
 func _get_drag_data(_at_position: Vector2) -> Variant:
 	if _board_interaction_enabled:
 		return null
+	if not can_be_used():
+		return null
 	if texture == null:
 		return null
 	var preview := TextureRect.new()
@@ -124,9 +133,17 @@ func _build_tooltip_text() -> String:
 			parts.append("Perenne")
 		_:
 			parts.append("Esauribile")
+	var cost_type = str(result_data.get("activation_cost_type", "none"))
+	var cost_amount = int(result_data.get("activation_cost_amount", 0))
+	if cost_type == "mana" and cost_amount > 0:
+		parts.append("Costo: %d mana" % cost_amount)
+		if _disabled_by_cost:
+			parts.append("Mana insufficiente")
 	return " | ".join(parts)
 
 func _get_display_modulate() -> Color:
+	if _disabled_by_cost:
+		return Color(0.42, 0.42, 0.42, 0.75)
 	if _is_exhausted:
 		return Color(0.55, 0.55, 0.55, 1)
 	if get_durability_mode() == "perennial":

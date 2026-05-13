@@ -32,7 +32,7 @@ func _on_game_pressed():
 	_open_module(GAME_SCENE, "Gioco aperto.")
 
 func _on_enemy_editor_pressed():
-	_open_module(ENEMY_EDITOR_SCENE, "Editor mostri aperto.")
+	_open_module(ENEMY_EDITOR_SCENE, "Editor carte dungeon aperto.")
 
 func _on_character_editor_pressed():
 	_open_module(CHARACTER_EDITOR_SCENE, "Editor personaggi aperto.")

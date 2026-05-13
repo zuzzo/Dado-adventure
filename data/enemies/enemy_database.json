@@ -6,6 +6,16 @@
 		"category": "monster",
 		"difficulty": 3,
 		"enemy_damage": 1,
+		"attack_sequences": [
+			[
+				"spada",
+				"spada"
+			],
+			[
+				"spada",
+				"scudo"
+			]
+		],
 		"equipment_slot": "weapon",
 		"exhaustion_limit": 0,
 		"failure_effects": [
@@ -58,6 +68,15 @@
 		"category": "monster",
 		"difficulty": 2,
 		"enemy_damage": 1,
+		"attack_sequences": [
+			[
+				"spada"
+			],
+			[
+				"spada",
+				"scudo"
+			]
+		],
 		"equipment_slot": "weapon",
 		"exhaustion_limit": 0,
 		"failure_effects": [
@@ -110,6 +129,19 @@
 		"category": "monster",
 		"difficulty": 4,
 		"enemy_damage": 2,
+		"attack_sequences": [
+			[
+				"spada"
+			],
+			[
+				"spada",
+				"spada"
+			],
+			[
+				"scudo",
+				"spada"
+			]
+		],
 		"equipment_slot": "weapon",
 		"exhaustion_limit": 0,
 		"failure_effects": [
@@ -162,6 +194,11 @@
 		"category": "trap",
 		"difficulty": 1,
 		"enemy_damage": 3,
+		"attack_sequences": [
+			[
+				"spada"
+			]
+		],
 		"equipment_slot": "weapon",
 		"exhaustion_limit": 1,
 		"failure_effects": [],
@@ -275,7 +312,11 @@
 		],
 		"reward_effects": [],
 		"reward_text": "",
-		"success_outcomes": []
+		"success_outcomes": [],
+		"weapon_attack_count": 1,
+		"weapon_damage_per_hit": 3,
+		"activation_cost_type": "none",
+		"activation_cost_amount": 0
 	},
 	{
 		"armor_value": 1,
@@ -304,7 +345,11 @@
 		],
 		"reward_effects": [],
 		"reward_text": "Concede un'icona scudo effimera da 3 usi.",
-		"success_outcomes": []
+		"success_outcomes": [],
+		"weapon_attack_count": 0,
+		"weapon_damage_per_hit": 0,
+		"activation_cost_type": "none",
+		"activation_cost_amount": 0
 	},
 	{
 		"armor_value": 3,
@@ -333,6 +378,10 @@
 		],
 		"reward_effects": [],
 		"reward_text": "",
-		"success_outcomes": []
+		"success_outcomes": [],
+		"weapon_attack_count": 0,
+		"weapon_damage_per_hit": 0,
+		"activation_cost_type": "none",
+		"activation_cost_amount": 0
 	}
 ]

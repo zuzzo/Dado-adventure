@@ -74,7 +74,7 @@ theme_override_constants/separation = 12
 [node name="Title" type="Label" parent="Margin/Root/LeftPanel/LeftMargin/LeftVBox"]
 layout_mode = 2
 theme_override_font_sizes/font_size = 28
-text = "Editor Incontri"
+text = "Carte Dungeon"
 
 [node name="Toolbar" type="HBoxContainer" parent="Margin/Root/LeftPanel/LeftMargin/LeftVBox"]
 layout_mode = 2
@@ -134,7 +134,7 @@ theme_override_constants/separation = 14
 [node name="FormTitle" type="Label" parent="Margin/Root/RightPanel/RightMargin/RightScroll/RightVBox"]
 layout_mode = 2
 theme_override_font_sizes/font_size = 24
-text = "Scheda Incontro"
+text = "Scheda Carta Dungeon"
 
 [node name="NameLabel" type="Label" parent="Margin/Root/RightPanel/RightMargin/RightScroll/RightVBox"]
 layout_mode = 2
@@ -169,7 +169,7 @@ layout_mode = 2
 
 [node name="DamageLabel" type="Label" parent="Margin/Root/RightPanel/RightMargin/RightScroll/RightVBox"]
 layout_mode = 2
-text = "Danno Della Carta"
+text = "Danno Per Attacco Nemico"
 
 [node name="DamageInput" type="SpinBox" parent="Margin/Root/RightPanel/RightMargin/RightScroll/RightVBox"]
 layout_mode = 2
@@ -247,7 +247,7 @@ layout_mode = 2
 [node name="AttackBonusLabel" type="Label" parent="Margin/Root/RightPanel/RightMargin/RightScroll/RightVBox"]
 visible = false
 layout_mode = 2
-text = "Bonus Danno Spada"
+text = "Danno Per Colpo"
 
 [node name="AttackBonusInput" type="SpinBox" parent="Margin/Root/RightPanel/RightMargin/RightScroll/RightVBox"]
 visible = false
@@ -415,7 +415,7 @@ theme_override_constants/separation = 10
 custom_minimum_size = Vector2(0, 56)
 layout_mode = 2
 size_flags_horizontal = 3
-text = "Salva Incontro Nel Database"
+text = "Salva Carta Nel Database"
 
 [node name="ReloadButtonLarge" type="Button" parent="Margin/Root/RightPanel/RightMargin/RightScroll/RightVBox/BottomActions"]
 custom_minimum_size = Vector2(0, 56)
