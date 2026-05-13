@@ -50,6 +50,11 @@ const ITEM_ICON_PALETTE := [
 	{"id": "teschio", "path": "res://assets/icone/teschio.png"},
 	{"id": "torcia", "path": "res://assets/icone/torcia.png"}
 ]
+const DURABILITY_BACKGROUND_PATHS := {
+	"perennial": "res://assets/icone/ferro.png",
+	"exhaustible": "res://assets/icone/legno.png",
+	"ephemeral": "res://assets/icone/carta.png"
+}
 
 @onready var enemy_list = $Margin/Root/LeftPanel/LeftMargin/LeftVBox/EnemyList
 @onready var status_label = $Margin/Root/LeftPanel/LeftMargin/LeftVBox/StatusLabel
@@ -57,6 +62,7 @@ const ITEM_ICON_PALETTE := [
 @onready var exhaustion_label = $Margin/Root/RightPanel/RightMargin/RightScroll/RightVBox/ExhaustionLabel
 @onready var flee_label = $Margin/Root/RightPanel/RightMargin/RightScroll/RightVBox/FleeLabel
 @onready var reward_label = $Margin/Root/RightPanel/RightMargin/RightScroll/RightVBox/RewardLabel
+@onready var requirement_title_label = $Margin/Root/RightPanel/RightMargin/RightScroll/RightVBox/RequirementTitle
 @onready var name_input = $Margin/Root/RightPanel/RightMargin/RightScroll/RightVBox/NameInput
 @onready var image_path_input = $Margin/Root/RightPanel/RightMargin/RightScroll/RightVBox/ImageRow/ImagePathInput
 @onready var category_input = $Margin/Root/RightPanel/RightMargin/RightScroll/RightVBox/CategoryInput
@@ -74,6 +80,7 @@ const ITEM_ICON_PALETTE := [
 @onready var enemy_preview = $Margin/Root/RightPanel/RightMargin/RightScroll/RightVBox/PreviewPanel/PreviewMargin/PreviewVBox/PreviewImageCenter/PreviewCard/EnemyPreview
 @onready var preview_name = $Margin/Root/RightPanel/RightMargin/RightScroll/RightVBox/PreviewPanel/PreviewMargin/PreviewVBox/PreviewName
 @onready var card_name = $Margin/Root/RightPanel/RightMargin/RightScroll/RightVBox/PreviewPanel/PreviewMargin/PreviewVBox/PreviewImageCenter/PreviewCard/CardName
+@onready var preview_card = $Margin/Root/RightPanel/RightMargin/RightScroll/RightVBox/PreviewPanel/PreviewMargin/PreviewVBox/PreviewImageCenter/PreviewCard
 @onready var preview_requirement_row = $Margin/Root/RightPanel/RightMargin/RightScroll/RightVBox/PreviewPanel/PreviewMargin/PreviewVBox/PreviewImageCenter/PreviewCard/CardInfo/CardInfoVBox/PreviewRequirementRow
 @onready var preview_meta_line = $Margin/Root/RightPanel/RightMargin/RightScroll/RightVBox/PreviewPanel/PreviewMargin/PreviewVBox/PreviewImageCenter/PreviewCard/CardInfo/CardInfoVBox/PreviewMetaLine
 @onready var preview_exhaustion_line = $Margin/Root/RightPanel/RightMargin/RightScroll/RightVBox/PreviewPanel/PreviewMargin/PreviewVBox/PreviewImageCenter/PreviewCard/CardInfo/CardInfoVBox/PreviewExhaustionLine
@@ -102,11 +109,29 @@ var object_uses_input: SpinBox
 var weapon_attack_count_label: Label
 var weapon_attack_count_input: SpinBox
 var attack_sequences_label: Label
+var attack_sequence_palette: FlowContainer
 var attack_sequences_text: TextEdit
+var attack_sequence_length_label: Label
+var attack_sequence_length_input: SpinBox
+var attack_sequence_builder_label: Label
+var attack_sequence_builder_slots: FlowContainer
+var attack_sequence_builder_actions: HBoxContainer
+var attack_sequence_add_button: Button
+var attack_sequence_clear_button: Button
+var attack_sequences_list_label: Label
+var attack_sequences_list: ItemList
+var attack_sequences_remove_button: Button
 var activation_cost_label: Label
 var activation_cost_input: OptionButton
 var activation_cost_amount_label: Label
 var activation_cost_amount_input: SpinBox
+var _current_attack_sequences: Array = []
+var _object_header_container: VBoxContainer
+var _object_header_icon_holder: Control
+var _object_header_background: TextureRect
+var _object_header_icon: TextureRect
+var _object_header_label: Label
+var _object_header_charges_label: Label
 
 func _ready():
 	_ensure_directories()
@@ -114,6 +139,7 @@ func _ready():
 	_build_equipment_slot_options()
 	_build_icon_palette()
 	_build_object_icon_runtime_ui()
+	_configure_static_editor_sections()
 	_bind_events()
 	_load_database()
 	if sequence_slots.get_child_count() == 0:
@@ -138,14 +164,21 @@ func _bind_events():
 	file_dialog.file_selected.connect(_on_file_selected)
 	name_input.text_changed.connect(_on_name_changed)
 	category_input.item_selected.connect(_on_category_changed)
-	damage_input.value_changed.connect(_on_damage_changed)
-	attack_sequences_text.text_changed.connect(_update_preview)
+	damage_input.value_changed.connect(_update_preview)
 	exhaustion_input.value_changed.connect(_on_exhaustion_changed)
 	flee_text.text_changed.connect(_update_preview)
 	reward_text.text_changed.connect(_update_preview)
 	equipment_slot_input.item_selected.connect(_on_equipment_slot_changed)
 	attack_bonus_input.value_changed.connect(_on_attack_bonus_changed)
 	armor_value_input.value_changed.connect(_on_armor_value_changed)
+	if attack_sequence_length_input != null:
+		attack_sequence_length_input.value_changed.connect(_on_attack_sequence_length_changed)
+	if attack_sequence_add_button != null:
+		attack_sequence_add_button.pressed.connect(_on_attack_sequence_add_pressed)
+	if attack_sequence_clear_button != null:
+		attack_sequence_clear_button.pressed.connect(_on_attack_sequence_clear_pressed)
+	if attack_sequences_remove_button != null:
+		attack_sequences_remove_button.pressed.connect(_on_attack_sequence_remove_pressed)
 	if weapon_attack_count_input != null:
 		weapon_attack_count_input.value_changed.connect(_on_weapon_attack_count_changed)
 	if activation_cost_input != null:
@@ -192,11 +225,72 @@ func _build_object_icon_runtime_ui():
 	right_vbox.add_child(attack_sequences_label)
 	right_vbox.move_child(attack_sequences_label, damage_input.get_index() + 1)
 
+	attack_sequence_palette = FlowContainer.new()
+	attack_sequence_palette.add_theme_constant_override("h_separation", 10)
+	attack_sequence_palette.add_theme_constant_override("v_separation", 10)
+	right_vbox.add_child(attack_sequence_palette)
+	right_vbox.move_child(attack_sequence_palette, attack_sequences_label.get_index() + 1)
+	_build_attack_sequence_palette()
+
+	attack_sequence_length_label = Label.new()
+	attack_sequence_length_label.text = "Caselle Sequenza Attacco"
+	right_vbox.add_child(attack_sequence_length_label)
+	right_vbox.move_child(attack_sequence_length_label, attack_sequence_palette.get_index() + 1)
+
+	attack_sequence_length_input = SpinBox.new()
+	attack_sequence_length_input.min_value = 1
+	attack_sequence_length_input.max_value = 8
+	attack_sequence_length_input.step = 1
+	attack_sequence_length_input.value = 2
+	right_vbox.add_child(attack_sequence_length_input)
+	right_vbox.move_child(attack_sequence_length_input, attack_sequence_length_label.get_index() + 1)
+
+	attack_sequence_builder_label = Label.new()
+	attack_sequence_builder_label.text = "Costruisci Una Sequenza E Premi Aggiungi"
+	right_vbox.add_child(attack_sequence_builder_label)
+	right_vbox.move_child(attack_sequence_builder_label, attack_sequence_length_input.get_index() + 1)
+
+	attack_sequence_builder_slots = FlowContainer.new()
+	attack_sequence_builder_slots.add_theme_constant_override("separation", 10)
+	right_vbox.add_child(attack_sequence_builder_slots)
+	right_vbox.move_child(attack_sequence_builder_slots, attack_sequence_builder_label.get_index() + 1)
+
+	attack_sequence_builder_actions = HBoxContainer.new()
+	attack_sequence_builder_actions.add_theme_constant_override("separation", 8)
+	right_vbox.add_child(attack_sequence_builder_actions)
+	right_vbox.move_child(attack_sequence_builder_actions, attack_sequence_builder_slots.get_index() + 1)
+
+	attack_sequence_add_button = Button.new()
+	attack_sequence_add_button.text = "Aggiungi Sequenza"
+	attack_sequence_builder_actions.add_child(attack_sequence_add_button)
+
+	attack_sequence_clear_button = Button.new()
+	attack_sequence_clear_button.text = "Pulisci Sequenza"
+	attack_sequence_builder_actions.add_child(attack_sequence_clear_button)
+
+	attack_sequences_list_label = Label.new()
+	attack_sequences_list_label.text = "Sequenze Salvate Nella Carta"
+	right_vbox.add_child(attack_sequences_list_label)
+	right_vbox.move_child(attack_sequences_list_label, attack_sequence_builder_actions.get_index() + 1)
+
+	attack_sequences_list = ItemList.new()
+	attack_sequences_list.custom_minimum_size = Vector2(0, 120)
+	attack_sequences_list.select_mode = ItemList.SELECT_MULTI
+	right_vbox.add_child(attack_sequences_list)
+	right_vbox.move_child(attack_sequences_list, attack_sequences_list_label.get_index() + 1)
+
+	attack_sequences_remove_button = Button.new()
+	attack_sequences_remove_button.text = "Rimuovi Sequenze Selezionate"
+	right_vbox.add_child(attack_sequences_remove_button)
+	right_vbox.move_child(attack_sequences_remove_button, attack_sequences_list.get_index() + 1)
+
 	attack_sequences_text = TextEdit.new()
-	attack_sequences_text.custom_minimum_size = Vector2(0, 110)
-	attack_sequences_text.placeholder_text = "Una sequenza per riga. Esempio: spada, spada, scudo"
+	attack_sequences_text.custom_minimum_size = Vector2(0, 1)
+	attack_sequences_text.visible = false
 	right_vbox.add_child(attack_sequences_text)
-	right_vbox.move_child(attack_sequences_text, attack_sequences_label.get_index() + 1)
+	right_vbox.move_child(attack_sequences_text, attack_sequences_remove_button.get_index() + 1)
+
+	_rebuild_attack_sequence_builder_slots(int(attack_sequence_length_input.value))
 
 	weapon_attack_count_label = Label.new()
 	weapon_attack_count_label.text = "Attacchi Generati"
@@ -291,6 +385,28 @@ func _build_object_icon_runtime_ui():
 	_rebuild_object_icon_palette()
 	if object_icons_slots.get_child_count() == 0:
 		_add_object_icon_slot()
+
+func _configure_static_editor_sections() -> void:
+	requirement_title_label.text = "Requisiti Per Sconfiggere / Risolvere La Carta"
+	var difficulty_label = $Margin/Root/RightPanel/RightMargin/RightScroll/RightVBox/DifficultyLabel
+	if difficulty_label != null:
+		difficulty_label.visible = false
+	if difficulty_value != null:
+		difficulty_value.visible = false
+
+func _build_attack_sequence_palette() -> void:
+	if attack_sequence_palette == null:
+		return
+	_clear_children_now(attack_sequence_palette)
+	for icon_data in _get_available_icon_palette():
+		var icon_id = str(icon_data["id"])
+		var slot = _create_slot()
+		slot.custom_minimum_size = Vector2(78, 78)
+		attack_sequence_palette.add_child(slot)
+		var token = TextureRect.new()
+		token.set_script(REQUIREMENT_TOKEN_SCRIPT)
+		token.call("setup", icon_id, str(icon_data["path"]), true)
+		slot.call("place_token", token)
 
 func _rebuild_object_icon_palette():
 	_clear_children_now(object_icons_palette)
@@ -441,22 +557,24 @@ func _save_current_enemy():
 	if enemy_name.is_empty():
 		_set_status("Inserisci il nome della carta.")
 		return false
+	var category_id = _get_selected_category_id()
 	var requirements = _get_sequence_data()
-	if requirements.is_empty():
+	if _uses_damage(category_id):
+		requirements = []
+	elif requirements.is_empty():
 		_set_status("Definisci almeno un'icona per la sconfitta.")
 		return false
-	var category_id = _get_selected_category_id()
 	var image_project_path = image_path_input.text.strip_edges()
 	if pending_image_source_path != "":
 		image_project_path = _copy_selected_image()
 		if image_project_path.is_empty():
 			return false
-	var difficulty = requirements.size()
+	var difficulty = requirements.size() if not _uses_damage(category_id) else _current_attack_sequences.size()
 	var outcome_text = flee_text.text
 	var reward_value = reward_text.text
 	var success_outcomes = _parse_outcome_lines(reward_text.text)
 	var failure_outcomes = _parse_outcome_lines(flee_text.text)
-	var attack_sequences = _parse_attack_sequences(attack_sequences_text.text)
+	var attack_sequences = _normalize_attack_sequences(_current_attack_sequences)
 	var equipment_slot = _get_selected_equipment_slot_id()
 	var weapon_damage_per_hit = int(attack_bonus_input.value)
 	var weapon_attack_count = int(weapon_attack_count_input.value)
@@ -490,7 +608,7 @@ func _save_current_enemy():
 		"name": enemy_name,
 		"image": image_project_path,
 		"category": category_id,
-		"enemy_damage": int(damage_input.value),
+		"enemy_damage": max(1, int(damage_input.value)) if _uses_damage(category_id) else 0,
 		"attack_sequences": attack_sequences,
 		"exhaustion_limit": int(exhaustion_input.value),
 		"attempt_limit": _get_attempt_limit_for_category(),
@@ -556,8 +674,8 @@ func _load_enemy_into_form(index):
 	name_input.text = str(enemy.get("name", ""))
 	image_path_input.text = str(enemy.get("image", ""))
 	_select_category(str(enemy.get("category", "monster")))
-	damage_input.value = float(enemy.get("enemy_damage", 1))
-	attack_sequences_text.text = _join_attack_sequences(enemy.get("attack_sequences", []))
+	damage_input.value = float(max(1, int(enemy.get("enemy_damage", 1))))
+	_set_attack_sequences(enemy.get("attack_sequences", []))
 	var loaded_attempt_limit = int(enemy.get("attempt_limit", 0))
 	var loaded_exhaustion_limit = int(enemy.get("exhaustion_limit", 0))
 	exhaustion_input.value = float(_get_editor_limit_value(str(enemy.get("category", "monster")), loaded_exhaustion_limit, loaded_attempt_limit))
@@ -592,7 +710,8 @@ func _clear_form():
 	image_path_input.text = ""
 	_select_category("monster")
 	damage_input.value = 1
-	attack_sequences_text.text = "spada"
+	_set_attack_sequences([["spada"]])
+	_on_attack_sequence_clear_pressed()
 	exhaustion_input.value = 0
 	_select_equipment_slot("weapon")
 	attack_bonus_input.value = 0
@@ -642,6 +761,7 @@ func _get_sequence_data():
 
 func _load_object_icon_sequence(requirements):
 	_clear_children_now(object_icons_slots)
+	var background_mode = _get_selected_object_durability_id()
 	for requirement in requirements:
 		var slot = _create_slot()
 		slot.custom_minimum_size = Vector2(78, 78)
@@ -652,7 +772,7 @@ func _load_object_icon_sequence(requirements):
 			continue
 		var token = TextureRect.new()
 		token.set_script(REQUIREMENT_TOKEN_SCRIPT)
-		token.call("setup", icon_id, texture_path, false)
+		token.call("setup", icon_id, texture_path, false, background_mode)
 		slot.call("place_token", token)
 	if object_icons_slots.get_child_count() == 0:
 		_add_object_icon_slot()
@@ -671,21 +791,29 @@ func _update_preview():
 	card_name.text = preview_name.text
 	var requirements = _get_sequence_data()
 	var category_id = _get_selected_category_id()
+	var is_object = category_id == "object"
 	difficulty_value.text = "%d icone" % requirements.size()
 	preview_requirement_title.text = _get_requirement_title(category_id)
-	if _uses_damage(category_id) and int(damage_input.value) > 0:
+	_update_preview_card_header(false)
+	if _uses_damage(category_id):
 		preview_meta_line.visible = true
-		var attacks = _parse_attack_sequences(attack_sequences_text.text)
+		var attacks = _normalize_attack_sequences(_current_attack_sequences)
+		var enemy_damage = max(1, int(damage_input.value))
 		var sequence_text = ""
 		if not attacks.is_empty():
 			sequence_text = " | Sequenze: %d" % attacks.size()
-		preview_meta_line.text = "Danno/attacco: %d%s" % [int(damage_input.value), sequence_text]
+		preview_meta_line.text = "Danno/colpo: %d | 1 colpo per ogni spada non parata%s" % [enemy_damage, sequence_text]
 	else:
 		preview_meta_line.visible = false
 		preview_meta_line.text = ""
-	if category_id == "object":
-		preview_meta_line.visible = true
-		preview_meta_line.text = _get_object_preview_meta()
+	if is_object:
+		preview_meta_line.text = _get_object_preview_stat_text()
+		preview_meta_line.visible = not preview_meta_line.text.is_empty()
+		preview_meta_line.add_theme_font_size_override("font_size", 18)
+		preview_meta_line.horizontal_alignment = HORIZONTAL_ALIGNMENT_CENTER
+	else:
+		preview_meta_line.remove_theme_font_size_override("font_size")
+		preview_meta_line.horizontal_alignment = HORIZONTAL_ALIGNMENT_LEFT
 	preview_exhaustion_line.visible = false
 	preview_flee_line.visible = false
 	preview_reward_line.visible = false
@@ -693,18 +821,21 @@ func _update_preview():
 	preview_flee_line.text = ""
 	preview_reward_line.text = ""
 	_clear_children_now(preview_requirement_row)
-	for icon_id in requirements:
-		var texture_path = _get_icon_path(icon_id)
-		if texture_path.is_empty():
-			continue
-		var icon := TextureRect.new()
-		icon.custom_minimum_size = Vector2(42, 42)
-		icon.expand_mode = TextureRect.EXPAND_IGNORE_SIZE
-		icon.stretch_mode = TextureRect.STRETCH_KEEP_ASPECT_CENTERED
-		if ResourceLoader.exists(texture_path):
-			icon.texture = load(texture_path)
-		icon.tooltip_text = icon_id.capitalize()
-		preview_requirement_row.add_child(icon)
+	if _uses_damage(category_id):
+		preview_requirement_title.visible = false
+		preview_requirement_row.visible = false
+	else:
+		var object_icons_only = is_object and _get_selected_object_durability_id() == "ephemeral" and _get_object_preview_stat_text().is_empty()
+		preview_requirement_title.visible = not object_icons_only
+		preview_requirement_row.visible = object_icons_only or not is_object
+		if object_icons_only:
+			_add_object_preview_icons_to_row()
+		elif not is_object:
+			var preview_background_mode = _get_selected_object_durability_id() if category_id == "object" else ""
+			for icon_id in requirements:
+				var icon = _build_preview_icon(icon_id, preview_background_mode)
+				icon.tooltip_text = icon_id.capitalize()
+				preview_requirement_row.add_child(icon)
 
 func _update_preview_from_project(project_path):
 	if project_path.is_empty():
@@ -749,8 +880,8 @@ func _normalize_enemy_record(enemy):
 		for requirement in raw_requirements:
 			var requirement_id = str(requirement)
 			requirements.append(requirement_id)
-	var damage_default = 1 if category_id == "monster" else 0
-	var enemy_damage = int(enemy.get("enemy_damage", damage_default))
+	var damage_default = 1 if category_id == "monster" or category_id == "trap" else 0
+	var enemy_damage = max(damage_default, int(enemy.get("enemy_damage", damage_default)))
 	var attack_sequences = _normalize_attack_sequences(enemy.get("attack_sequences", []))
 	if not _uses_damage(category_id):
 		attack_sequences = []
@@ -974,10 +1105,24 @@ func _get_exhaustion_preview_text(category_id, exhaustion_limit):
 
 func _update_form_for_category():
 	var category_id = _get_selected_category_id()
+	var use_requirements = not _uses_damage(category_id)
+	requirement_title_label.visible = use_requirements
+	icon_palette.visible = use_requirements
+	$Margin/Root/RightPanel/RightMargin/RightScroll/RightVBox/SequenceButtons.visible = use_requirements
+	sequence_slots.visible = use_requirements
 	damage_label.visible = _uses_damage(category_id)
 	damage_input.visible = _uses_damage(category_id)
 	attack_sequences_label.visible = _uses_damage(category_id)
-	attack_sequences_text.visible = _uses_damage(category_id)
+	attack_sequence_palette.visible = _uses_damage(category_id)
+	attack_sequence_length_label.visible = _uses_damage(category_id)
+	attack_sequence_length_input.visible = _uses_damage(category_id)
+	attack_sequence_builder_label.visible = _uses_damage(category_id)
+	attack_sequence_builder_slots.visible = _uses_damage(category_id)
+	attack_sequence_builder_actions.visible = _uses_damage(category_id)
+	attack_sequences_list_label.visible = _uses_damage(category_id)
+	attack_sequences_list.visible = _uses_damage(category_id)
+	attack_sequences_remove_button.visible = _uses_damage(category_id)
+	attack_sequences_text.visible = false
 	exhaustion_label.text = _get_limit_label(category_id)
 	flee_label.text = _get_outcome_label(category_id)
 	reward_label.text = _get_reward_label(category_id)
@@ -1016,10 +1161,16 @@ func _update_form_for_category():
 		flee_label.text = "Esiti Possibili Di Fallimento"
 		reward_label.text = "Esiti Possibili Di Successo"
 	if is_object:
-		damage_label.visible = false
-		damage_input.visible = false
 		attack_sequences_label.visible = false
-		attack_sequences_text.visible = false
+		attack_sequence_palette.visible = false
+		attack_sequence_length_label.visible = false
+		attack_sequence_length_input.visible = false
+		attack_sequence_builder_label.visible = false
+		attack_sequence_builder_slots.visible = false
+		attack_sequence_builder_actions.visible = false
+		attack_sequences_list_label.visible = false
+		attack_sequences_list.visible = false
+		attack_sequences_remove_button.visible = false
 		exhaustion_label.text = "Durata Carta"
 		flee_label.text = "Testo Se Non Recuperato"
 		reward_label.text = "Testo Equipaggiamento"
@@ -1059,6 +1210,83 @@ func _parse_attack_sequences(source_text: String) -> Array:
 			sequences.append(sequence)
 	return sequences
 
+func _on_attack_sequence_length_changed(value: float) -> void:
+	_rebuild_attack_sequence_builder_slots(int(value))
+
+func _rebuild_attack_sequence_builder_slots(slot_count: int) -> void:
+	if attack_sequence_builder_slots == null:
+		return
+	_clear_children_now(attack_sequence_builder_slots)
+	for _i in max(1, slot_count):
+		var slot = _create_slot()
+		slot.custom_minimum_size = Vector2(78, 78)
+		attack_sequence_builder_slots.add_child(slot)
+
+func _get_attack_sequence_builder_data() -> Array:
+	var sequence: Array = []
+	for slot in attack_sequence_builder_slots.get_children():
+		if slot.has_method("has_token") and slot.call("has_token"):
+			var token = slot.call("get_token")
+			if token != null:
+				sequence.append(str(token.get("icon_id")))
+	return sequence
+
+func _on_attack_sequence_add_pressed() -> void:
+	var sequence = _normalize_attack_sequence(_get_attack_sequence_builder_data())
+	if sequence.is_empty():
+		_set_status("Componi una sequenza attacco valida prima di aggiungerla.")
+		return
+	_current_attack_sequences.append(sequence)
+	_refresh_attack_sequences_list()
+	_on_attack_sequence_clear_pressed()
+	_set_status("Sequenza attacco aggiunta alla carta.")
+	_update_preview()
+
+func _on_attack_sequence_clear_pressed() -> void:
+	if attack_sequence_builder_slots == null:
+		return
+	for slot in attack_sequence_builder_slots.get_children():
+		if slot.has_method("clear_token"):
+			var removed = slot.call("clear_token")
+			if removed != null:
+				removed.queue_free()
+
+func _on_attack_sequence_remove_pressed() -> void:
+	if attack_sequences_list == null or attack_sequences_list.get_item_count() == 0:
+		return
+	var kept: Array = []
+	for item_index in attack_sequences_list.get_item_count():
+		if attack_sequences_list.is_selected(item_index):
+			continue
+		kept.append(_current_attack_sequences[item_index])
+	_current_attack_sequences = kept
+	_refresh_attack_sequences_list()
+	_update_preview()
+
+func _set_attack_sequences(raw_sequences) -> void:
+	_current_attack_sequences = _normalize_attack_sequences(raw_sequences)
+	if attack_sequence_length_input != null and not _current_attack_sequences.is_empty():
+		attack_sequence_length_input.value = (_current_attack_sequences[0] as Array).size()
+		_rebuild_attack_sequence_builder_slots(int(attack_sequence_length_input.value))
+	_refresh_attack_sequences_list()
+
+func _refresh_attack_sequences_list() -> void:
+	if attack_sequences_list == null:
+		return
+	attack_sequences_list.clear()
+	for sequence in _current_attack_sequences:
+		attack_sequences_list.add_item(", ".join(sequence))
+
+func _normalize_attack_sequence(raw_sequence) -> Array:
+	var normalized: Array = []
+	if not (raw_sequence is Array):
+		return normalized
+	for raw_token in raw_sequence:
+		var token = _normalize_attack_token(str(raw_token))
+		if not token.is_empty():
+			normalized.append(token)
+	return normalized
+
 func _normalize_attack_sequences(raw_sequences) -> Array:
 	var sequences: Array = []
 	if not (raw_sequences is Array):
@@ -1089,6 +1317,9 @@ func _normalize_attack_token(token: String) -> String:
 		return "spada"
 	if normalized == "para" or normalized == "parata" or normalized == "blocco" or normalized == "block":
 		return "scudo"
+	for icon_data in _get_available_icon_palette():
+		if str(icon_data["id"]) == normalized:
+			return normalized
 	if normalized == "spada" or normalized == "scudo":
 		return normalized
 	return ""
@@ -1149,29 +1380,145 @@ func _get_reward_label(category_id):
 		return "Testo Oggetto Equipaggiato"
 	return "Testo Premio"
 
-func _get_object_preview_meta():
+func _get_object_preview_stat_text() -> String:
 	var slot_id = _get_selected_equipment_slot_id()
-	var parts: Array[String] = ["Slot: %s" % _get_equipment_slot_label(slot_id)]
-	var granted_icons = _build_weapon_attack_icons(int(weapon_attack_count_input.value)) if slot_id == "weapon" else _get_object_icon_sequence_data()
-	if not granted_icons.is_empty():
-		parts.append("Icone: %s" % ", ".join(granted_icons))
-	var durability_id = _get_selected_object_durability_id()
-	if durability_id == "ephemeral":
-		parts.append("%s %d usi" % [_get_object_durability_label(durability_id), int(object_uses_input.value)])
-	else:
-		parts.append(_get_object_durability_label(durability_id))
-	var cost_id = _get_selected_activation_cost_id()
-	if cost_id != "none" and int(activation_cost_amount_input.value) > 0:
-		parts.append("Costo: %d %s" % [int(activation_cost_amount_input.value), _get_activation_cost_label(cost_id)])
 	if slot_id == "weapon" and int(attack_bonus_input.value) > 0:
-		parts.append("Danno/colpo %d" % int(attack_bonus_input.value))
+		return "Danno %d" % int(attack_bonus_input.value)
 	if int(armor_value_input.value) > 0:
-		parts.append("Armatura %d" % int(armor_value_input.value))
-	if parts.size() == 1:
-		parts.append("Nessun bonus")
-	return " | ".join(parts)
+		return "Armatura %d" % int(armor_value_input.value)
+	return ""
+
+func _add_object_preview_icons_to_row() -> void:
+	var slot_id = _get_selected_equipment_slot_id()
+	var granted_icons = _build_weapon_attack_icons(int(weapon_attack_count_input.value)) if slot_id == "weapon" else _get_object_icon_sequence_data()
+	var durability_id = _get_selected_object_durability_id()
+	var charges = max(1, int(object_uses_input.value)) if durability_id == "ephemeral" else 0
+	for icon_id in granted_icons:
+		var icon = _build_preview_icon(icon_id, durability_id, charges)
+		icon.custom_minimum_size = Vector2(72, 72)
+		icon.tooltip_text = icon_id.capitalize()
+		preview_requirement_row.add_child(icon)
+
+func _update_preview_card_header(is_object: bool) -> void:
+	_ensure_object_header()
+	card_name.visible = true
+	if _object_header_container == null:
+		return
+	_object_header_container.visible = false
+
+func _ensure_object_header() -> void:
+	if _object_header_container != null or preview_card == null:
+		return
+	_object_header_container = VBoxContainer.new()
+	_object_header_container.layout_mode = 1
+	_object_header_container.offset_left = 16.0
+	_object_header_container.offset_top = 10.0
+	_object_header_container.offset_right = 224.0
+	_object_header_container.offset_bottom = 130.0
+	_object_header_container.alignment = BoxContainer.ALIGNMENT_CENTER
+	_object_header_container.add_theme_constant_override("separation", 4)
+	preview_card.add_child(_object_header_container)
+	preview_card.move_child(_object_header_container, preview_card.get_child_count() - 1)
+	_object_header_label = Label.new()
+	_object_header_label.size_flags_horizontal = Control.SIZE_EXPAND_FILL
+	_object_header_label.horizontal_alignment = HORIZONTAL_ALIGNMENT_CENTER
+	_object_header_label.vertical_alignment = VERTICAL_ALIGNMENT_CENTER
+	_object_header_label.add_theme_font_size_override("font_size", 20)
+	_object_header_label.add_theme_color_override("font_color", Color(1, 1, 1, 1))
+	_object_header_label.add_theme_constant_override("outline_size", 4)
+	_object_header_label.add_theme_color_override("font_outline_color", Color(0, 0, 0, 1))
+	_object_header_container.add_child(_object_header_label)
+	_object_header_icon_holder = Control.new()
+	_object_header_icon_holder.custom_minimum_size = Vector2(64, 64)
+	_object_header_container.add_child(_object_header_icon_holder)
+	_object_header_background = TextureRect.new()
+	_object_header_background.set_anchors_and_offsets_preset(Control.PRESET_FULL_RECT)
+	_object_header_background.expand_mode = TextureRect.EXPAND_IGNORE_SIZE
+	_object_header_background.stretch_mode = TextureRect.STRETCH_KEEP_ASPECT_CENTERED
+	_object_header_icon_holder.add_child(_object_header_background)
+	_object_header_icon = TextureRect.new()
+	_object_header_icon.set_anchors_and_offsets_preset(Control.PRESET_FULL_RECT)
+	_object_header_icon.offset_left = 8.0
+	_object_header_icon.offset_top = 8.0
+	_object_header_icon.offset_right = -8.0
+	_object_header_icon.offset_bottom = -8.0
+	_object_header_icon.expand_mode = TextureRect.EXPAND_IGNORE_SIZE
+	_object_header_icon.stretch_mode = TextureRect.STRETCH_KEEP_ASPECT_CENTERED
+	_object_header_icon_holder.add_child(_object_header_icon)
+	_object_header_charges_label = Label.new()
+	_object_header_charges_label.layout_mode = 1
+	_object_header_charges_label.offset_left = 16.0
+	_object_header_charges_label.offset_top = -12.0
+	_object_header_charges_label.offset_right = 48.0
+	_object_header_charges_label.offset_bottom = 8.0
+	_object_header_charges_label.add_theme_font_size_override("font_size", 16)
+	_object_header_charges_label.add_theme_color_override("font_color", Color(1, 1, 1, 1))
+	_object_header_charges_label.add_theme_constant_override("outline_size", 3)
+	_object_header_charges_label.add_theme_color_override("font_outline_color", Color(0, 0, 0, 1))
+	_object_header_charges_label.horizontal_alignment = HORIZONTAL_ALIGNMENT_CENTER
+	_object_header_charges_label.vertical_alignment = VERTICAL_ALIGNMENT_CENTER
+	_object_header_icon_holder.add_child(_object_header_charges_label)
+	_object_header_container.visible = false
+
+func _get_object_header_icon_path() -> String:
+	var slot_id = _get_selected_equipment_slot_id()
+	var granted_icons = _build_weapon_attack_icons(int(weapon_attack_count_input.value)) if slot_id == "weapon" else _get_object_icon_sequence_data()
+	if granted_icons.is_empty():
+		return ""
+	return _get_icon_path(str(granted_icons[0]))
+
+func _get_object_header_background_texture() -> Texture2D:
+	var durability_id = _get_selected_object_durability_id()
+	var background_path = str(DURABILITY_BACKGROUND_PATHS.get(durability_id, ""))
+	if background_path.is_empty() or not ResourceLoader.exists(background_path):
+		return null
+	return load(background_path)
+
+func _update_object_header_charges() -> void:
+	if _object_header_charges_label == null:
+		return
+	var show_charges = _get_selected_equipment_slot_id() == "weapon" and _get_selected_object_durability_id() == "ephemeral"
+	_object_header_charges_label.visible = show_charges
+	if show_charges:
+		_object_header_charges_label.text = str(max(1, int(object_uses_input.value)))
+
+func _get_icon_display_name(icon_id: String) -> String:
+	match icon_id.strip_edges().to_lower():
+		"spada":
+			return "Spada"
+		"scudo":
+			return "Scudo"
+		"cuore":
+			return "Cura"
+		"moneta":
+			return "Moneta"
+		"magia":
+			return "Magia"
+		"ladro":
+			return "Ladro"
+		"arco":
+			return "Arco"
+		"chiave":
+			return "Chiave"
+		"corona":
+			return "Corona"
+		"cristallo":
+			return "Cristallo"
+		"monete":
+			return "Monete"
+		"pergamena":
+			return "Pergamena"
+		"pozione":
+			return "Pozione"
+		"teschio":
+			return "Teschio"
+		"torcia":
+			return "Torcia"
+		_:
+			return icon_id.capitalize()
 
 func _on_object_durability_changed(_index):
+	_refresh_object_icon_slot_backgrounds()
 	_update_form_for_category()
 	_update_preview()
 
@@ -1193,10 +1540,65 @@ func _count_icons(icons, icon_id: String) -> int:
 			count += 1
 	return count
 
+func _refresh_object_icon_slot_backgrounds() -> void:
+	var background_mode = _get_selected_object_durability_id()
+	for slot in object_icons_slots.get_children():
+		if slot == null or not slot.has_method("has_token") or not slot.call("has_token"):
+			continue
+		var token = slot.call("get_token")
+		if token != null and token.has_method("set_background_mode"):
+			token.call("set_background_mode", background_mode)
+
 func _get_reward_prefix(category_id):
 	if category_id == "stairs":
 		return "Successo"
 	return "Premio"
+
+func _build_preview_icon(icon_id: String, background_mode: String = "", charges: int = 0) -> Control:
+	var holder := Control.new()
+	holder.custom_minimum_size = Vector2(42, 42)
+	var background := TextureRect.new()
+	background.expand_mode = TextureRect.EXPAND_IGNORE_SIZE
+	background.stretch_mode = TextureRect.STRETCH_KEEP_ASPECT_CENTERED
+	background.set_anchors_and_offsets_preset(Control.PRESET_FULL_RECT)
+	background.texture = _load_durability_background(background_mode)
+	holder.add_child(background)
+	var icon := TextureRect.new()
+	icon.expand_mode = TextureRect.EXPAND_IGNORE_SIZE
+	icon.stretch_mode = TextureRect.STRETCH_KEEP_ASPECT_CENTERED
+	icon.set_anchors_and_offsets_preset(Control.PRESET_FULL_RECT)
+	icon.offset_left = 5.0
+	icon.offset_top = 5.0
+	icon.offset_right = -5.0
+	icon.offset_bottom = -5.0
+	var texture_path = _get_icon_path(icon_id)
+	if not texture_path.is_empty() and ResourceLoader.exists(texture_path):
+		icon.texture = load(texture_path)
+	holder.add_child(icon)
+	if charges > 0:
+		var charges_label := Label.new()
+		charges_label.layout_mode = 1
+		charges_label.offset_left = 12.0
+		charges_label.offset_top = -18.0
+		charges_label.offset_right = 34.0
+		charges_label.offset_bottom = 4.0
+		charges_label.add_theme_font_size_override("font_size", 18)
+		charges_label.add_theme_color_override("font_color", Color(1, 1, 1, 1))
+		charges_label.add_theme_constant_override("outline_size", 3)
+		charges_label.add_theme_color_override("font_outline_color", Color(0, 0, 0, 1))
+		charges_label.horizontal_alignment = HORIZONTAL_ALIGNMENT_CENTER
+		charges_label.vertical_alignment = VERTICAL_ALIGNMENT_CENTER
+		charges_label.text = str(charges)
+		holder.add_child(charges_label)
+	return holder
+
+func _load_durability_background(durability_mode: String) -> Texture2D:
+	if durability_mode.is_empty():
+		return null
+	var background_path = str(DURABILITY_BACKGROUND_PATHS.get(durability_mode, ""))
+	if background_path.is_empty() or not ResourceLoader.exists(background_path):
+		return null
+	return load(background_path)
 
 func _get_attempt_limit_for_category():
 	var category_id = _get_selected_category_id()

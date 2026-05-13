@@ -1,73 +1,65 @@
 [
 	{
+		"activation_cost_amount": 0,
+		"activation_cost_type": "none",
 		"armor_value": 0,
 		"attack_bonus": 0,
+		"attack_sequences": [
+			[
+				"spada",
+				"spada"
+			],
+			[
+				"spada",
+				"scudo"
+			],
+			[
+				"cuore",
+				"cuore",
+				"scudo"
+			]
+		],
 		"attempt_limit": 0,
 		"category": "monster",
 		"difficulty": 3,
 		"enemy_damage": 1,
-		"attack_sequences": [
-			[
-				"spada",
-				"spada"
-			],
-			[
-				"spada",
-				"scudo"
-			]
-		],
 		"equipment_slot": "weapon",
 		"exhaustion_limit": 0,
-		"failure_effects": [
-			{
-				"amount": 4.0,
-				"type": "lose_hp"
-			}
+		"failure_effects": [],
+		"failure_outcomes": [
+			"-4 Punti vita",
+			"-2 Punti vita"
 		],
-		"failure_outcomes": [],
-		"failure_text": "-4 P.V.",
-		"flee_effects": [
-			{
-				"amount": 4.0,
-				"type": "lose_hp"
-			}
-		],
-		"flee_text": "-4 P.V.",
+		"failure_text": "-4 Punti vita\n-2 Punti vita",
+		"flee_effects": [],
+		"flee_text": "-4 Punti vita\n-2 Punti vita",
 		"granted_durability_mode": "exhaustible",
-		"granted_icons": [
-			"spada",
-			"arco",
-			"spada"
-		],
+		"granted_icons": [],
 		"granted_remaining_uses": 1,
 		"id": "scheletro_guerriero",
 		"image": "res://assets/enemies/skeleton.png",
 		"name": "Scheletro guerriero",
-		"requirements": [
-			"spada",
-			"arco",
-			"spada"
-		],
+		"requirements": [],
 		"reward_effects": [
 			{
 				"amount": 10.0,
 				"type": "gain_coins"
-			},
-			{
-				"amount": 1.0,
-				"type": "add_blank_die"
 			}
 		],
-		"reward_text": "10 monete, Aggiungi un dado vuoto al tuo zaino.",
-		"success_outcomes": []
+		"reward_text": "10 monete\naggiungi un +1 al tuo inventario\nSpada arruginita",
+		"success_outcomes": [
+			"10 monete",
+			"aggiungi un +1 al tuo inventario",
+			"Spada arruginita"
+		],
+		"weapon_attack_count": 0,
+		"weapon_damage_per_hit": 0
 	},
 	{
+		"activation_cost_amount": 0,
+		"activation_cost_type": "none",
 		"armor_value": 0,
 		"attack_bonus": 0,
-		"attempt_limit": 0,
-		"category": "monster",
-		"difficulty": 2,
-		"enemy_damage": 1,
 		"attack_sequences": [
 			[
 				"spada"
@@ -75,60 +67,46 @@
 			[
 				"spada",
 				"scudo"
+			],
+			[
+				"arco"
 			]
 		],
+		"attempt_limit": 0,
+		"category": "monster",
+		"difficulty": 3,
+		"enemy_damage": 1,
 		"equipment_slot": "weapon",
 		"exhaustion_limit": 0,
-		"failure_effects": [
-			{
-				"target": "random_die",
-				"turns": 3.0,
-				"type": "disable_random_die_for_turns"
-			}
+		"failure_effects": [],
+		"failure_outcomes": [
+			"Per 3 turni un icona casuale è inutilizzabile",
+			"3 Danni"
 		],
-		"failure_outcomes": [],
-		"failure_text": "Per 3 turni un dado casuale, è inutilizzabile.",
-		"flee_effects": [
-			{
-				"target": "random_die",
-				"turns": 3.0,
-				"type": "disable_random_die_for_turns"
-			}
-		],
-		"flee_text": "Per 3 turni un dado casuale, è inutilizzabile.",
+		"failure_text": "Per 3 turni un icona casuale è inutilizzabile\n3 Danni",
+		"flee_effects": [],
+		"flee_text": "Per 3 turni un icona casuale è inutilizzabile\n3 Danni",
 		"granted_durability_mode": "exhaustible",
-		"granted_icons": [
-			"ladro",
-			"arco"
-		],
+		"granted_icons": [],
 		"granted_remaining_uses": 1,
 		"id": "goblin",
 		"image": "res://assets/enemies/goblin.png",
 		"name": "Goblin",
-		"requirements": [
-			"ladro",
-			"arco"
+		"requirements": [],
+		"reward_effects": [],
+		"reward_text": "5 monete\nPugnale",
+		"success_outcomes": [
+			"5 monete",
+			"Pugnale"
 		],
-		"reward_effects": [
-			{
-				"amount": 15.0,
-				"type": "gain_coins"
-			},
-			{
-				"amount": 5.0,
-				"type": "gain_exp"
-			}
-		],
-		"reward_text": "15 monete, 5 EXP.",
-		"success_outcomes": []
+		"weapon_attack_count": 0,
+		"weapon_damage_per_hit": 0
 	},
 	{
+		"activation_cost_amount": 0,
+		"activation_cost_type": "none",
 		"armor_value": 0,
 		"attack_bonus": 0,
-		"attempt_limit": 0,
-		"category": "monster",
-		"difficulty": 4,
-		"enemy_damage": 2,
 		"attack_sequences": [
 			[
 				"spada"
@@ -142,6 +120,10 @@
 				"spada"
 			]
 		],
+		"attempt_limit": 0,
+		"category": "monster",
+		"difficulty": 4,
+		"enemy_damage": 2,
 		"equipment_slot": "weapon",
 		"exhaustion_limit": 0,
 		"failure_effects": [
@@ -185,20 +167,24 @@
 			}
 		],
 		"reward_text": "Raddoppia un simbolo ad una faccia di un dado.",
-		"success_outcomes": []
+		"success_outcomes": [],
+		"weapon_attack_count": 0,
+		"weapon_damage_per_hit": 0
 	},
 	{
+		"activation_cost_amount": 0,
+		"activation_cost_type": "none",
 		"armor_value": 0,
 		"attack_bonus": 0,
-		"attempt_limit": 0,
-		"category": "trap",
-		"difficulty": 1,
-		"enemy_damage": 3,
 		"attack_sequences": [
 			[
 				"spada"
 			]
 		],
+		"attempt_limit": 0,
+		"category": "trap",
+		"difficulty": 1,
+		"enemy_damage": 3,
 		"equipment_slot": "weapon",
 		"exhaustion_limit": 1,
 		"failure_effects": [],
@@ -219,11 +205,16 @@
 		],
 		"reward_effects": [],
 		"reward_text": "",
-		"success_outcomes": []
+		"success_outcomes": [],
+		"weapon_attack_count": 0,
+		"weapon_damage_per_hit": 0
 	},
 	{
+		"activation_cost_amount": 0,
+		"activation_cost_type": "none",
 		"armor_value": 0,
 		"attack_bonus": 0,
+		"attack_sequences": [],
 		"attempt_limit": 0,
 		"category": "door",
 		"difficulty": 1,
@@ -252,11 +243,16 @@
 		"reward_text": "La porta si apre",
 		"success_outcomes": [
 			"La porta si apre"
-		]
+		],
+		"weapon_attack_count": 0,
+		"weapon_damage_per_hit": 0
 	},
 	{
+		"activation_cost_amount": 0,
+		"activation_cost_type": "none",
 		"armor_value": 0,
 		"attack_bonus": 0,
+		"attack_sequences": [],
 		"attempt_limit": 0,
 		"category": "event",
 		"difficulty": 2,
@@ -283,15 +279,20 @@
 		],
 		"reward_effects": [],
 		"reward_text": "Scondo del 50%",
-		"success_outcomes": []
+		"success_outcomes": [],
+		"weapon_attack_count": 0,
+		"weapon_damage_per_hit": 0
 	},
 	{
+		"activation_cost_amount": 0,
+		"activation_cost_type": "none",
 		"armor_value": 0,
-		"attack_bonus": 2,
+		"attack_bonus": 1,
+		"attack_sequences": [],
 		"attempt_limit": 0,
 		"category": "object",
 		"difficulty": 1,
-		"enemy_damage": 1,
+		"enemy_damage": 0,
 		"equipment_slot": "weapon",
 		"exhaustion_limit": 0,
 		"failure_effects": [],
@@ -299,7 +300,7 @@
 		"failure_text": "",
 		"flee_effects": [],
 		"flee_text": "",
-		"granted_durability_mode": "perennial",
+		"granted_durability_mode": "exhaustible",
 		"granted_icons": [
 			"spada"
 		],
@@ -314,17 +315,18 @@
 		"reward_text": "",
 		"success_outcomes": [],
 		"weapon_attack_count": 1,
-		"weapon_damage_per_hit": 3,
-		"activation_cost_type": "none",
-		"activation_cost_amount": 0
+		"weapon_damage_per_hit": 2
 	},
 	{
+		"activation_cost_amount": 0,
+		"activation_cost_type": "none",
 		"armor_value": 1,
 		"attack_bonus": 0,
+		"attack_sequences": [],
 		"attempt_limit": 0,
 		"category": "object",
 		"difficulty": 1,
-		"enemy_damage": 1,
+		"enemy_damage": 0,
 		"equipment_slot": "armor",
 		"exhaustion_limit": 0,
 		"failure_effects": [],
@@ -337,23 +339,26 @@
 			"scudo"
 		],
 		"granted_remaining_uses": 3,
-		"id": "scudo",
-		"image": "res://assets/icone/scudo1.png",
-		"name": "Scudo",
+		"id": "scudo_di_legno",
+		"image": "res://assets/enemies/scudo-legno.png",
+		"name": "Scudo di legno",
 		"requirements": [
 			"scudo"
 		],
 		"reward_effects": [],
 		"reward_text": "Concede un'icona scudo effimera da 3 usi.",
-		"success_outcomes": [],
+		"success_outcomes": [
+			"Concede un'icona scudo effimera da 3 usi."
+		],
 		"weapon_attack_count": 0,
-		"weapon_damage_per_hit": 0,
-		"activation_cost_type": "none",
-		"activation_cost_amount": 0
+		"weapon_damage_per_hit": 0
 	},
 	{
-		"armor_value": 3,
+		"activation_cost_amount": 0,
+		"activation_cost_type": "none",
+		"armor_value": 0,
 		"attack_bonus": 0,
+		"attack_sequences": [],
 		"attempt_limit": 0,
 		"category": "object",
 		"difficulty": 1,
@@ -365,11 +370,11 @@
 		"failure_text": "",
 		"flee_effects": [],
 		"flee_text": "",
-		"granted_durability_mode": "exhaustible",
+		"granted_durability_mode": "ephemeral",
 		"granted_icons": [
 			"scudo"
 		],
-		"granted_remaining_uses": 1,
+		"granted_remaining_uses": 5,
 		"id": "armatura_di_pelle",
 		"image": "res://assets/enemies/armatura pelle.png",
 		"name": "Armatura di pelle",
@@ -380,8 +385,6 @@
 		"reward_text": "",
 		"success_outcomes": [],
 		"weapon_attack_count": 0,
-		"weapon_damage_per_hit": 0,
-		"activation_cost_type": "none",
-		"activation_cost_amount": 0
+		"weapon_damage_per_hit": 0
 	}
 ]

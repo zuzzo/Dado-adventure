@@ -8,6 +8,11 @@ const MAX_GRID_SIZE := 5
 const ENEMY_DATABASE_PATH := "res://data/enemies/enemy_database.json"
 const ENEMY_BACK_IMAGE_PATH := "res://assets/enemies/dorso.png"
 const TRACE_DEBUG_LOG_PATH := "res://trace_debug_log.txt"
+const DURABILITY_BACKGROUND_PATHS := {
+	"perennial": "res://assets/icone/ferro.png",
+	"exhaustible": "res://assets/icone/legno.png",
+	"ephemeral": "res://assets/icone/carta.png"
+}
 const ENEMY_ICON_PATHS := {
 	"spada": "res://assets/icone/spada.png",
 	"scudo": "res://assets/icone/scudo1.png",
@@ -62,8 +67,10 @@ const DEFAULT_UNLOCKED_CELLS: Array[Vector2i] = [
 @onready var token_tray: HBoxContainer = $BoardArea/BoardVBox/ResultsPanel/ResultsMargin/ResultsVBox/TokenTray
 @onready var enemy_card: PanelContainer = $EnemyArea/EnemyMargin/EnemyCard
 @onready var enemy_name_label: Label = $EnemyArea/EnemyMargin/EnemyCard/CardMargin/CardVBox/EnemyName
+@onready var preview_card: Control = $EnemyArea/EnemyMargin/EnemyCard/CardMargin/CardVBox/ImagePanel/ImageMargin/ImageCenter/PreviewCard
 @onready var enemy_image: TextureRect = $EnemyArea/EnemyMargin/EnemyCard/CardMargin/CardVBox/ImagePanel/ImageMargin/ImageCenter/PreviewCard/EnemyImage
 @onready var card_name_label: Label = $EnemyArea/EnemyMargin/EnemyCard/CardMargin/CardVBox/ImagePanel/ImageMargin/ImageCenter/PreviewCard/CardName
+@onready var requirements_title_label: Label = $EnemyArea/EnemyMargin/EnemyCard/CardMargin/CardVBox/ImagePanel/ImageMargin/ImageCenter/PreviewCard/CardInfo/CardInfoVBox/RequirementsTitle
 @onready var requirements_row: HBoxContainer = $EnemyArea/EnemyMargin/EnemyCard/CardMargin/CardVBox/ImagePanel/ImageMargin/ImageCenter/PreviewCard/CardInfo/CardInfoVBox/RequirementsRow
 @onready var damage_line_label: Label = $EnemyArea/EnemyMargin/EnemyCard/CardMargin/CardVBox/ImagePanel/ImageMargin/ImageCenter/PreviewCard/CardInfo/CardInfoVBox/DamageLine
 @onready var flee_value_label: Label = $EnemyArea/EnemyMargin/EnemyCard/CardMargin/CardVBox/ImagePanel/ImageMargin/ImageCenter/PreviewCard/CardInfo/CardInfoVBox/FleeLine
@@ -104,6 +111,13 @@ var _dragging_path: bool = false
 var _drag_path: Array[Vector2i] = []
 var _pending_status_messages: Array[String] = []
 var _board_layout_locked: bool = false
+var _current_enemy_sequence_summary: String = ""
+var _object_header_container: VBoxContainer
+var _object_header_icon_holder: Control
+var _object_header_background: TextureRect
+var _object_header_icon: TextureRect
+var _object_header_label: Label
+var _object_header_charges_label: Label
 
 func _ready() -> void:
 	_reset_trace_debug_log()
@@ -304,6 +318,7 @@ func _prepare_hidden_enemy(hint_text: String = "Piazza tutti i simboli, poi clic
 	current_enemy_requirements.clear()
 	current_pending_defense = 0
 	current_enemy_blocks = 0
+	_current_enemy_sequence_summary = ""
 	var raw_requirements = current_enemy.get("requirements", [])
 	if raw_requirements is Array:
 		for requirement in raw_requirements:
@@ -311,6 +326,10 @@ func _prepare_hidden_enemy(hint_text: String = "Piazza tutti i simboli, poi clic
 	enemy_revealed = false
 	enemy_name_label.text = "Carta Coperta"
 	card_name_label.text = "Carta Coperta"
+	_update_battle_card_header(false)
+	card_name_label.visible = true
+	requirements_title_label.visible = true
+	requirements_row.visible = true
 	damage_line_label.text = ""
 	damage_line_label.visible = false
 	flee_value_label.text = "Fuga: -"
@@ -340,8 +359,22 @@ func _reveal_enemy() -> void:
 	var is_object = str(current_enemy.get("category", "")) == "object"
 	if is_object:
 		enemy_damage = 0
-	damage_line_label.visible = is_object or enemy_damage > 0
+	_update_battle_card_header(false)
+	var object_durability_mode = str(current_enemy.get("granted_durability_mode", "exhaustible")).strip_edges().to_lower()
+	var object_icons_only = is_object and object_durability_mode == "ephemeral" and _get_enemy_meta_text(enemy_damage).is_empty()
+	requirements_title_label.visible = not is_object
+	requirements_row.visible = not is_object or object_icons_only
+	damage_line_label.visible = object_icons_only or is_object or enemy_damage > 0
 	damage_line_label.text = _get_enemy_meta_text(enemy_damage)
+	if object_icons_only:
+		damage_line_label.visible = false
+		_build_object_granted_icons_row()
+	if is_object:
+		damage_line_label.add_theme_font_size_override("font_size", 28)
+		damage_line_label.horizontal_alignment = HORIZONTAL_ALIGNMENT_CENTER
+	else:
+		damage_line_label.remove_theme_font_size_override("font_size")
+		damage_line_label.horizontal_alignment = HORIZONTAL_ALIGNMENT_LEFT
 	flee_value_label.text = "Fuga: %s" % str(current_enemy.get("flee_text", "-"))
 	reward_value_label.text = "Premio: %s" % str(current_enemy.get("reward_text", "-"))
 	flee_value_label.visible = false
@@ -551,17 +584,13 @@ func _apply_slot_fill(slot: PanelContainer, fill_color: Color) -> void:
 	slot.add_theme_stylebox_override("panel", style)
 
 func _begin_drag_path(cell: Vector2i, slot: PanelContainer) -> void:
-	if slot == null or not slot.has_method("has_token") or not slot.call("has_token"):
-		_log_trace_debug("begin_rejected cell=%s reason=no_token" % str(cell))
-		return
-	var token = slot.call("get_token") as Control
-	if token == null or not _token_can_be_used(token):
-		_log_trace_debug("begin_rejected cell=%s reason=token_unusable" % str(cell))
+	if slot == null:
+		_log_trace_debug("begin_rejected cell=%s reason=no_slot" % str(cell))
 		return
 	_dragging_path = true
 	_drag_path = [cell]
-	_log_trace_debug("begin_ok cell=%s symbol=%s" % [str(cell), _get_token_debug_symbol(token)])
-	reveal_hint_label.text = "Traccia una sequenza ortogonale di 2 fino a %d caselle." % current_max_trace_length
+	_log_trace_debug("begin_ok cell=%s state=%s" % [str(cell), _get_cell_trace_state(cell)])
+	reveal_hint_label.text = "Traccia una sequenza ortogonale di 2 fino a %d caselle. Contano solo le icone ancora attive." % current_max_trace_length
 	_refresh_grid_visuals()
 
 func _extend_drag_path(cell: Vector2i) -> void:
@@ -586,15 +615,11 @@ func _extend_drag_path(cell: Vector2i) -> void:
 		_log_trace_debug("extend_rejected cell=%s reason=not_adjacent last=%s" % [str(cell), str(last_cell)])
 		return
 	var slot = _slot_by_cell.get(cell, null) as PanelContainer
-	if slot == null or not slot.has_method("has_token") or not slot.call("has_token"):
-		_log_trace_debug("extend_rejected cell=%s reason=no_token" % str(cell))
-		return
-	var token = slot.call("get_token") as Control
-	if token == null or not _token_can_be_used(token):
-		_log_trace_debug("extend_rejected cell=%s reason=token_unusable" % str(cell))
+	if slot == null:
+		_log_trace_debug("extend_rejected cell=%s reason=no_slot" % str(cell))
 		return
 	_drag_path.append(cell)
-	_log_trace_debug("extend_ok cell=%s symbol=%s path=%s" % [str(cell), _get_token_debug_symbol(token), str(_drag_path)])
+	_log_trace_debug("extend_ok cell=%s state=%s path=%s" % [str(cell), _get_cell_trace_state(cell), str(_drag_path)])
 	_refresh_grid_visuals()
 
 func _finalize_drag_path() -> void:
@@ -694,6 +719,19 @@ func _get_token_debug_symbol(token: Control) -> String:
 		return "?"
 	var token_data = token.call("get_result_data") as Dictionary
 	return str(token_data.get("symbol_id", token_data.get("label", "?")))
+
+func _get_cell_trace_state(cell: Vector2i) -> String:
+	var slot = _slot_by_cell.get(cell, null) as PanelContainer
+	if slot == null:
+		return "no_slot"
+	if not slot.has_method("has_token") or not slot.call("has_token"):
+		return "empty"
+	var token = slot.call("get_token") as Control
+	if token == null:
+		return "empty"
+	if _token_can_be_used(token):
+		return "active:%s" % _get_token_debug_symbol(token)
+	return "inactive:%s" % _get_token_debug_symbol(token)
 
 func _count_board_tokens() -> int:
 	var count := 0
@@ -802,11 +840,12 @@ func _consume_enemy_requirements(used_symbol_entries: Array) -> void:
 			var blocked_consumption = min(current_enemy_blocks, total_consumption)
 			current_enemy_blocks -= blocked_consumption
 			total_consumption -= blocked_consumption
-		for i in total_consumption:
+		for _i in range(total_consumption):
 			var requirement_index = current_enemy_requirements.find(symbol_id)
 			if requirement_index >= 0:
 				current_enemy_requirements.remove_at(requirement_index)
 	_build_requirements_row()
+	damage_line_label.text = _get_enemy_meta_text(int(current_enemy.get("enemy_damage", 0)))
 	_update_ability_label()
 
 func _collect_gold_from_symbols(used_symbol_entries: Array) -> void:
@@ -999,12 +1038,16 @@ func _end_player_action() -> void:
 	var attack_result = _choose_enemy_attack_result()
 	var attack_count = int(attack_result.get("attack_count", 0))
 	var block_count = int(attack_result.get("block_count", 0))
+	var heal_count = int(attack_result.get("heal_count", 0))
 	var sequence_summary = str(attack_result.get("summary", ""))
-	var damage_per_attack = max(1, int(current_enemy.get("enemy_damage", 1)))
+	_current_enemy_sequence_summary = sequence_summary
 	var blocked_attacks = min(current_pending_defense, attack_count)
 	var unblocked_attacks = max(attack_count - blocked_attacks, 0)
+	var damage_per_attack = max(1, int(current_enemy.get("enemy_damage", 1)))
 	var incoming_damage = max((unblocked_attacks * damage_per_attack) - current_armor, 0)
 	current_enemy_blocks += block_count
+	var restored_requirements = _heal_enemy_requirements(heal_count)
+	damage_line_label.text = _get_enemy_meta_text(damage_per_attack)
 	current_pending_defense = 0
 	current_character_hp = max(current_character_hp - incoming_damage, 0)
 	character_hp_changed.emit(current_character_hp)
@@ -1016,6 +1059,8 @@ func _end_player_action() -> void:
 		sequence_text = " Sequenza: %s." % sequence_summary
 	if block_count > 0:
 		sequence_text += " Il nemico prepara %d parate per il prossimo turno." % block_count
+	if restored_requirements > 0:
+		sequence_text += " Il nemico recupera %d punti vita." % restored_requirements
 	if incoming_damage > 0:
 		reveal_hint_label.text = _compose_status_text("Il nemico colpisce per %d danni.%s Ora tocca di nuovo a te." % [incoming_damage, sequence_text])
 	else:
@@ -1036,15 +1081,19 @@ func _choose_enemy_attack_result() -> Dictionary:
 	var sequence = normalized_sequences[randi() % normalized_sequences.size()]
 	var attack_count := 0
 	var block_count := 0
+	var heal_count := 0
 	for token in sequence:
 		match str(token):
 			"spada":
 				attack_count += 1
 			"scudo":
 				block_count += 1
+			"cuore":
+				heal_count += 1
 	return {
 		"attack_count": attack_count,
 		"block_count": block_count,
+		"heal_count": heal_count,
 		"summary": _summarize_enemy_attack_sequence(sequence)
 	}
 
@@ -1061,7 +1110,7 @@ func _normalize_enemy_attack_sequences(raw_sequences) -> Array:
 					token = "spada"
 				elif token == "para" or token == "parata" or token == "blocco":
 					token = "scudo"
-				if token == "spada" or token == "scudo":
+				if ENEMY_ICON_PATHS.has(token):
 					sequence.append(token)
 		if not sequence.is_empty():
 			sequences.append(sequence)
@@ -1075,9 +1124,33 @@ func _summarize_enemy_attack_sequence(sequence: Array) -> String:
 				parts.append("attacco")
 			"scudo":
 				parts.append("para")
+			"cuore":
+				parts.append("cura")
 			_:
 				parts.append(str(token))
 	return ", ".join(parts)
+
+func _heal_enemy_requirements(heal_amount: int) -> int:
+	if heal_amount <= 0:
+		return 0
+	var base_requirements = current_enemy.get("requirements", [])
+	if not (base_requirements is Array) or base_requirements.is_empty():
+		return 0
+	var restored := 0
+	for requirement in base_requirements:
+		if restored >= heal_amount:
+			break
+		var requirement_id = str(requirement)
+		var current_count = current_enemy_requirements.count(requirement_id)
+		var max_count = base_requirements.count(requirement_id)
+		if current_count >= max_count:
+			continue
+		current_enemy_requirements.append(requirement_id)
+		restored += 1
+	if restored > 0:
+		_build_requirements_row()
+		damage_line_label.text = _get_enemy_meta_text(int(current_enemy.get("enemy_damage", 0)))
+	return restored
 
 func _update_ability_label() -> void:
 	var enemy_block_text = ""
@@ -1472,33 +1545,193 @@ func _get_enemy_meta_text(enemy_damage: int) -> String:
 	if str(current_enemy.get("category", "")) != "object":
 		var sequences = _normalize_enemy_attack_sequences(current_enemy.get("attack_sequences", []))
 		if sequences.is_empty():
-			return "Danno/attacco: %d" % enemy_damage
-		return "Danno/attacco: %d | Sequenze: %d" % [enemy_damage, sequences.size()]
+			return "Nessuna sequenza attacco"
+		var hp_text = "PV: %d" % current_enemy_requirements.size()
+		var damage_text = "Danno/colpo: %d" % max(1, enemy_damage)
+		var sequence_text = "Sequenze: %d" % sequences.size()
+		if not _current_enemy_sequence_summary.is_empty():
+			sequence_text = "Sequenza: %s" % _current_enemy_sequence_summary
+		return "%s | %s | %s" % [hp_text, damage_text, sequence_text]
 	var slot_id = str(current_enemy.get("equipment_slot", "weapon"))
-	var parts: Array[String] = ["Oggetto: %s" % _get_equipment_slot_label(slot_id)]
 	var attack_bonus = int(current_enemy.get("attack_bonus", 0))
 	var weapon_attack_count = int(current_enemy.get("weapon_attack_count", 0))
 	var weapon_damage_per_hit = int(current_enemy.get("weapon_damage_per_hit", attack_bonus + 1 if attack_bonus > 0 else 0))
 	var armor_value = int(current_enemy.get("armor_value", 0))
+	if weapon_damage_per_hit > 0:
+		return "Danno %d" % weapon_damage_per_hit
+	if armor_value > 0:
+		return "Armatura %d" % armor_value
+	return ""
+
+func _update_battle_card_header(is_object: bool) -> void:
+	_ensure_object_header()
+	card_name_label.visible = true
+	if _object_header_container == null:
+		return
+	_object_header_container.visible = false
+
+func _ensure_object_header() -> void:
+	if _object_header_container != null or preview_card == null:
+		return
+	_object_header_container = VBoxContainer.new()
+	_object_header_container.layout_mode = 1
+	_object_header_container.offset_left = 24.0
+	_object_header_container.offset_top = 16.0
+	_object_header_container.offset_right = 356.0
+	_object_header_container.offset_bottom = 180.0
+	_object_header_container.alignment = BoxContainer.ALIGNMENT_CENTER
+	_object_header_container.add_theme_constant_override("separation", 6)
+	preview_card.add_child(_object_header_container)
+	preview_card.move_child(_object_header_container, preview_card.get_child_count() - 1)
+	_object_header_label = Label.new()
+	_object_header_label.size_flags_horizontal = Control.SIZE_EXPAND_FILL
+	_object_header_label.horizontal_alignment = HORIZONTAL_ALIGNMENT_CENTER
+	_object_header_label.vertical_alignment = VERTICAL_ALIGNMENT_CENTER
+	_object_header_label.add_theme_font_size_override("font_size", 28)
+	_object_header_label.add_theme_color_override("font_color", Color(1, 1, 1, 1))
+	_object_header_label.add_theme_constant_override("outline_size", 4)
+	_object_header_label.add_theme_color_override("font_outline_color", Color(0, 0, 0, 1))
+	_object_header_container.add_child(_object_header_label)
+	_object_header_icon_holder = Control.new()
+	_object_header_icon_holder.custom_minimum_size = Vector2(96, 96)
+	_object_header_container.add_child(_object_header_icon_holder)
+	_object_header_background = TextureRect.new()
+	_object_header_background.set_anchors_and_offsets_preset(Control.PRESET_FULL_RECT)
+	_object_header_background.expand_mode = TextureRect.EXPAND_IGNORE_SIZE
+	_object_header_background.stretch_mode = TextureRect.STRETCH_KEEP_ASPECT_CENTERED
+	_object_header_icon_holder.add_child(_object_header_background)
+	_object_header_icon = TextureRect.new()
+	_object_header_icon.set_anchors_and_offsets_preset(Control.PRESET_FULL_RECT)
+	_object_header_icon.offset_left = 10.0
+	_object_header_icon.offset_top = 10.0
+	_object_header_icon.offset_right = -10.0
+	_object_header_icon.offset_bottom = -10.0
+	_object_header_icon.expand_mode = TextureRect.EXPAND_IGNORE_SIZE
+	_object_header_icon.stretch_mode = TextureRect.STRETCH_KEEP_ASPECT_CENTERED
+	_object_header_icon_holder.add_child(_object_header_icon)
+	_object_header_charges_label = Label.new()
+	_object_header_charges_label.layout_mode = 1
+	_object_header_charges_label.offset_left = 26.0
+	_object_header_charges_label.offset_top = -16.0
+	_object_header_charges_label.offset_right = 70.0
+	_object_header_charges_label.offset_bottom = 14.0
+	_object_header_charges_label.add_theme_font_size_override("font_size", 22)
+	_object_header_charges_label.add_theme_color_override("font_color", Color(1, 1, 1, 1))
+	_object_header_charges_label.add_theme_constant_override("outline_size", 3)
+	_object_header_charges_label.add_theme_color_override("font_outline_color", Color(0, 0, 0, 1))
+	_object_header_charges_label.horizontal_alignment = HORIZONTAL_ALIGNMENT_CENTER
+	_object_header_charges_label.vertical_alignment = VERTICAL_ALIGNMENT_CENTER
+	_object_header_icon_holder.add_child(_object_header_charges_label)
+	_object_header_container.visible = false
+
+func _get_current_object_header_icon_path() -> String:
 	var granted_icons = current_enemy.get("granted_icons", current_enemy.get("requirements", []))
 	if granted_icons is Array and not granted_icons.is_empty():
-		parts.append("Icone %s" % ", ".join(granted_icons))
-	var granted_durability_mode = str(current_enemy.get("granted_durability_mode", "exhaustible"))
-	if granted_durability_mode == "ephemeral":
-		parts.append("Effimera %d usi" % max(1, int(current_enemy.get("granted_remaining_uses", 1))))
-	elif granted_durability_mode == "perennial":
-		parts.append("Perenne")
-	else:
-		parts.append("Esauribile")
-	if weapon_attack_count > 0:
-		parts.append("Attacchi %d" % weapon_attack_count)
-	if weapon_damage_per_hit > 0:
-		parts.append("Danno/colpo %d" % weapon_damage_per_hit)
-	if armor_value > 0:
-		parts.append("Armatura %d" % armor_value)
-	if parts.size() == 1:
-		parts.append("Nessun bonus")
-	return " | ".join(parts)
+		return str(ENEMY_ICON_PATHS.get(str(granted_icons[0]), ""))
+	return ""
+
+func _get_current_object_header_background_texture() -> Texture2D:
+	var durability_mode = str(current_enemy.get("granted_durability_mode", "exhaustible")).strip_edges().to_lower()
+	var background_path = str(DURABILITY_BACKGROUND_PATHS.get(durability_mode, ""))
+	if background_path.is_empty() or not ResourceLoader.exists(background_path):
+		return null
+	return load(background_path)
+
+func _build_object_granted_icons_row() -> void:
+	_clear_requirements_row()
+	var granted_icons = current_enemy.get("granted_icons", current_enemy.get("requirements", []))
+	if not (granted_icons is Array):
+		return
+	var durability_mode = str(current_enemy.get("granted_durability_mode", "exhaustible")).strip_edges().to_lower()
+	var charges = max(1, int(current_enemy.get("granted_remaining_uses", 1))) if durability_mode == "ephemeral" else 0
+	for raw_icon in granted_icons:
+		var icon = _build_card_info_icon(str(raw_icon), durability_mode, charges)
+		requirements_row.add_child(icon)
+
+func _build_card_info_icon(icon_id: String, background_mode: String = "", charges: int = 0) -> Control:
+	var holder := Control.new()
+	holder.custom_minimum_size = Vector2(96, 96)
+	var background := TextureRect.new()
+	background.set_anchors_and_offsets_preset(Control.PRESET_FULL_RECT)
+	background.expand_mode = TextureRect.EXPAND_IGNORE_SIZE
+	background.stretch_mode = TextureRect.STRETCH_KEEP_ASPECT_CENTERED
+	var background_path = str(DURABILITY_BACKGROUND_PATHS.get(background_mode, ""))
+	if not background_path.is_empty() and ResourceLoader.exists(background_path):
+		background.texture = load(background_path)
+	holder.add_child(background)
+	var icon := TextureRect.new()
+	icon.set_anchors_and_offsets_preset(Control.PRESET_FULL_RECT)
+	icon.offset_left = 12.0
+	icon.offset_top = 12.0
+	icon.offset_right = -12.0
+	icon.offset_bottom = -12.0
+	icon.expand_mode = TextureRect.EXPAND_IGNORE_SIZE
+	icon.stretch_mode = TextureRect.STRETCH_KEEP_ASPECT_CENTERED
+	var icon_path = str(ENEMY_ICON_PATHS.get(icon_id, ""))
+	if not icon_path.is_empty() and ResourceLoader.exists(icon_path):
+		icon.texture = load(icon_path)
+	holder.add_child(icon)
+	if charges > 0:
+		var charges_label := Label.new()
+		charges_label.layout_mode = 1
+		charges_label.offset_left = 28.0
+		charges_label.offset_top = -22.0
+		charges_label.offset_right = 68.0
+		charges_label.offset_bottom = 8.0
+		charges_label.add_theme_font_size_override("font_size", 24)
+		charges_label.add_theme_color_override("font_color", Color(1, 1, 1, 1))
+		charges_label.add_theme_constant_override("outline_size", 3)
+		charges_label.add_theme_color_override("font_outline_color", Color(0, 0, 0, 1))
+		charges_label.horizontal_alignment = HORIZONTAL_ALIGNMENT_CENTER
+		charges_label.vertical_alignment = VERTICAL_ALIGNMENT_CENTER
+		charges_label.text = str(charges)
+		holder.add_child(charges_label)
+	return holder
+
+func _update_battle_object_header_charges() -> void:
+	if _object_header_charges_label == null:
+		return
+	var slot_id = _normalize_equipment_slot(str(current_enemy.get("equipment_slot", "weapon")))
+	var durability_mode = str(current_enemy.get("granted_durability_mode", "exhaustible")).strip_edges().to_lower()
+	var show_charges = slot_id == "weapon" and durability_mode == "ephemeral"
+	_object_header_charges_label.visible = show_charges
+	if show_charges:
+		_object_header_charges_label.text = str(max(1, int(current_enemy.get("granted_remaining_uses", 1))))
+
+func _get_icon_display_name(icon_id: String) -> String:
+	match icon_id.strip_edges().to_lower():
+		"spada":
+			return "Spada"
+		"scudo":
+			return "Scudo"
+		"cuore":
+			return "Cura"
+		"moneta":
+			return "Moneta"
+		"magia":
+			return "Magia"
+		"ladro":
+			return "Ladro"
+		"arco":
+			return "Arco"
+		"chiave":
+			return "Chiave"
+		"corona":
+			return "Corona"
+		"cristallo":
+			return "Cristallo"
+		"monete":
+			return "Monete"
+		"pergamena":
+			return "Pergamena"
+		"pozione":
+			return "Pozione"
+		"teschio":
+			return "Teschio"
+		"torcia":
+			return "Torcia"
+		_:
+			return icon_id.capitalize()
 
 func _equip_current_object() -> String:
 	var slot_id = _normalize_equipment_slot(str(current_enemy.get("equipment_slot", "weapon")))

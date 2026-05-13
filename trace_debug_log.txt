@@ -1,254 +1,145 @@
-=== TRACE DEBUG START 2026-05-13T01:30:52 ===
+=== TRACE DEBUG START 2026-05-13T23:17:41 ===
 absolute_path=C:/Giochi Python/Dado-adventure/trace_debug_log.txt
-[01:31:01] enemy_revealed name=Licantropo board_tokens=4 max_trace=2
-[01:31:03] mouse_down global=(219.3333, 180.6667) cell=(0, 1) dragging=false
-[01:31:03] begin_ok cell=(0, 1) symbol=spada
-[01:31:03] mouse_motion global=(220.6667, 180.6667) cell=(0, 1) path=[(0, 1)]
-[01:31:03] extend_ignored cell=(0, 1) reason=same_cell
-[01:31:03] mouse_motion global=(230.6667, 182.6667) cell=(0, 1) path=[(0, 1)]
-[01:31:03] extend_ignored cell=(0, 1) reason=same_cell
-[01:31:03] mouse_motion global=(255.3333, 188.0) cell=(0, 1) path=[(0, 1)]
-[01:31:03] extend_ignored cell=(0, 1) reason=same_cell
-[01:31:03] mouse_motion global=(284.0, 194.0) cell=<null> path=[(0, 1)]
-[01:31:03] mouse_motion global=(324.6667, 202.0) cell=(1, 1) path=[(0, 1)]
-[01:31:03] extend_ok cell=(1, 1) symbol=cuore path=[(0, 1), (1, 1)]
-[01:31:03] mouse_motion global=(336.6667, 204.0) cell=(1, 1) path=[(0, 1), (1, 1)]
-[01:31:03] extend_ignored cell=(1, 1) reason=same_cell
-[01:31:03] mouse_motion global=(360.6667, 208.0) cell=(1, 1) path=[(0, 1), (1, 1)]
-[01:31:03] extend_ignored cell=(1, 1) reason=same_cell
-[01:31:03] mouse_motion global=(367.3333, 208.6667) cell=(1, 1) path=[(0, 1), (1, 1)]
-[01:31:03] extend_ignored cell=(1, 1) reason=same_cell
-[01:31:05] mouse_up path=[(0, 1), (1, 1)]
-[01:31:05] finalize_ok path=[(0, 1), (1, 1)]
-[01:31:05] resolve path=[(0, 1), (1, 1)] entries=[{ "face_id": 0, "value": 1, "label": "spada", "base_label": "spada", "symbol_id": "spada", "symbol_texture": <CompressedTexture2D#-9223371968789608583>, "dice_type": "loadout", "dice_name": "Loadout", "durability_mode": "perennial", "remaining_uses": 1 }, { "face_id": 0, "value": 1, "label": "cuore", "base_label": "cuore", "symbol_id": "cuore", "symbol_texture": <CompressedTexture2D#-9223371970836428929>, "dice_type": "loadout", "dice_name": "Loadout", "durability_mode": "exhaustible", "remaining_uses": 1 }] outputs=[{ "symbol_id": "spada", "value": 1 }, { "symbol_id": "cuore", "value": 1 }]
-[01:31:07] mouse_down global=(226.6667, 274.0) cell=(0, 2) dragging=false
-[01:31:07] begin_ok cell=(0, 2) symbol=spada
-[01:31:07] mouse_motion global=(226.6667, 274.6667) cell=(0, 2) path=[(0, 2)]
-[01:31:07] extend_ignored cell=(0, 2) reason=same_cell
-[01:31:07] mouse_motion global=(230.6667, 274.6667) cell=(0, 2) path=[(0, 2)]
-[01:31:07] extend_ignored cell=(0, 2) reason=same_cell
-[01:31:07] mouse_motion global=(246.6667, 276.0) cell=(0, 2) path=[(0, 2)]
-[01:31:07] extend_ignored cell=(0, 2) reason=same_cell
-[01:31:07] mouse_motion global=(268.6667, 279.3333) cell=(0, 2) path=[(0, 2)]
-[01:31:07] extend_ignored cell=(0, 2) reason=same_cell
-[01:31:07] mouse_motion global=(295.3333, 283.3333) cell=(1, 2) path=[(0, 2)]
-[01:31:07] extend_ok cell=(1, 2) symbol=scudo path=[(0, 2), (1, 2)]
-[01:31:07] mouse_motion global=(320.0, 289.3333) cell=(1, 2) path=[(0, 2), (1, 2)]
-[01:31:07] extend_ignored cell=(1, 2) reason=same_cell
-[01:31:07] mouse_motion global=(335.3333, 292.6667) cell=(1, 2) path=[(0, 2), (1, 2)]
-[01:31:07] extend_ignored cell=(1, 2) reason=same_cell
-[01:31:07] mouse_motion global=(339.3333, 293.3333) cell=(1, 2) path=[(0, 2), (1, 2)]
-[01:31:07] extend_ignored cell=(1, 2) reason=same_cell
-[01:31:07] mouse_motion global=(342.6667, 294.0) cell=(1, 2) path=[(0, 2), (1, 2)]
-[01:31:07] extend_ignored cell=(1, 2) reason=same_cell
-[01:31:07] mouse_motion global=(350.6667, 296.0) cell=(1, 2) path=[(0, 2), (1, 2)]
-[01:31:07] extend_ignored cell=(1, 2) reason=same_cell
-[01:31:07] mouse_motion global=(357.3333, 298.0) cell=(1, 2) path=[(0, 2), (1, 2)]
-[01:31:07] extend_ignored cell=(1, 2) reason=same_cell
-[01:31:07] mouse_motion global=(358.6667, 299.3333) cell=(1, 2) path=[(0, 2), (1, 2)]
-[01:31:07] extend_ignored cell=(1, 2) reason=same_cell
-[01:31:08] mouse_up path=[(0, 2), (1, 2)]
-[01:31:08] finalize_ok path=[(0, 2), (1, 2)]
-[01:31:08] resolve path=[(0, 2), (1, 2)] entries=[{ "face_id": 0, "value": 1, "label": "spada", "base_label": "spada", "symbol_id": "spada", "symbol_texture": <CompressedTexture2D#-9223371968789608583>, "dice_type": "loadout", "dice_name": "Loadout", "durability_mode": "perennial", "remaining_uses": 1, "source_object_id": "spada", "source_object_name": "Spada", "source_equipment_slot": "weapon" }, { "face_id": 0, "value": 1, "label": "scudo", "base_label": "scudo", "symbol_id": "scudo", "symbol_texture": <CompressedTexture2D#-9223371965702600821>, "dice_type": "loadout", "dice_name": "Loadout", "durability_mode": "exhaustible", "remaining_uses": 1, "source_object_id": "armatura_di_pelle", "source_object_name": "Armatura di pelle", "source_equipment_slot": "armor" }] outputs=[{ "symbol_id": "spada", "value": 1 }, { "symbol_id": "scudo", "value": 1 }]
-[01:31:09] mouse_down global=(330.6667, 288.6667) cell=(1, 2) dragging=false
-[01:31:09] begin_rejected cell=(1, 2) reason=token_unusable
-[01:31:11] mouse_down global=(215.3333, 176.6667) cell=(0, 1) dragging=false
-[01:31:11] begin_ok cell=(0, 1) symbol=spada
-[01:31:11] mouse_motion global=(216.0, 178.0) cell=(0, 1) path=[(0, 1)]
-[01:31:11] extend_ignored cell=(0, 1) reason=same_cell
-[01:31:11] mouse_motion global=(216.6667, 180.6667) cell=(0, 1) path=[(0, 1)]
-[01:31:11] extend_ignored cell=(0, 1) reason=same_cell
-[01:31:11] mouse_motion global=(219.3333, 189.3333) cell=(0, 1) path=[(0, 1)]
-[01:31:11] extend_ignored cell=(0, 1) reason=same_cell
-[01:31:11] mouse_motion global=(222.0, 199.3333) cell=(0, 1) path=[(0, 1)]
-[01:31:11] extend_ignored cell=(0, 1) reason=same_cell
-[01:31:11] mouse_motion global=(224.0, 212.0) cell=(0, 1) path=[(0, 1)]
-[01:31:11] extend_ignored cell=(0, 1) reason=same_cell
-[01:31:11] mouse_motion global=(225.3333, 225.3333) cell=(0, 1) path=[(0, 1)]
-[01:31:11] extend_ignored cell=(0, 1) reason=same_cell
-[01:31:11] mouse_motion global=(227.3333, 237.3333) cell=(0, 2) path=[(0, 1)]
-[01:31:11] extend_ok cell=(0, 2) symbol=spada path=[(0, 1), (0, 2)]
-[01:31:11] mouse_motion global=(228.0, 246.6667) cell=(0, 2) path=[(0, 1), (0, 2)]
-[01:31:11] extend_ignored cell=(0, 2) reason=same_cell
-[01:31:11] mouse_motion global=(228.0, 252.6667) cell=(0, 2) path=[(0, 1), (0, 2)]
-[01:31:11] extend_ignored cell=(0, 2) reason=same_cell
-[01:31:11] mouse_motion global=(228.0, 255.3333) cell=(0, 2) path=[(0, 1), (0, 2)]
-[01:31:11] extend_ignored cell=(0, 2) reason=same_cell
-[01:31:11] mouse_motion global=(228.0, 256.6667) cell=(0, 2) path=[(0, 1), (0, 2)]
-[01:31:11] extend_ignored cell=(0, 2) reason=same_cell
-[01:31:11] mouse_motion global=(228.0, 258.0) cell=(0, 2) path=[(0, 1), (0, 2)]
-[01:31:11] extend_ignored cell=(0, 2) reason=same_cell
-[01:31:11] mouse_motion global=(228.6667, 260.0) cell=(0, 2) path=[(0, 1), (0, 2)]
-[01:31:11] extend_ignored cell=(0, 2) reason=same_cell
-[01:31:11] mouse_motion global=(228.6667, 261.3333) cell=(0, 2) path=[(0, 1), (0, 2)]
-[01:31:11] extend_ignored cell=(0, 2) reason=same_cell
-[01:31:11] mouse_motion global=(228.6667, 262.6667) cell=(0, 2) path=[(0, 1), (0, 2)]
-[01:31:11] extend_ignored cell=(0, 2) reason=same_cell
-[01:31:11] mouse_motion global=(228.6667, 264.0) cell=(0, 2) path=[(0, 1), (0, 2)]
-[01:31:11] extend_ignored cell=(0, 2) reason=same_cell
-[01:31:11] mouse_motion global=(229.3333, 266.0) cell=(0, 2) path=[(0, 1), (0, 2)]
-[01:31:11] extend_ignored cell=(0, 2) reason=same_cell
-[01:31:11] mouse_motion global=(229.3333, 266.6667) cell=(0, 2) path=[(0, 1), (0, 2)]
-[01:31:11] extend_ignored cell=(0, 2) reason=same_cell
-[01:31:11] mouse_motion global=(230.0, 268.0) cell=(0, 2) path=[(0, 1), (0, 2)]
-[01:31:11] extend_ignored cell=(0, 2) reason=same_cell
-[01:31:11] mouse_motion global=(230.0, 268.6667) cell=(0, 2) path=[(0, 1), (0, 2)]
-[01:31:11] extend_ignored cell=(0, 2) reason=same_cell
-[01:31:11] mouse_motion global=(230.0, 270.6667) cell=(0, 2) path=[(0, 1), (0, 2)]
-[01:31:11] extend_ignored cell=(0, 2) reason=same_cell
-[01:31:11] mouse_motion global=(230.0, 271.3333) cell=(0, 2) path=[(0, 1), (0, 2)]
-[01:31:11] extend_ignored cell=(0, 2) reason=same_cell
-[01:31:11] mouse_up path=[(0, 1), (0, 2)]
-[01:31:11] finalize_ok path=[(0, 1), (0, 2)]
-[01:31:11] resolve path=[(0, 1), (0, 2)] entries=[{ "face_id": 0, "value": 1, "label": "spada", "base_label": "spada", "symbol_id": "spada", "symbol_texture": <CompressedTexture2D#-9223371968789608583>, "dice_type": "loadout", "dice_name": "Loadout", "durability_mode": "perennial", "remaining_uses": 1 }, { "face_id": 0, "value": 1, "label": "spada", "base_label": "spada", "symbol_id": "spada", "symbol_texture": <CompressedTexture2D#-9223371968789608583>, "dice_type": "loadout", "dice_name": "Loadout", "durability_mode": "perennial", "remaining_uses": 1, "source_object_id": "spada", "source_object_name": "Spada", "source_equipment_slot": "weapon" }] outputs=[{ "symbol_id": "spada", "value": 2 }]
-[01:31:12] mouse_down global=(242.0, 190.0) cell=(0, 1) dragging=false
-[01:31:12] begin_ok cell=(0, 1) symbol=spada
-[01:31:12] mouse_motion global=(242.0, 196.0) cell=(0, 1) path=[(0, 1)]
-[01:31:12] extend_ignored cell=(0, 1) reason=same_cell
-[01:31:12] mouse_motion global=(242.0, 211.3333) cell=(0, 1) path=[(0, 1)]
-[01:31:12] extend_ignored cell=(0, 1) reason=same_cell
-[01:31:12] mouse_motion global=(242.0, 229.3333) cell=<null> path=[(0, 1)]
-[01:31:12] mouse_motion global=(243.3333, 248.6667) cell=(0, 2) path=[(0, 1)]
-[01:31:12] extend_ok cell=(0, 2) symbol=spada path=[(0, 1), (0, 2)]
-[01:31:12] mouse_motion global=(244.0, 256.6667) cell=(0, 2) path=[(0, 1), (0, 2)]
-[01:31:12] extend_ignored cell=(0, 2) reason=same_cell
-[01:31:12] mouse_motion global=(244.0, 261.3333) cell=(0, 2) path=[(0, 1), (0, 2)]
-[01:31:12] extend_ignored cell=(0, 2) reason=same_cell
-[01:31:12] mouse_motion global=(244.0, 266.6667) cell=(0, 2) path=[(0, 1), (0, 2)]
-[01:31:12] extend_ignored cell=(0, 2) reason=same_cell
-[01:31:12] mouse_motion global=(244.0, 272.0) cell=(0, 2) path=[(0, 1), (0, 2)]
-[01:31:12] extend_ignored cell=(0, 2) reason=same_cell
-[01:31:12] mouse_motion global=(244.0, 276.0) cell=(0, 2) path=[(0, 1), (0, 2)]
-[01:31:12] extend_ignored cell=(0, 2) reason=same_cell
-[01:31:12] mouse_motion global=(244.0, 277.3333) cell=(0, 2) path=[(0, 1), (0, 2)]
-[01:31:12] extend_ignored cell=(0, 2) reason=same_cell
-[01:31:12] mouse_up path=[(0, 1), (0, 2)]
-[01:31:12] finalize_ok path=[(0, 1), (0, 2)]
-[01:31:12] resolve path=[(0, 1), (0, 2)] entries=[{ "face_id": 0, "value": 1, "label": "spada", "base_label": "spada", "symbol_id": "spada", "symbol_texture": <CompressedTexture2D#-9223371968789608583>, "dice_type": "loadout", "dice_name": "Loadout", "durability_mode": "perennial", "remaining_uses": 1 }, { "face_id": 0, "value": 1, "label": "spada", "base_label": "spada", "symbol_id": "spada", "symbol_texture": <CompressedTexture2D#-9223371968789608583>, "dice_type": "loadout", "dice_name": "Loadout", "durability_mode": "perennial", "remaining_uses": 1, "source_object_id": "spada", "source_object_name": "Spada", "source_equipment_slot": "weapon" }] outputs=[{ "symbol_id": "spada", "value": 2 }]
-[01:31:12] mouse_down global=(240.6667, 186.0) cell=(0, 1) dragging=false
-[01:31:12] begin_ok cell=(0, 1) symbol=spada
-[01:31:12] mouse_motion global=(240.6667, 186.6667) cell=(0, 1) path=[(0, 1)]
-[01:31:12] extend_ignored cell=(0, 1) reason=same_cell
-[01:31:12] mouse_motion global=(240.6667, 190.0) cell=(0, 1) path=[(0, 1)]
-[01:31:12] extend_ignored cell=(0, 1) reason=same_cell
-[01:31:12] mouse_motion global=(240.6667, 200.6667) cell=(0, 1) path=[(0, 1)]
-[01:31:12] extend_ignored cell=(0, 1) reason=same_cell
-[01:31:12] mouse_motion global=(240.6667, 213.3333) cell=(0, 1) path=[(0, 1)]
-[01:31:12] extend_ignored cell=(0, 1) reason=same_cell
-[01:31:12] mouse_motion global=(240.6667, 225.3333) cell=(0, 1) path=[(0, 1)]
-[01:31:12] extend_ignored cell=(0, 1) reason=same_cell
-[01:31:12] mouse_motion global=(240.6667, 234.6667) cell=<null> path=[(0, 1)]
-[01:31:12] mouse_motion global=(240.6667, 242.0) cell=(0, 2) path=[(0, 1)]
-[01:31:12] extend_ok cell=(0, 2) symbol=spada path=[(0, 1), (0, 2)]
-[01:31:12] mouse_motion global=(240.6667, 250.6667) cell=(0, 2) path=[(0, 1), (0, 2)]
-[01:31:12] extend_ignored cell=(0, 2) reason=same_cell
-[01:31:12] mouse_motion global=(240.6667, 253.3333) cell=(0, 2) path=[(0, 1), (0, 2)]
-[01:31:12] extend_ignored cell=(0, 2) reason=same_cell
-[01:31:13] mouse_up path=[(0, 1), (0, 2)]
-[01:31:13] finalize_ok path=[(0, 1), (0, 2)]
-[01:31:13] resolve path=[(0, 1), (0, 2)] entries=[{ "face_id": 0, "value": 1, "label": "spada", "base_label": "spada", "symbol_id": "spada", "symbol_texture": <CompressedTexture2D#-9223371968789608583>, "dice_type": "loadout", "dice_name": "Loadout", "durability_mode": "perennial", "remaining_uses": 1 }, { "face_id": 0, "value": 1, "label": "spada", "base_label": "spada", "symbol_id": "spada", "symbol_texture": <CompressedTexture2D#-9223371968789608583>, "dice_type": "loadout", "dice_name": "Loadout", "durability_mode": "perennial", "remaining_uses": 1, "source_object_id": "spada", "source_object_name": "Spada", "source_equipment_slot": "weapon" }] outputs=[{ "symbol_id": "spada", "value": 2 }]
-[01:31:13] mouse_down global=(248.6667, 184.0) cell=(0, 1) dragging=false
-[01:31:13] begin_ok cell=(0, 1) symbol=spada
-[01:31:13] mouse_motion global=(248.6667, 186.6667) cell=(0, 1) path=[(0, 1)]
-[01:31:13] extend_ignored cell=(0, 1) reason=same_cell
-[01:31:13] mouse_motion global=(248.6667, 189.3333) cell=(0, 1) path=[(0, 1)]
-[01:31:13] extend_ignored cell=(0, 1) reason=same_cell
-[01:31:13] mouse_motion global=(250.0, 200.0) cell=(0, 1) path=[(0, 1)]
-[01:31:13] extend_ignored cell=(0, 1) reason=same_cell
-[01:31:13] mouse_motion global=(250.6667, 212.6667) cell=(0, 1) path=[(0, 1)]
-[01:31:13] extend_ignored cell=(0, 1) reason=same_cell
-[01:31:13] mouse_motion global=(251.3333, 225.3333) cell=(0, 1) path=[(0, 1)]
-[01:31:13] extend_ignored cell=(0, 1) reason=same_cell
-[01:31:13] mouse_motion global=(252.6667, 238.6667) cell=(0, 2) path=[(0, 1)]
-[01:31:13] extend_ok cell=(0, 2) symbol=spada path=[(0, 1), (0, 2)]
-[01:31:13] mouse_motion global=(252.6667, 252.6667) cell=(0, 2) path=[(0, 1), (0, 2)]
-[01:31:13] extend_ignored cell=(0, 2) reason=same_cell
-[01:31:13] mouse_motion global=(252.6667, 259.3333) cell=(0, 2) path=[(0, 1), (0, 2)]
-[01:31:13] extend_ignored cell=(0, 2) reason=same_cell
-[01:31:13] mouse_motion global=(252.6667, 260.0) cell=(0, 2) path=[(0, 1), (0, 2)]
-[01:31:13] extend_ignored cell=(0, 2) reason=same_cell
-[01:31:13] mouse_up path=[(0, 1), (0, 2)]
-[01:31:13] finalize_ok path=[(0, 1), (0, 2)]
-[01:31:13] resolve path=[(0, 1), (0, 2)] entries=[{ "face_id": 0, "value": 1, "label": "spada", "base_label": "spada", "symbol_id": "spada", "symbol_texture": <CompressedTexture2D#-9223371968789608583>, "dice_type": "loadout", "dice_name": "Loadout", "durability_mode": "perennial", "remaining_uses": 1 }, { "face_id": 0, "value": 1, "label": "spada", "base_label": "spada", "symbol_id": "spada", "symbol_texture": <CompressedTexture2D#-9223371968789608583>, "dice_type": "loadout", "dice_name": "Loadout", "durability_mode": "perennial", "remaining_uses": 1, "source_object_id": "spada", "source_object_name": "Spada", "source_equipment_slot": "weapon" }] outputs=[{ "symbol_id": "spada", "value": 2 }]
-[01:31:14] mouse_down global=(252.6667, 190.6667) cell=(0, 1) dragging=false
-[01:31:14] begin_ok cell=(0, 1) symbol=spada
-[01:31:14] mouse_motion global=(252.6667, 192.6667) cell=(0, 1) path=[(0, 1)]
-[01:31:14] extend_ignored cell=(0, 1) reason=same_cell
-[01:31:14] mouse_motion global=(252.6667, 196.0) cell=(0, 1) path=[(0, 1)]
-[01:31:14] extend_ignored cell=(0, 1) reason=same_cell
-[01:31:14] mouse_motion global=(252.6667, 199.3333) cell=(0, 1) path=[(0, 1)]
-[01:31:14] extend_ignored cell=(0, 1) reason=same_cell
-[01:31:14] mouse_motion global=(252.6667, 206.0) cell=(0, 1) path=[(0, 1)]
-[01:31:14] extend_ignored cell=(0, 1) reason=same_cell
-[01:31:14] mouse_motion global=(252.0, 216.0) cell=(0, 1) path=[(0, 1)]
-[01:31:14] extend_ignored cell=(0, 1) reason=same_cell
-[01:31:14] mouse_motion global=(251.3333, 226.6667) cell=(0, 1) path=[(0, 1)]
-[01:31:14] extend_ignored cell=(0, 1) reason=same_cell
-[01:31:14] mouse_motion global=(251.3333, 234.6667) cell=<null> path=[(0, 1)]
-[01:31:14] mouse_motion global=(251.3333, 242.6667) cell=(0, 2) path=[(0, 1)]
-[01:31:14] extend_ok cell=(0, 2) symbol=spada path=[(0, 1), (0, 2)]
-[01:31:14] mouse_motion global=(251.3333, 249.3333) cell=(0, 2) path=[(0, 1), (0, 2)]
-[01:31:14] extend_ignored cell=(0, 2) reason=same_cell
-[01:31:14] mouse_motion global=(251.3333, 256.0) cell=(0, 2) path=[(0, 1), (0, 2)]
-[01:31:14] extend_ignored cell=(0, 2) reason=same_cell
-[01:31:14] mouse_motion global=(250.6667, 260.0) cell=(0, 2) path=[(0, 1), (0, 2)]
-[01:31:14] extend_ignored cell=(0, 2) reason=same_cell
-[01:31:14] mouse_up path=[(0, 1), (0, 2)]
-[01:31:14] finalize_ok path=[(0, 1), (0, 2)]
-[01:31:14] resolve path=[(0, 1), (0, 2)] entries=[{ "face_id": 0, "value": 1, "label": "spada", "base_label": "spada", "symbol_id": "spada", "symbol_texture": <CompressedTexture2D#-9223371968789608583>, "dice_type": "loadout", "dice_name": "Loadout", "durability_mode": "perennial", "remaining_uses": 1 }, { "face_id": 0, "value": 1, "label": "spada", "base_label": "spada", "symbol_id": "spada", "symbol_texture": <CompressedTexture2D#-9223371968789608583>, "dice_type": "loadout", "dice_name": "Loadout", "durability_mode": "perennial", "remaining_uses": 1, "source_object_id": "spada", "source_object_name": "Spada", "source_equipment_slot": "weapon" }] outputs=[{ "symbol_id": "spada", "value": 2 }]
-[01:31:14] mouse_down global=(258.0, 200.0) cell=(0, 1) dragging=false
-[01:31:14] begin_ok cell=(0, 1) symbol=spada
-[01:31:14] mouse_motion global=(258.0, 200.6667) cell=(0, 1) path=[(0, 1)]
-[01:31:14] extend_ignored cell=(0, 1) reason=same_cell
-[01:31:14] mouse_motion global=(258.0, 205.3333) cell=(0, 1) path=[(0, 1)]
-[01:31:14] extend_ignored cell=(0, 1) reason=same_cell
-[01:31:14] mouse_motion global=(258.0, 208.6667) cell=(0, 1) path=[(0, 1)]
-[01:31:14] extend_ignored cell=(0, 1) reason=same_cell
-[01:31:14] mouse_motion global=(258.0, 214.0) cell=(0, 1) path=[(0, 1)]
-[01:31:14] extend_ignored cell=(0, 1) reason=same_cell
-[01:31:14] mouse_motion global=(258.0, 223.3333) cell=(0, 1) path=[(0, 1)]
-[01:31:14] extend_ignored cell=(0, 1) reason=same_cell
-[01:31:14] mouse_motion global=(258.0, 233.3333) cell=<null> path=[(0, 1)]
-[01:31:14] mouse_motion global=(258.0, 242.6667) cell=(0, 2) path=[(0, 1)]
-[01:31:14] extend_ok cell=(0, 2) symbol=spada path=[(0, 1), (0, 2)]
-[01:31:14] mouse_motion global=(258.0, 256.6667) cell=(0, 2) path=[(0, 1), (0, 2)]
-[01:31:14] extend_ignored cell=(0, 2) reason=same_cell
-[01:31:15] mouse_motion global=(258.0, 264.0) cell=(0, 2) path=[(0, 1), (0, 2)]
-[01:31:15] extend_ignored cell=(0, 2) reason=same_cell
-[01:31:15] mouse_motion global=(258.0, 267.3333) cell=(0, 2) path=[(0, 1), (0, 2)]
-[01:31:15] extend_ignored cell=(0, 2) reason=same_cell
-[01:31:15] mouse_motion global=(258.0, 268.0) cell=(0, 2) path=[(0, 1), (0, 2)]
-[01:31:15] extend_ignored cell=(0, 2) reason=same_cell
-[01:31:15] mouse_up path=[(0, 1), (0, 2)]
-[01:31:15] finalize_ok path=[(0, 1), (0, 2)]
-[01:31:15] resolve path=[(0, 1), (0, 2)] entries=[{ "face_id": 0, "value": 1, "label": "spada", "base_label": "spada", "symbol_id": "spada", "symbol_texture": <CompressedTexture2D#-9223371968789608583>, "dice_type": "loadout", "dice_name": "Loadout", "durability_mode": "perennial", "remaining_uses": 1 }, { "face_id": 0, "value": 1, "label": "spada", "base_label": "spada", "symbol_id": "spada", "symbol_texture": <CompressedTexture2D#-9223371968789608583>, "dice_type": "loadout", "dice_name": "Loadout", "durability_mode": "perennial", "remaining_uses": 1, "source_object_id": "spada", "source_object_name": "Spada", "source_equipment_slot": "weapon" }] outputs=[{ "symbol_id": "spada", "value": 2 }]
-[01:31:15] mouse_down global=(266.0, 200.6667) cell=(0, 1) dragging=false
-[01:31:15] begin_ok cell=(0, 1) symbol=spada
-[01:31:15] mouse_motion global=(266.0, 206.6667) cell=(0, 1) path=[(0, 1)]
-[01:31:15] extend_ignored cell=(0, 1) reason=same_cell
-[01:31:15] mouse_motion global=(266.0, 211.3333) cell=(0, 1) path=[(0, 1)]
-[01:31:15] extend_ignored cell=(0, 1) reason=same_cell
-[01:31:15] mouse_motion global=(266.0, 223.3333) cell=(0, 1) path=[(0, 1)]
-[01:31:15] extend_ignored cell=(0, 1) reason=same_cell
-[01:31:15] mouse_motion global=(266.0, 231.3333) cell=<null> path=[(0, 1)]
-[01:31:15] mouse_motion global=(266.0, 240.0) cell=(0, 2) path=[(0, 1)]
-[01:31:15] extend_ok cell=(0, 2) symbol=spada path=[(0, 1), (0, 2)]
-[01:31:15] mouse_motion global=(266.0, 250.0) cell=(0, 2) path=[(0, 1), (0, 2)]
-[01:31:15] extend_ignored cell=(0, 2) reason=same_cell
-[01:31:15] mouse_motion global=(266.0, 258.6667) cell=(0, 2) path=[(0, 1), (0, 2)]
-[01:31:15] extend_ignored cell=(0, 2) reason=same_cell
-[01:31:15] mouse_motion global=(266.0, 264.6667) cell=(0, 2) path=[(0, 1), (0, 2)]
-[01:31:15] extend_ignored cell=(0, 2) reason=same_cell
-[01:31:15] mouse_motion global=(266.0, 266.6667) cell=(0, 2) path=[(0, 1), (0, 2)]
-[01:31:15] extend_ignored cell=(0, 2) reason=same_cell
-[01:31:15] mouse_motion global=(266.0, 267.3333) cell=(0, 2) path=[(0, 1), (0, 2)]
-[01:31:15] extend_ignored cell=(0, 2) reason=same_cell
-[01:31:15] mouse_motion global=(266.0, 268.6667) cell=(0, 2) path=[(0, 1), (0, 2)]
-[01:31:15] extend_ignored cell=(0, 2) reason=same_cell
-[01:31:15] mouse_motion global=(266.0, 269.3333) cell=(0, 2) path=[(0, 1), (0, 2)]
-[01:31:15] extend_ignored cell=(0, 2) reason=same_cell
-[01:31:15] mouse_motion global=(266.0, 270.6667) cell=(0, 2) path=[(0, 1), (0, 2)]
-[01:31:15] extend_ignored cell=(0, 2) reason=same_cell
-[01:31:15] mouse_up path=[(0, 1), (0, 2)]
-[01:31:15] finalize_ok path=[(0, 1), (0, 2)]
-[01:31:15] resolve path=[(0, 1), (0, 2)] entries=[{ "face_id": 0, "value": 1, "label": "spada", "base_label": "spada", "symbol_id": "spada", "symbol_texture": <CompressedTexture2D#-9223371968789608583>, "dice_type": "loadout", "dice_name": "Loadout", "durability_mode": "perennial", "remaining_uses": 1 }, { "face_id": 0, "value": 1, "label": "spada", "base_label": "spada", "symbol_id": "spada", "symbol_texture": <CompressedTexture2D#-9223371968789608583>, "dice_type": "loadout", "dice_name": "Loadout", "durability_mode": "perennial", "remaining_uses": 1, "source_object_id": "spada", "source_object_name": "Spada", "source_equipment_slot": "weapon" }] outputs=[{ "symbol_id": "spada", "value": 2 }]
+[23:18:01] enemy_revealed name=Armatura di pelle board_tokens=4 max_trace=2
+[23:18:02] mouse_down global=(324.6667, 182.6667) cell=(1, 1) dragging=false
+[23:18:02] begin_ok cell=(1, 1) state=active:scudo
+[23:18:02] mouse_motion global=(325.3333, 182.6667) cell=(1, 1) path=[(1, 1)]
+[23:18:02] extend_ignored cell=(1, 1) reason=same_cell
+[23:18:02] mouse_motion global=(325.3333, 186.0) cell=(1, 1) path=[(1, 1)]
+[23:18:02] extend_ignored cell=(1, 1) reason=same_cell
+[23:18:02] mouse_motion global=(325.3333, 188.6667) cell=(1, 1) path=[(1, 1)]
+[23:18:02] extend_ignored cell=(1, 1) reason=same_cell
+[23:18:02] mouse_motion global=(326.0, 196.6667) cell=(1, 1) path=[(1, 1)]
+[23:18:02] extend_ignored cell=(1, 1) reason=same_cell
+[23:18:02] mouse_motion global=(326.0, 206.0) cell=(1, 1) path=[(1, 1)]
+[23:18:02] extend_ignored cell=(1, 1) reason=same_cell
+[23:18:02] mouse_motion global=(326.0, 216.6667) cell=(1, 1) path=[(1, 1)]
+[23:18:02] extend_ignored cell=(1, 1) reason=same_cell
+[23:18:02] mouse_motion global=(326.0, 226.0) cell=(1, 1) path=[(1, 1)]
+[23:18:02] extend_ignored cell=(1, 1) reason=same_cell
+[23:18:02] mouse_motion global=(326.0, 234.6667) cell=<null> path=[(1, 1)]
+[23:18:02] mouse_motion global=(326.0, 240.6667) cell=(1, 2) path=[(1, 1)]
+[23:18:02] extend_ok cell=(1, 2) state=active:spada path=[(1, 1), (1, 2)]
+[23:18:02] mouse_motion global=(326.0, 243.3333) cell=(1, 2) path=[(1, 1), (1, 2)]
+[23:18:02] extend_ignored cell=(1, 2) reason=same_cell
+[23:18:02] mouse_motion global=(326.0, 245.3333) cell=(1, 2) path=[(1, 1), (1, 2)]
+[23:18:02] extend_ignored cell=(1, 2) reason=same_cell
+[23:18:02] mouse_motion global=(326.0, 246.6667) cell=(1, 2) path=[(1, 1), (1, 2)]
+[23:18:02] extend_ignored cell=(1, 2) reason=same_cell
+[23:18:02] mouse_motion global=(326.0, 250.0) cell=(1, 2) path=[(1, 1), (1, 2)]
+[23:18:02] extend_ignored cell=(1, 2) reason=same_cell
+[23:18:02] mouse_motion global=(326.0, 252.6667) cell=(1, 2) path=[(1, 1), (1, 2)]
+[23:18:02] extend_ignored cell=(1, 2) reason=same_cell
+[23:18:02] mouse_motion global=(326.0, 256.0) cell=(1, 2) path=[(1, 1), (1, 2)]
+[23:18:02] extend_ignored cell=(1, 2) reason=same_cell
+[23:18:02] mouse_motion global=(326.0, 260.0) cell=(1, 2) path=[(1, 1), (1, 2)]
+[23:18:02] extend_ignored cell=(1, 2) reason=same_cell
+[23:18:02] mouse_motion global=(326.0, 264.0) cell=(1, 2) path=[(1, 1), (1, 2)]
+[23:18:02] extend_ignored cell=(1, 2) reason=same_cell
+[23:18:02] mouse_motion global=(326.0, 267.3333) cell=(1, 2) path=[(1, 1), (1, 2)]
+[23:18:02] extend_ignored cell=(1, 2) reason=same_cell
+[23:18:02] mouse_motion global=(325.3333, 270.6667) cell=(1, 2) path=[(1, 1), (1, 2)]
+[23:18:02] extend_ignored cell=(1, 2) reason=same_cell
+[23:18:03] mouse_motion global=(324.6667, 274.0) cell=(1, 2) path=[(1, 1), (1, 2)]
+[23:18:03] extend_ignored cell=(1, 2) reason=same_cell
+[23:18:03] mouse_motion global=(324.6667, 276.6667) cell=(1, 2) path=[(1, 1), (1, 2)]
+[23:18:03] extend_ignored cell=(1, 2) reason=same_cell
+[23:18:03] mouse_motion global=(324.6667, 278.0) cell=(1, 2) path=[(1, 1), (1, 2)]
+[23:18:03] extend_ignored cell=(1, 2) reason=same_cell
+[23:18:03] mouse_motion global=(324.6667, 279.3333) cell=(1, 2) path=[(1, 1), (1, 2)]
+[23:18:03] extend_ignored cell=(1, 2) reason=same_cell
+[23:18:03] mouse_up path=[(1, 1), (1, 2)]
+[23:18:03] finalize_ok path=[(1, 1), (1, 2)]
+[23:18:03] resolve path=[(1, 1), (1, 2)] entries=[{ "face_id": 0, "value": 1, "label": "scudo", "base_label": "scudo", "symbol_id": "scudo", "symbol_texture": <CompressedTexture2D#-9223371968084965496>, "dice_type": "loadout", "dice_name": "Loadout", "durability_mode": "exhaustible", "remaining_uses": 1, "source_object_id": "armatura_di_pelle", "source_object_name": "Armatura di pelle", "source_equipment_slot": "armor", "activation_cost_type": "none", "activation_cost_amount": 0 }, { "face_id": 0, "value": 1, "label": "spada", "base_label": "spada", "symbol_id": "spada", "symbol_texture": <CompressedTexture2D#-9223371973688555711>, "dice_type": "loadout", "dice_name": "Loadout", "durability_mode": "perennial", "remaining_uses": 1, "activation_cost_type": "none", "activation_cost_amount": 0 }] outputs=[{ "symbol_id": "scudo", "value": 1 }, { "symbol_id": "spada", "value": 1 }]
+[23:18:08] mouse_down global=(326.6667, 293.3333) cell=(1, 2) dragging=false
+[23:18:09] begin_ok cell=(1, 2) state=active:spada
+[23:18:09] mouse_motion global=(326.0, 293.3333) cell=(1, 2) path=[(1, 2)]
+[23:18:09] extend_ignored cell=(1, 2) reason=same_cell
+[23:18:09] mouse_motion global=(320.6667, 292.6667) cell=(1, 2) path=[(1, 2)]
+[23:18:09] extend_ignored cell=(1, 2) reason=same_cell
+[23:18:09] mouse_motion global=(317.3333, 292.6667) cell=(1, 2) path=[(1, 2)]
+[23:18:09] extend_ignored cell=(1, 2) reason=same_cell
+[23:18:09] mouse_motion global=(310.6667, 292.0) cell=(1, 2) path=[(1, 2)]
+[23:18:09] extend_ignored cell=(1, 2) reason=same_cell
+[23:18:09] mouse_motion global=(302.6667, 291.3333) cell=(1, 2) path=[(1, 2)]
+[23:18:09] extend_ignored cell=(1, 2) reason=same_cell
+[23:18:09] mouse_motion global=(293.3333, 290.6667) cell=(1, 2) path=[(1, 2)]
+[23:18:09] extend_ignored cell=(1, 2) reason=same_cell
+[23:18:09] mouse_motion global=(284.6667, 290.0) cell=<null> path=[(1, 2)]
+[23:18:09] mouse_motion global=(276.6667, 289.3333) cell=(0, 2) path=[(1, 2)]
+[23:18:09] extend_ok cell=(0, 2) state=active:cuore path=[(1, 2), (0, 2)]
+[23:18:09] mouse_motion global=(266.6667, 289.3333) cell=(0, 2) path=[(1, 2), (0, 2)]
+[23:18:09] extend_ignored cell=(0, 2) reason=same_cell
+[23:18:09] mouse_motion global=(260.6667, 289.3333) cell=(0, 2) path=[(1, 2), (0, 2)]
+[23:18:09] extend_ignored cell=(0, 2) reason=same_cell
+[23:18:09] mouse_motion global=(256.0, 289.3333) cell=(0, 2) path=[(1, 2), (0, 2)]
+[23:18:09] extend_ignored cell=(0, 2) reason=same_cell
+[23:18:09] mouse_motion global=(251.3333, 289.3333) cell=(0, 2) path=[(1, 2), (0, 2)]
+[23:18:09] extend_ignored cell=(0, 2) reason=same_cell
+[23:18:09] mouse_motion global=(247.3333, 288.6667) cell=(0, 2) path=[(1, 2), (0, 2)]
+[23:18:09] extend_ignored cell=(0, 2) reason=same_cell
+[23:18:09] mouse_motion global=(244.0, 288.6667) cell=(0, 2) path=[(1, 2), (0, 2)]
+[23:18:09] extend_ignored cell=(0, 2) reason=same_cell
+[23:18:09] mouse_motion global=(240.0, 288.6667) cell=(0, 2) path=[(1, 2), (0, 2)]
+[23:18:09] extend_ignored cell=(0, 2) reason=same_cell
+[23:18:09] mouse_motion global=(237.3333, 288.6667) cell=(0, 2) path=[(1, 2), (0, 2)]
+[23:18:09] extend_ignored cell=(0, 2) reason=same_cell
+[23:18:09] mouse_motion global=(235.3333, 288.0) cell=(0, 2) path=[(1, 2), (0, 2)]
+[23:18:09] extend_ignored cell=(0, 2) reason=same_cell
+[23:18:09] mouse_motion global=(234.6667, 288.0) cell=(0, 2) path=[(1, 2), (0, 2)]
+[23:18:09] extend_ignored cell=(0, 2) reason=same_cell
+[23:18:09] mouse_motion global=(234.0, 288.0) cell=(0, 2) path=[(1, 2), (0, 2)]
+[23:18:09] extend_ignored cell=(0, 2) reason=same_cell
+[23:18:09] mouse_up path=[(1, 2), (0, 2)]
+[23:18:09] finalize_ok path=[(1, 2), (0, 2)]
+[23:18:09] resolve path=[(1, 2), (0, 2)] entries=[{ "face_id": 0, "value": 1, "label": "spada", "base_label": "spada", "symbol_id": "spada", "symbol_texture": <CompressedTexture2D#-9223371973688555711>, "dice_type": "loadout", "dice_name": "Loadout", "durability_mode": "perennial", "remaining_uses": 1, "activation_cost_type": "none", "activation_cost_amount": 0 }, { "face_id": 0, "value": 1, "label": "cuore", "base_label": "cuore", "symbol_id": "cuore", "symbol_texture": <CompressedTexture2D#-9223371980902758579>, "dice_type": "loadout", "dice_name": "Loadout", "durability_mode": "exhaustible", "remaining_uses": 1, "activation_cost_type": "none", "activation_cost_amount": 0 }] outputs=[{ "symbol_id": "spada", "value": 1 }, { "symbol_id": "cuore", "value": 1 }]
+[23:18:11] mouse_down global=(317.3333, 291.3333) cell=(1, 2) dragging=false
+[23:18:11] begin_ok cell=(1, 2) state=active:spada
+[23:18:11] mouse_motion global=(318.6667, 290.6667) cell=(1, 2) path=[(1, 2)]
+[23:18:11] extend_ignored cell=(1, 2) reason=same_cell
+[23:18:11] mouse_motion global=(320.6667, 288.6667) cell=(1, 2) path=[(1, 2)]
+[23:18:11] extend_ignored cell=(1, 2) reason=same_cell
+[23:18:11] mouse_motion global=(321.3333, 286.6667) cell=(1, 2) path=[(1, 2)]
+[23:18:11] extend_ignored cell=(1, 2) reason=same_cell
+[23:18:11] mouse_motion global=(325.3333, 280.0) cell=(1, 2) path=[(1, 2)]
+[23:18:11] extend_ignored cell=(1, 2) reason=same_cell
+[23:18:11] mouse_motion global=(328.0, 274.6667) cell=(1, 2) path=[(1, 2)]
+[23:18:11] extend_ignored cell=(1, 2) reason=same_cell
+[23:18:11] mouse_motion global=(330.0, 270.6667) cell=(1, 2) path=[(1, 2)]
+[23:18:11] extend_ignored cell=(1, 2) reason=same_cell
+[23:18:11] mouse_motion global=(331.3333, 266.0) cell=(1, 2) path=[(1, 2)]
+[23:18:11] extend_ignored cell=(1, 2) reason=same_cell
+[23:18:11] mouse_motion global=(334.0, 260.6667) cell=(1, 2) path=[(1, 2)]
+[23:18:11] extend_ignored cell=(1, 2) reason=same_cell
+[23:18:11] mouse_motion global=(334.6667, 255.3333) cell=(1, 2) path=[(1, 2)]
+[23:18:11] extend_ignored cell=(1, 2) reason=same_cell
+[23:18:11] mouse_motion global=(336.0, 249.3333) cell=(1, 2) path=[(1, 2)]
+[23:18:11] extend_ignored cell=(1, 2) reason=same_cell
+[23:18:11] mouse_motion global=(336.6667, 242.0) cell=(1, 2) path=[(1, 2)]
+[23:18:11] extend_ignored cell=(1, 2) reason=same_cell
+[23:18:11] mouse_motion global=(338.0, 235.3333) cell=<null> path=[(1, 2)]
+[23:18:11] mouse_motion global=(338.6667, 228.0) cell=(1, 1) path=[(1, 2)]
+[23:18:11] extend_ok cell=(1, 1) state=inactive:scudo path=[(1, 2), (1, 1)]
+[23:18:11] mouse_motion global=(339.3333, 221.3333) cell=(1, 1) path=[(1, 2), (1, 1)]
+[23:18:11] extend_ignored cell=(1, 1) reason=same_cell
+[23:18:11] mouse_motion global=(340.0, 215.3333) cell=(1, 1) path=[(1, 2), (1, 1)]
+[23:18:11] extend_ignored cell=(1, 1) reason=same_cell
+[23:18:11] mouse_motion global=(340.6667, 208.6667) cell=(1, 1) path=[(1, 2), (1, 1)]
+[23:18:11] extend_ignored cell=(1, 1) reason=same_cell
+[23:18:11] mouse_motion global=(340.6667, 204.0) cell=(1, 1) path=[(1, 2), (1, 1)]
+[23:18:11] extend_ignored cell=(1, 1) reason=same_cell
+[23:18:11] mouse_motion global=(340.6667, 200.0) cell=(1, 1) path=[(1, 2), (1, 1)]
+[23:18:11] extend_ignored cell=(1, 1) reason=same_cell
+[23:18:11] mouse_motion global=(342.0, 196.6667) cell=(1, 1) path=[(1, 2), (1, 1)]
+[23:18:11] extend_ignored cell=(1, 1) reason=same_cell
+[23:18:11] mouse_motion global=(342.0, 193.3333) cell=(1, 1) path=[(1, 2), (1, 1)]
+[23:18:11] extend_ignored cell=(1, 1) reason=same_cell
+[23:18:11] mouse_motion global=(342.0, 190.0) cell=(1, 1) path=[(1, 2), (1, 1)]
+[23:18:11] extend_ignored cell=(1, 1) reason=same_cell
+[23:18:11] mouse_motion global=(342.0, 188.0) cell=(1, 1) path=[(1, 2), (1, 1)]
+[23:18:11] extend_ignored cell=(1, 1) reason=same_cell
+[23:18:11] mouse_motion global=(342.6667, 186.6667) cell=(1, 1) path=[(1, 2), (1, 1)]
+[23:18:11] extend_ignored cell=(1, 1) reason=same_cell
+[23:18:11] mouse_up path=[(1, 2), (1, 1)]
+[23:18:11] finalize_ok path=[(1, 2), (1, 1)]
+[23:18:11] resolve path=[(1, 2), (1, 1)] entries=[{ "face_id": 0, "value": 1, "label": "spada", "base_label": "spada", "symbol_id": "spada", "symbol_texture": <CompressedTexture2D#-9223371973688555711>, "dice_type": "loadout", "dice_name": "Loadout", "durability_mode": "perennial", "remaining_uses": 1, "activation_cost_type": "none", "activation_cost_amount": 0 }] outputs=[{ "symbol_id": "spada", "value": 1 }]

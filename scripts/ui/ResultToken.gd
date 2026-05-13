@@ -1,18 +1,25 @@
 extends TextureRect
 
+const DURABILITY_BACKGROUND_PATHS := {
+	"perennial": "res://assets/icone/ferro.png",
+	"exhaustible": "res://assets/icone/legno.png",
+	"ephemeral": "res://assets/icone/carta.png"
+}
+
 var result_data: Dictionary = {}
 var _slot: Control
 var _is_exhausted := false
 var _disabled_by_cost := false
 var _text_label: Label
-var _mode_label: Label
 var _board_interaction_enabled: bool = false
+var _icon_rect: TextureRect
 
 func _ready() -> void:
 	mouse_filter = Control.MOUSE_FILTER_PASS
 	expand_mode = TextureRect.EXPAND_IGNORE_SIZE
 	stretch_mode = TextureRect.STRETCH_KEEP_ASPECT_CENTERED
 	custom_minimum_size = Vector2(84, 84)
+	_ensure_icon_rect()
 	_ensure_text_label()
 
 func setup(data: Dictionary) -> void:
@@ -21,14 +28,13 @@ func setup(data: Dictionary) -> void:
 	_refresh_display()
 
 func _refresh_display() -> void:
+	_ensure_icon_rect()
 	_ensure_text_label()
-	_ensure_mode_label()
-	texture = result_data.get("symbol_texture") as Texture2D
+	texture = _load_background_texture(get_durability_mode())
+	_icon_rect.texture = result_data.get("symbol_texture") as Texture2D
 	tooltip_text = _build_tooltip_text()
 	_text_label.text = _build_visible_text()
 	_text_label.visible = true
-	_mode_label.text = _build_mode_badge_text()
-	_mode_label.visible = not _mode_label.text.is_empty()
 	modulate = _get_display_modulate()
 
 func set_slot(slot: Control) -> void:
@@ -103,13 +109,27 @@ func _get_drag_data(_at_position: Vector2) -> Variant:
 		return null
 	if not can_be_used():
 		return null
-	if texture == null:
+	if texture == null and (_icon_rect == null or _icon_rect.texture == null):
 		return null
-	var preview := TextureRect.new()
-	preview.texture = texture
+	var preview := Control.new()
 	preview.custom_minimum_size = custom_minimum_size
-	preview.expand_mode = TextureRect.EXPAND_IGNORE_SIZE
-	preview.stretch_mode = TextureRect.STRETCH_KEEP_ASPECT_CENTERED
+	preview.size = custom_minimum_size
+	var preview_background := TextureRect.new()
+	preview_background.texture = texture
+	preview_background.expand_mode = TextureRect.EXPAND_IGNORE_SIZE
+	preview_background.stretch_mode = TextureRect.STRETCH_KEEP_ASPECT_CENTERED
+	preview_background.set_anchors_and_offsets_preset(Control.PRESET_FULL_RECT)
+	preview.add_child(preview_background)
+	var preview_icon := TextureRect.new()
+	preview_icon.texture = _icon_rect.texture if _icon_rect != null else null
+	preview_icon.expand_mode = TextureRect.EXPAND_IGNORE_SIZE
+	preview_icon.stretch_mode = TextureRect.STRETCH_KEEP_ASPECT_CENTERED
+	preview_icon.set_anchors_and_offsets_preset(Control.PRESET_FULL_RECT)
+	preview_icon.offset_left = 12.0
+	preview_icon.offset_top = 12.0
+	preview_icon.offset_right = -12.0
+	preview_icon.offset_bottom = -12.0
+	preview.add_child(preview_icon)
 	set_drag_preview(preview)
 	return {
 		"type": "result_token",
@@ -163,20 +183,11 @@ func _build_visible_text() -> String:
 	var symbol_id = str(result_data.get("symbol_id", "")).strip_edges()
 	if symbol_id == "+1" or symbol_id == "x2":
 		return symbol_id
-	if texture == null:
+	if _icon_rect == null or _icon_rect.texture == null:
 		return symbol_id if not symbol_id.is_empty() else str(result_data.get("label", ""))
 	if get_durability_mode() == "ephemeral":
 		return str(get_remaining_uses())
 	return ""
-
-func _build_mode_badge_text() -> String:
-	match get_durability_mode():
-		"ephemeral":
-			return "E"
-		"perennial":
-			return "P"
-		_:
-			return "R"
 
 func _ensure_text_label() -> void:
 	if _text_label != null:
@@ -196,23 +207,26 @@ func _ensure_text_label() -> void:
 	_text_label.add_theme_color_override("font_outline_color", Color(0, 0, 0, 1))
 	add_child(_text_label)
 
-func _ensure_mode_label() -> void:
-	if _mode_label != null:
+func _ensure_icon_rect() -> void:
+	if _icon_rect != null:
 		return
-	_mode_label = get_node_or_null("ModeLabel") as Label
-	if _mode_label != null:
+	_icon_rect = get_node_or_null("IconRect") as TextureRect
+	if _icon_rect != null:
 		return
-	_mode_label = Label.new()
-	_mode_label.name = "ModeLabel"
-	_mode_label.horizontal_alignment = HORIZONTAL_ALIGNMENT_RIGHT
-	_mode_label.vertical_alignment = VERTICAL_ALIGNMENT_TOP
-	_mode_label.set_anchors_and_offsets_preset(Control.PRESET_TOP_RIGHT)
-	_mode_label.offset_left = -28.0
-	_mode_label.offset_top = 4.0
-	_mode_label.offset_right = -4.0
-	_mode_label.offset_bottom = 24.0
-	_mode_label.add_theme_font_size_override("font_size", 14)
-	_mode_label.add_theme_color_override("font_color", Color(1, 0.95, 0.7, 1))
-	_mode_label.add_theme_constant_override("outline_size", 3)
-	_mode_label.add_theme_color_override("font_outline_color", Color(0, 0, 0, 1))
-	add_child(_mode_label)
+	_icon_rect = TextureRect.new()
+	_icon_rect.name = "IconRect"
+	_icon_rect.mouse_filter = Control.MOUSE_FILTER_IGNORE
+	_icon_rect.expand_mode = TextureRect.EXPAND_IGNORE_SIZE
+	_icon_rect.stretch_mode = TextureRect.STRETCH_KEEP_ASPECT_CENTERED
+	_icon_rect.set_anchors_and_offsets_preset(Control.PRESET_FULL_RECT)
+	_icon_rect.offset_left = 12.0
+	_icon_rect.offset_top = 12.0
+	_icon_rect.offset_right = -12.0
+	_icon_rect.offset_bottom = -12.0
+	add_child(_icon_rect)
+
+func _load_background_texture(durability_mode: String) -> Texture2D:
+	var background_path = str(DURABILITY_BACKGROUND_PATHS.get(durability_mode, DURABILITY_BACKGROUND_PATHS["exhaustible"]))
+	if background_path.is_empty() or not ResourceLoader.exists(background_path):
+		return null
+	return load(background_path)

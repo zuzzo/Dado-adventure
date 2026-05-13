@@ -31,13 +31,13 @@
 		],
 		"starting_objects": [
 			"spada",
-			"armatura_di_pelle"
+			"scudo_di_legno"
 		]
 	},
 	{
 		"ability_effects": [
 			{
-				"amount": 1.0,
+				"amount": 1,
 				"type": "pay_hp_cost"
 			},
 			{
@@ -54,12 +54,7 @@
 		"name": "Mago",
 		"starting_loadout": [
 			{
-				"durability_mode": "exhaustible",
-				"remaining_uses": 1,
-				"symbol_id": "magia"
-			},
-			{
-				"durability_mode": "exhaustible",
+				"durability_mode": "perennial",
 				"remaining_uses": 1,
 				"symbol_id": "magia"
 			},

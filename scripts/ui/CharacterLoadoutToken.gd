@@ -1,19 +1,25 @@
 extends TextureRect
 
+const DURABILITY_BACKGROUND_PATHS := {
+	"perennial": "res://assets/icone/ferro.png",
+	"exhaustible": "res://assets/icone/legno.png",
+	"ephemeral": "res://assets/icone/carta.png"
+}
+
 var icon_id: String = ""
 var texture_path: String = ""
 var config: Dictionary = {}
 var is_palette_token: bool = false
 var _slot = null
 var _editor_module = null
-var _overlay_label: Label
+var _icon_rect: TextureRect
 
 func _ready() -> void:
 	mouse_filter = Control.MOUSE_FILTER_PASS
 	expand_mode = TextureRect.EXPAND_IGNORE_SIZE
 	stretch_mode = TextureRect.STRETCH_KEEP_ASPECT_CENTERED
 	custom_minimum_size = Vector2(64, 64)
-	_ensure_overlay_label()
+	_ensure_icon_rect()
 	_refresh_visuals()
 
 func setup(p_icon_id: String, p_texture_path: String, p_config: Dictionary, p_editor_module, p_is_palette_token := false) -> void:
@@ -22,8 +28,6 @@ func setup(p_icon_id: String, p_texture_path: String, p_config: Dictionary, p_ed
 	config = p_config.duplicate(true)
 	is_palette_token = p_is_palette_token
 	_editor_module = p_editor_module
-	if not texture_path.is_empty() and ResourceLoader.exists(texture_path):
-		texture = load(texture_path)
 	_ensure_defaults()
 	_refresh_visuals()
 
@@ -50,40 +54,13 @@ func _ensure_defaults() -> void:
 	if not config.has("remaining_uses"):
 		config["remaining_uses"] = 1
 
-func _ensure_overlay_label() -> void:
-	_overlay_label = get_node_or_null("OverlayLabel") as Label
-	if _overlay_label != null:
-		return
-	_overlay_label = Label.new()
-	_overlay_label.name = "OverlayLabel"
-	_overlay_label.mouse_filter = Control.MOUSE_FILTER_IGNORE
-	_overlay_label.set_anchors_and_offsets_preset(Control.PRESET_BOTTOM_RIGHT)
-	_overlay_label.offset_left = -34.0
-	_overlay_label.offset_top = -22.0
-	_overlay_label.offset_right = -6.0
-	_overlay_label.offset_bottom = -4.0
-	_overlay_label.horizontal_alignment = HORIZONTAL_ALIGNMENT_RIGHT
-	_overlay_label.vertical_alignment = VERTICAL_ALIGNMENT_BOTTOM
-	_overlay_label.add_theme_font_size_override("font_size", 14)
-	_overlay_label.add_theme_constant_override("outline_size", 3)
-	_overlay_label.add_theme_color_override("font_color", Color(1, 1, 1, 1))
-	_overlay_label.add_theme_color_override("font_outline_color", Color(0, 0, 0, 1))
-	add_child(_overlay_label)
-
 func _refresh_visuals() -> void:
-	if _overlay_label == null:
+	if _icon_rect == null:
 		return
 	var durability_mode: String = str(config.get("durability_mode", "exhaustible"))
 	var remaining_uses: int = max(1, int(config.get("remaining_uses", 1)))
-	var suffix: String = ""
-	match durability_mode:
-		"ephemeral":
-			suffix = "E%d" % remaining_uses
-		"perennial":
-			suffix = "P"
-		_:
-			suffix = "R"
-	_overlay_label.text = "" if is_palette_token else suffix
+	texture = null if is_palette_token else _load_background_texture(durability_mode)
+	_icon_rect.texture = _load_icon_texture()
 	tooltip_text = _build_tooltip(durability_mode, remaining_uses)
 
 func _build_tooltip(durability_mode: String, remaining_uses: int) -> String:
@@ -105,13 +82,27 @@ func _gui_input(event: InputEvent) -> void:
 			accept_event()
 
 func _get_drag_data(_at_position: Vector2) -> Variant:
-	if texture == null:
+	if _icon_rect == null or _icon_rect.texture == null:
 		return null
-	var preview := TextureRect.new()
-	preview.texture = texture
+	var preview := Control.new()
 	preview.custom_minimum_size = custom_minimum_size
-	preview.expand_mode = TextureRect.EXPAND_IGNORE_SIZE
-	preview.stretch_mode = TextureRect.STRETCH_KEEP_ASPECT_CENTERED
+	preview.size = custom_minimum_size
+	var preview_background := TextureRect.new()
+	preview_background.texture = texture if not is_palette_token else null
+	preview_background.expand_mode = TextureRect.EXPAND_IGNORE_SIZE
+	preview_background.stretch_mode = TextureRect.STRETCH_KEEP_ASPECT_CENTERED
+	preview_background.set_anchors_and_offsets_preset(Control.PRESET_FULL_RECT)
+	preview.add_child(preview_background)
+	var preview_icon := TextureRect.new()
+	preview_icon.texture = _icon_rect.texture
+	preview_icon.expand_mode = TextureRect.EXPAND_IGNORE_SIZE
+	preview_icon.stretch_mode = TextureRect.STRETCH_KEEP_ASPECT_CENTERED
+	preview_icon.set_anchors_and_offsets_preset(Control.PRESET_FULL_RECT)
+	preview_icon.offset_left = 8.0
+	preview_icon.offset_top = 8.0
+	preview_icon.offset_right = -8.0
+	preview_icon.offset_bottom = -8.0
+	preview.add_child(preview_icon)
 	set_drag_preview(preview)
 	return {
 		"type": "character_loadout_token",
@@ -121,3 +112,30 @@ func _get_drag_data(_at_position: Vector2) -> Variant:
 		"config": get_config(),
 		"is_palette_token": is_palette_token
 	}
+
+func _ensure_icon_rect() -> void:
+	_icon_rect = get_node_or_null("IconRect") as TextureRect
+	if _icon_rect != null:
+		return
+	_icon_rect = TextureRect.new()
+	_icon_rect.name = "IconRect"
+	_icon_rect.mouse_filter = Control.MOUSE_FILTER_IGNORE
+	_icon_rect.expand_mode = TextureRect.EXPAND_IGNORE_SIZE
+	_icon_rect.stretch_mode = TextureRect.STRETCH_KEEP_ASPECT_CENTERED
+	_icon_rect.set_anchors_and_offsets_preset(Control.PRESET_FULL_RECT)
+	_icon_rect.offset_left = 8.0
+	_icon_rect.offset_top = 8.0
+	_icon_rect.offset_right = -8.0
+	_icon_rect.offset_bottom = -8.0
+	add_child(_icon_rect)
+
+func _load_icon_texture() -> Texture2D:
+	if texture_path.is_empty() or not ResourceLoader.exists(texture_path):
+		return null
+	return load(texture_path)
+
+func _load_background_texture(durability_mode: String) -> Texture2D:
+	var background_path = str(DURABILITY_BACKGROUND_PATHS.get(durability_mode, DURABILITY_BACKGROUND_PATHS["exhaustible"]))
+	if background_path.is_empty() or not ResourceLoader.exists(background_path):
+		return null
+	return load(background_path)

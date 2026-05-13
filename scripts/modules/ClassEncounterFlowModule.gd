@@ -22,6 +22,11 @@ const LOADOUT_ICON_PATHS := {
 	"+1": "res://assets/icone/+1.png",
 	"x2": "res://assets/icone/+1.png"
 }
+const DURABILITY_BACKGROUND_PATHS := {
+	"perennial": "res://assets/icone/ferro.png",
+	"exhaustible": "res://assets/icone/legno.png",
+	"ephemeral": "res://assets/icone/carta.png"
+}
 
 @export var spada_dice_scene: PackedScene
 @export var scudo_dice_scene: PackedScene
@@ -194,30 +199,10 @@ func _build_loadout_preview(character):
 		var center: CenterContainer = CenterContainer.new()
 		center.set_anchors_and_offsets_preset(Control.PRESET_FULL_RECT)
 		panel.add_child(center)
-		var icon: TextureRect = TextureRect.new()
-		icon.custom_minimum_size = Vector2(72, 72)
-		icon.expand_mode = TextureRect.EXPAND_IGNORE_SIZE
-		icon.stretch_mode = TextureRect.STRETCH_KEEP_ASPECT_CENTERED
-		var icon_path = str(LOADOUT_ICON_PATHS.get(str(symbol_id), ""))
-		if not icon_path.is_empty() and ResourceLoader.exists(icon_path):
-			icon.texture = load(icon_path)
-		icon.tooltip_text = _build_loadout_tooltip(entry)
-		center.add_child(icon)
-		var badge: Label = Label.new()
-		badge.set_anchors_and_offsets_preset(Control.PRESET_BOTTOM_RIGHT)
-		badge.offset_left = -30.0
-		badge.offset_top = -22.0
-		badge.offset_right = -4.0
-		badge.offset_bottom = -4.0
-		badge.horizontal_alignment = HORIZONTAL_ALIGNMENT_RIGHT
-		badge.vertical_alignment = VERTICAL_ALIGNMENT_BOTTOM
-		badge.add_theme_font_size_override("font_size", 13)
-		badge.add_theme_constant_override("outline_size", 3)
-		badge.add_theme_color_override("font_color", Color(1, 1, 1, 1))
-		badge.add_theme_color_override("font_outline_color", Color(0, 0, 0, 1))
-		badge.text = _get_loadout_badge(entry)
-		panel.add_child(badge)
-		if icon.texture == null:
+		var icon_holder = _build_framed_loadout_icon(symbol_id, entry)
+		icon_holder.tooltip_text = _build_loadout_tooltip(entry)
+		center.add_child(icon_holder)
+		if not _icon_exists_for_symbol(symbol_id):
 			var label: Label = Label.new()
 			label.set_anchors_and_offsets_preset(Control.PRESET_FULL_RECT)
 			label.horizontal_alignment = HORIZONTAL_ALIGNMENT_CENTER
@@ -378,12 +363,36 @@ func _build_loadout_tooltip(entry: Dictionary) -> String:
 		return "%s | %s | Usi: %d" % [symbol_id.capitalize(), mode_label, int(entry.get("remaining_uses", 1))]
 	return "%s | %s" % [symbol_id.capitalize(), mode_label]
 
-func _get_loadout_badge(entry: Dictionary) -> String:
-	var durability_mode = str(entry.get("durability_mode", "exhaustible"))
-	match durability_mode:
-		"ephemeral":
-			return "E%d" % int(entry.get("remaining_uses", 1))
-		"perennial":
-			return "P"
-		_:
-			return "R"
+func _build_framed_loadout_icon(symbol_id: String, entry: Dictionary) -> Control:
+	var holder := Control.new()
+	holder.custom_minimum_size = Vector2(72, 72)
+	var durability_mode = str(entry.get("durability_mode", "exhaustible")).strip_edges().to_lower()
+	var background := TextureRect.new()
+	background.expand_mode = TextureRect.EXPAND_IGNORE_SIZE
+	background.stretch_mode = TextureRect.STRETCH_KEEP_ASPECT_CENTERED
+	background.set_anchors_and_offsets_preset(Control.PRESET_FULL_RECT)
+	background.texture = _load_durability_background(durability_mode)
+	holder.add_child(background)
+	var icon := TextureRect.new()
+	icon.expand_mode = TextureRect.EXPAND_IGNORE_SIZE
+	icon.stretch_mode = TextureRect.STRETCH_KEEP_ASPECT_CENTERED
+	icon.set_anchors_and_offsets_preset(Control.PRESET_FULL_RECT)
+	icon.offset_left = 8.0
+	icon.offset_top = 8.0
+	icon.offset_right = -8.0
+	icon.offset_bottom = -8.0
+	var icon_path = str(LOADOUT_ICON_PATHS.get(str(symbol_id), ""))
+	if not icon_path.is_empty() and ResourceLoader.exists(icon_path):
+		icon.texture = load(icon_path)
+	holder.add_child(icon)
+	return holder
+
+func _load_durability_background(durability_mode: String) -> Texture2D:
+	var background_path = str(DURABILITY_BACKGROUND_PATHS.get(durability_mode, DURABILITY_BACKGROUND_PATHS["exhaustible"]))
+	if background_path.is_empty() or not ResourceLoader.exists(background_path):
+		return null
+	return load(background_path)
+
+func _icon_exists_for_symbol(symbol_id: String) -> bool:
+	var icon_path = str(LOADOUT_ICON_PATHS.get(str(symbol_id), ""))
+	return not icon_path.is_empty() and ResourceLoader.exists(icon_path)

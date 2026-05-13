@@ -1,0 +1,582 @@
+Recap Progetto Dado Adventure
+Data aggiornamento: 2026-05-13
+
+Scopo di questo file
+- Questo documento serve come handoff completo per una futura chat.
+- Riassume lo stato attuale del progetto, cosa esiste nel codice, cosa e stato cambiato di recente, e quali decisioni di design sono gia state prese.
+- L'obiettivo e evitare di dover rispiegare da zero personaggi, combattimento, dungeon, editor e direzione del redesign.
+
+Panoramica generale
+- Il progetto e un gioco Godot 4.5 chiamato "Dado Adventure".
+- Scena iniziale: res://scenes/Main.tscn
+- Script principale: res://scripts/Main.gd
+- Il main carica un menu principale che apre diversi moduli separati.
+
+Moduli attualmente presenti
+- Main Menu
+  - Scene: res://scenes/modules/MainMenuModule.tscn
+  - Script: res://scripts/modules/MainMenuModule.gd
+  - Funzione: hub centrale del progetto
+  - Da qui si aprono:
+    - gioco / flow principale
+    - editor personaggi
+    - editor carte dungeon / nemici
+    - generatore dungeon
+
+- Flusso di gioco / selezione personaggio
+  - Scene: res://scenes/modules/ClassEncounterFlowModule.tscn
+  - Script: res://scripts/modules/ClassEncounterFlowModule.gd
+  - Funzione:
+    - mostra la selezione del personaggio
+    - legge il database dei personaggi JSON
+    - mostra anteprima di statistiche, abilita, loadout iniziale e oggetti iniziali
+    - avvia il modulo di combattimento passando HP, MP, lunghezza traccia, abilita, loadout e oggetti iniziali
+
+- Combattimento
+  - Scene: res://scenes/modules/BattleBoardModule.tscn
+  - Script: res://scripts/modules/BattleBoardModule.gd
+  - Funzione:
+    - griglia di gioco
+    - piazzamento simboli
+    - reveal della carta nemico
+    - selezione/risoluzione della sequenza tracciata
+    - gestione equipaggiamento e oggetti
+    - gestione HP, MP, oro, difesa temporanea, esaurimento, oggetti distrutti
+
+- Editor personaggi
+  - Scene: res://scenes/modules/CharacterEditorModule.tscn
+  - Script: res://scripts/modules/CharacterEditorModule.gd
+  - Funzione:
+    - CRUD dei personaggi
+    - salvataggio su JSON
+    - composizione visuale del loadout iniziale
+    - scelta degli oggetti iniziali
+    - supporto a modalita di durata icone: esauribile, effimera, perenne
+
+- Editor carte dungeon / nemici / oggetti
+  - Scene: res://scenes/modules/EnemyEditorModule.tscn
+  - Script: res://scripts/modules/EnemyEditorModule.gd
+  - Funzione:
+    - CRUD del database carte
+    - supporto a categorie multiple: mostro, tesoro, trappola, scala, evento, porta, oggetto
+    - gestione requisiti, sequenze attacco, effetti, immagini
+    - per gli oggetti: slot equipaggiamento, icone conferite, durata, costo di attivazione, armatura, danno arma
+
+- Generatore dungeon
+  - Scene: res://scenes/modules/DungeonGeneratorModule.tscn
+  - Script: res://scripts/modules/DungeonGeneratorModule.gd
+  - Canvas di disegno: res://scripts/ui/DungeonMapCanvas.gd
+  - Funzione:
+    - genera stanze casuali
+    - costruisce corridoi senza sovrapposizioni
+    - imposta ingresso e uscita con un percorso minimo coerente col livello richiesto
+    - mostra un personaggio/cavaliere che si muove lungo il dungeon
+
+Moduli / file secondari importanti
+- Result token UI: res://scripts/ui/ResultToken.gd
+- Overlay traccia drag: res://scripts/ui/DragPathOverlay.gd
+- Slot/tokens per editor personaggio:
+  - res://scripts/ui/CharacterLoadoutSlot.gd
+  - res://scripts/ui/CharacterLoadoutToken.gd
+- Slot/tokens per editor nemico:
+  - res://scripts/ui/EnemyRequirementSlot.gd
+  - res://scripts/ui/EnemyRequirementToken.gd
+- Parser testuale effetti:
+  - res://scripts/core/EffectTextParser.gd
+- Documento decisioni redesign combattimento:
+  - res://decisioni_sistema_combattimento.txt
+
+Cronologia recente di sviluppo
+- 47c91a1 Add class encounter flow and enemy data modules
+- a07b522 Add editors menu and enemy card preview updates
+- 72b1415 Update dungeon flow and game content
+- aa761e1 Add combat system design notes
+- abb2757 Refactor character loadout and battle trace flow
+- 5e0cf3e Refine dungeon cards and combat systems
+
+Stato attuale del sistema personaggi
+- I personaggi sono nel file:
+  - res://data/characters/character_database.json
+- Ogni personaggio attualmente ha:
+  - id
+  - nome
+  - immagine
+  - hp
+  - mp
+  - max_trace_length
+  - starting_loadout
+  - starting_objects
+  - ability_text
+  - ability_effects
+
+Personaggi attuali nel database
+- Guerriero
+  - HP 10
+  - MP 0
+  - Traccia massima 2
+  - Loadout iniziale:
+    - spada perenne
+    - cuore esauribile
+  - Oggetti iniziali:
+    - spada
+    - armatura_di_pelle
+  - Abilita:
+    - paga 1 HP
+    - riattiva un dado/simbolo esausto
+
+- Mago
+  - HP 7
+  - MP 3
+  - Traccia massima 4
+  - Loadout iniziale:
+    - magia
+    - magia
+    - cuore
+  - Oggetti iniziali: nessuno
+  - Abilita:
+    - paga 1 HP
+    - crea simbolo effimero
+
+- Ladro
+  - HP 8
+  - MP 1
+  - Traccia massima 4
+  - Loadout iniziale:
+    - ladro
+    - arco
+    - moneta
+  - Oggetti iniziali: nessuno
+  - Abilita:
+    - paga 1 HP
+    - imposta un simbolo desiderato su un dado/simbolo esausto
+
+- Stregone
+  - HP 7
+  - MP 3
+  - Traccia massima 4
+  - Loadout iniziale:
+    - magia
+    - spada
+    - cuore
+    - moneta
+  - Oggetti iniziali: nessuno
+  - Abilita:
+    - paga 1 HP
+    - seleziona una sequenza aggiuntiva
+
+Nota importante sui personaggi
+- Il vecchio modello "starting_dice_count" e stato superato dal nuovo modello "starting_loadout".
+- Ora il personaggio parte con icone/token iniziali configurabili, non solo con un numero di dadi generico.
+- Gli oggetti iniziali sono gestiti separatamente rispetto al loadout.
+
+Stato attuale dell'editor personaggi
+- L'editor personaggi permette di:
+  - creare/modificare/cancellare personaggi
+  - scegliere immagine
+  - configurare HP, MP e lunghezza massima della traccia
+  - inserire testo abilita che viene convertito in effect list tramite EffectTextParser
+  - scegliere oggetti iniziali dal database oggetti
+  - costruire il loadout iniziale trascinando icone in slot
+
+Durata icone nel loadout personaggio
+- exhaustible
+  - usa standard che poi va in esaurimento
+- ephemeral
+  - numero limitato di utilizzi, poi sparisce
+- perennial
+  - resta disponibile come risorsa persistente
+
+Nota implementativa importante
+- Nel codice e gia presente il supporto dati per queste durate.
+- Questo e fondamentale per il redesign basato su equipaggiamento persistente e oggetti effimeri.
+
+Stato attuale del combattimento
+- Il modulo di combattimento e BattleBoardModule.
+- La griglia supporta:
+  - piazzamento dei simboli
+  - reveal del nemico dopo che tutti i simboli sono stati piazzati
+  - selezione tramite drag ortogonale
+  - lunghezza massima della traccia dipendente dal personaggio
+  - no riuso della stessa cella nella stessa sequenza
+  - solo movimenti ortogonali
+
+Vecchio sistema vs nuovo sistema
+- Vecchio sistema:
+  - click su riga o colonna
+  - risoluzione dell'intera riga/colonna
+- Nuovo sistema:
+  - drag manuale su celle adiacenti ortogonali
+  - costruzione di una sequenza simbolica
+  - risoluzione della sequenza come formula leggibile
+
+Stato attuale della formula nel codice
+- Esiste gia una prima implementazione della risoluzione con:
+  - simboli base
+  - modificatori
+  - raggruppamento dei simboli uguali consecutivi
+- I modificatori supportati chiaramente nel codice sono:
+  - +1
+  - x2
+- La funzione chiave per questa logica e:
+  - _resolve_formula_outputs()
+
+Regola attuale implementata / discussa
+- La sequenza viene letta nell'ordine del drag.
+- I simboli base uguali e consecutivi si sommano prima.
+- I modificatori si applicano al blocco immediatamente precedente.
+- Esempio deciso:
+  - spada, spada, x2
+  - diventa spada(2)
+  - poi spada(4)
+
+Uso dei simboli nel combattimento
+- Scudo:
+  - accumula difesa temporanea
+- Cuore:
+  - cura
+- Moneta:
+  - genera oro
+- Altri simboli:
+  - vengono consumati come output per soddisfare i requisiti del nemico
+
+Meccaniche di stato nel combattimento
+- HP personaggio
+- MP personaggio
+- Oro
+- Difesa temporanea pendente
+- Equipaggiamento corrente:
+  - weapon
+  - armor
+  - accessory
+- Bonus attacco corrente
+- Danno arma per colpo
+- Armatura corrente
+- Celle esauste
+- Reroll bloccato su celle specifiche
+- Board layout lock in alcuni momenti
+
+Oggetti ed equipaggiamento nel combattimento
+- Gli oggetti sono salvati nello stesso database delle carte, ma con category = object.
+- Gli oggetti possono:
+  - occupare slot di equipaggiamento
+  - conferire nuove icone al tray
+  - avere durata per le icone conferite
+  - avere costi di attivazione, per ora anche a mana
+  - modificare attacco e armatura
+
+Stato attuale degli slot equipaggiamento
+- weapon
+- armor
+- accessory
+
+Comportamento degli oggetti
+- Un oggetto equipaggiato puo aggiungere token al tray.
+- I token possono essere:
+  - esauribili
+  - effimeri
+  - perenni
+- Se un token effimero di un oggetto viene distrutto/consumato del tutto, il codice puo rimuovere anche l'oggetto sorgente e i token collegati.
+
+Costo di attivazione token
+- Supporto presente nel codice:
+  - activation_cost_type
+  - activation_cost_amount
+- Al momento esiste almeno:
+  - none
+  - mana
+- Il BattleBoard controlla se il personaggio puo pagare il costo prima di consentire l'uso del token.
+
+Abilita personaggio attualmente integrate
+- pay_hp_cost
+- reactivate_exhausted_die
+- create_ephemeral_symbol
+- set_exhausted_die_symbol
+- select_extra_line
+
+Nota importante
+- Il nome interno di alcune abilita usa ancora termini del sistema precedente come "die" o "line".
+- Il concetto pero sta gia migrando verso token/icone/traccia.
+- Questo e un punto di refactor concettuale futuro: allineare naming e UX al nuovo modello.
+
+Stato attuale dei nemici / carte dungeon
+- Database:
+  - res://data/enemies/enemy_database.json
+- Le carte non sono solo mostri:
+  - monster
+  - trap
+  - door
+  - event
+  - object
+  - il codice supporta anche treasure e stairs nell'editor, anche se il database attuale mostrato non li usa ancora davvero
+
+Campi principali delle carte
+- id
+- name
+- image
+- category
+- difficulty
+- enemy_damage
+- attack_sequences
+- requirements
+- flee_text / failure_text
+- flee_effects / failure_effects
+- reward_text
+- reward_effects
+- equipment_slot
+- attack_bonus
+- weapon_attack_count
+- weapon_damage_per_hit
+- armor_value
+- granted_icons
+- granted_durability_mode
+- granted_remaining_uses
+- activation_cost_type
+- activation_cost_amount
+
+Categorie attuali nel database
+- Mostri:
+  - scheletro_guerriero
+  - goblin
+  - licantropo
+- Trappola:
+  - spuntoni
+- Porta:
+  - inferiata
+- Evento:
+  - mercante
+- Oggetti:
+  - spada
+  - scudo
+  - armatura_di_pelle
+
+Mostri / carte esempio
+- Scheletro guerriero
+  - category monster
+  - danno 1
+  - attack_sequences:
+    - spada, spada
+    - spada, scudo
+  - requirements:
+    - spada, arco, spada
+
+- Goblin
+  - category monster
+  - danno 1
+  - attack_sequences:
+    - spada
+    - spada, scudo
+  - requirements:
+    - ladro, arco
+
+- Licantropo
+  - category monster
+  - danno 2
+  - attack_sequences:
+    - spada
+    - spada, spada
+    - scudo, spada
+  - requirements:
+    - ladro, magia, magia, arco
+
+Oggetti attuali nel database
+- Spada
+  - category object
+  - slot weapon
+  - granted_icons:
+    - spada
+  - durability: perennial
+  - weapon_attack_count: 1
+  - weapon_damage_per_hit: 3
+
+- Scudo
+  - category object
+  - slot armor
+  - granted_icons:
+    - scudo
+  - durability: ephemeral
+  - remaining uses: 3
+  - armor_value: 1
+
+- Armatura di pelle
+  - category object
+  - slot armor
+  - granted_icons:
+    - scudo
+  - durability: exhaustible
+  - armor_value: 3
+
+Stato attuale dell'editor carte dungeon / nemici
+- L'editor supporta:
+  - immagini
+  - categoria carta
+  - requisiti tramite slot di icone
+  - sequenze di attacco nemico tramite text edit
+  - reward e flee/failure text
+  - per gli oggetti:
+    - slot equip
+    - durata icone conferite
+    - numero usi delle icone effimere
+    - danno per colpo
+    - armatura
+    - costo di attivazione
+    - icone conferite quando equipaggiato
+
+Sequenze attacco nemico
+- Esiste un nuovo concetto di "attack_sequences" per i nemici.
+- L'editor le scrive come una sequenza per riga.
+- Token riconosciuti dal parser editor:
+  - spada
+  - scudo
+  - sinonimi base come attacco/attack -> spada e para/blocco -> scudo
+- Questo sembra essere la direzione per far attaccare il nemico secondo pattern, non solo con un danno numerico secco.
+
+Stato attuale del dungeon generator
+- Il modulo genera una mappa con:
+  - stanze casuali
+  - corridoi ortogonali
+  - grafo di connessione
+  - ingresso e uscita
+- Il livello richiesto influenza il numero di stanze tra ingresso e uscita.
+- Se il numero stanze richiesto non basta a rispettare la distanza minima, il generatore aumenta il numero stanze.
+- Il codice prova piu generazioni finche non trova una mappa con corridoi non sovrapposti e grafo connesso.
+
+Obiettivi e comportamento del dungeon generator attuale
+- percorso principale coerente col livello
+- stanze collegate da corridoi validi
+- nessun attraversamento casuale di altre stanze o altri corridoi in conflitto
+- anteprima grafica della pianta
+
+Stato attuale del movimento nel dungeon
+- Script: res://scripts/ui/DungeonMapCanvas.gd
+- Lo sprite del cavaliere:
+  - si muove lungo il percorso corretto
+  - segue il grafo e i corridoi
+  - non attraversa lo spazio vuoto
+  - puo attraversare piu stanze lungo un percorso
+  - fa soste nelle stanze intermedie
+  - usa traiettorie rese piu fluide comprimendo il path ai punti di svolta
+
+Audio passi nel dungeon
+- E stato collegato il file:
+  - res://assets/Sound effect/passi_2.mp3
+- Il suono parte mentre il cavaliere si muove e si ferma all'arrivo.
+- Il file e impostato per essere usato in loop durante il movimento.
+
+Stato attuale del redesign combattimento
+- E gia stato discusso e documentato in:
+  - res://decisioni_sistema_combattimento.txt
+- Idee chiave decise:
+  - abbandono del puro sistema riga/colonna
+  - drag manuale ortogonale
+  - formula leggibile
+  - simboli base + modificatori
+  - raggruppamento di simboli uguali consecutivi
+  - modificatori sul blocco precedente
+  - differenza chiara tra:
+    - esauribile
+    - effimero
+    - perenne
+
+Vocabolario di design ormai emerso
+- simboli base:
+  - spada
+  - scudo
+  - cuore
+  - eventuali utility come chiave
+- modificatori:
+  - +1
+  - x2
+- oggetti:
+  - possono occupare griglia o tray come token
+  - possono essere persistenti o consumabili
+
+Decisioni concettuali importanti gia prese
+- Gli oggetti possono stare nel sistema, ma non sono semplici simboli tutti uguali.
+- Devono avere durata e comportamento distinti.
+- Gli oggetti possono essere:
+  - persistenti
+  - effimeri / consumabili
+- Esempio di design discusso:
+  - una palla di fuoco da 4 danni combinata con x2 diventa 8 danni
+  - la differenza rispetto a una spada e nella durata / consumo
+
+Stato reale del codice rispetto alla visione di design
+- Una parte del redesign e gia entrata nel codice:
+  - drag ortogonale
+  - max trace length
+  - grouping/modifier logic
+  - oggetti con durate diverse
+  - mana cost per token
+  - equipaggiamento con icone conferite
+- Una parte e ancora concettuale o parziale:
+  - algebra completa piu ampia
+  - palla di fuoco come esempio concreto
+  - piena conversione di tutti i nemici da "simboli richiesti" a "output richiesti"
+  - completa pulizia del naming legacy
+
+Trace e debug
+- Esiste il file:
+  - res://trace_debug_log.txt
+- BattleBoardModule contiene logging di debug per il drag path.
+- Questo e utile se in futuro bisogna diagnosticare problemi di selezione della traccia.
+
+Asset attualmente rilevanti
+- Personaggi:
+  - res://assets/characters/
+- Enemies / carte:
+  - res://assets/enemies/
+- Oggetti:
+  - res://assets/item/
+- Icone/token:
+  - res://assets/icone/
+- Audio:
+  - res://assets/Sound effect/
+  - res://assets/musica/
+
+File da tenere presenti in una futura chat
+- Stato generale e regole:
+  - res://recap_progetto_2026-05-13.txt
+  - res://decisioni_sistema_combattimento.txt
+- Personaggi:
+  - res://data/characters/character_database.json
+  - res://scripts/modules/CharacterEditorModule.gd
+  - res://scripts/modules/ClassEncounterFlowModule.gd
+- Combattimento:
+  - res://scripts/modules/BattleBoardModule.gd
+  - res://scripts/ui/ResultToken.gd
+  - res://scripts/ui/DragPathOverlay.gd
+- Carte dungeon / oggetti:
+  - res://data/enemies/enemy_database.json
+  - res://scripts/modules/EnemyEditorModule.gd
+- Dungeon:
+  - res://scripts/modules/DungeonGeneratorModule.gd
+  - res://scripts/ui/DungeonMapCanvas.gd
+
+Problemi / debiti tecnici da ricordare
+- Alcuni testi e nomi interni usano ancora concetti del vecchio sistema:
+  - die
+  - line
+  - reroll
+- Il sistema di combattimento e in transizione tra vecchio modello e nuovo modello.
+- Ci sono ancora campi legacy nei JSON e nel codice che convivono con quelli nuovi.
+- Alcune icone come x2 al momento puntano alla stessa immagine di +1 nel mapping dell'editor/personaggi.
+- Parte dei testi nel database mostra encoding sporco su alcuni accenti.
+
+Direzione sensata per il prossimo sviluppo
+- Consolidare definitivamente il nuovo sistema drag/formula.
+- Rifinire il parser/risolutore per output attacco/difesa/cura/utility.
+- Convertire progressivamente i nemici da requisiti puramente simbolici a requisiti di output o pattern.
+- Separare meglio a livello UX:
+  - token da loadout
+  - token da oggetto equipaggiato
+  - token effimeri/consumabili
+- Allineare naming e interfaccia al nuovo lessico.
+
+Sintesi finale
+- Il progetto non e piu solo un prototipo di dadi con righe/colonne.
+- Sta diventando un sistema ibrido tra:
+  - puzzle tattico su griglia
+  - costruzione di formule con simboli
+  - gestione di equipaggiamento persistente ed effetti effimeri
+  - generazione dungeon con movimento visivo del personaggio
+- Il codice attuale contiene gia buona parte dell'infrastruttura necessaria per questa direzione.
