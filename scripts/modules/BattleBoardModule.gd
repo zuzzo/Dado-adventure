@@ -90,6 +90,7 @@ var current_max_trace_length: int = 4
 var current_character_ability: String = ""
 var current_character_ability_effects: Array = []
 var current_gold: int = 0
+var current_arrows: int = 0
 var current_equipment := {
 	"weapon": {},
 	"armor": {},
@@ -97,6 +98,7 @@ var current_equipment := {
 }
 var current_attack_bonus: int = 0
 var current_weapon_damage_per_hit: int = 1
+var current_weapon_attack_symbol: String = "spada"
 var current_armor: int = 0
 var current_pending_defense: int = 0
 var current_enemy_blocks: int = 0
@@ -231,6 +233,7 @@ func start_battle(character_name: String, hp: int, mp: int, max_trace_length: in
 
 func reset_run_state() -> void:
 	current_gold = 0
+	current_arrows = 0
 	current_equipment = {
 		"weapon": {},
 		"armor": {},
@@ -238,6 +241,7 @@ func reset_run_state() -> void:
 	}
 	current_attack_bonus = 0
 	current_weapon_damage_per_hit = 1
+	current_weapon_attack_symbol = "spada"
 	current_armor = 0
 	current_pending_defense = 0
 	current_enemy_blocks = 0
@@ -835,8 +839,9 @@ func _consume_enemy_requirements(used_symbol_entries: Array) -> void:
 		if symbol_id.is_empty():
 			symbol_id = _infer_symbol_id_from_label(str(entry.get("label", "")))
 		var total_consumption = amount
-		if symbol_id == "spada":
+		if symbol_id == current_weapon_attack_symbol:
 			total_consumption = amount * max(1, current_weapon_damage_per_hit)
+		if symbol_id == "spada":
 			var blocked_consumption = min(current_enemy_blocks, total_consumption)
 			current_enemy_blocks -= blocked_consumption
 			total_consumption -= blocked_consumption
@@ -904,6 +909,30 @@ func _apply_flee_effects() -> void:
 	_update_ability_label()
 	player_stats_changed.emit(current_character_hp, current_gold)
 
+func _apply_reward_effects() -> void:
+	var reward_effects = current_enemy.get("reward_effects", [])
+	if not (reward_effects is Array):
+		return
+	var resources_changed := false
+	for effect in reward_effects:
+		if not (effect is Dictionary):
+			continue
+		var effect_type = str(effect.get("type", ""))
+		var amount = max(0, int(effect.get("amount", 0)))
+		match effect_type:
+			"gain_coins":
+				if amount > 0:
+					current_gold += amount
+					resources_changed = true
+			"gain_arrows":
+				if amount > 0:
+					current_arrows += amount
+					resources_changed = true
+	if resources_changed:
+		_update_ability_label()
+		_refresh_token_cost_states()
+		player_stats_changed.emit(current_character_hp, current_gold)
+
 func _disable_random_active_die() -> void:
 	var available_cells: Array = []
 	for cell in _slot_by_cell.keys():
@@ -957,6 +986,7 @@ func _handle_enemy_defeated() -> void:
 	var equip_text := ""
 	if str(current_enemy.get("category", "")) == "object":
 		equip_text = _equip_current_object()
+	_apply_reward_effects()
 	var reward_text = str(current_enemy.get("reward_text", "")).strip_edges()
 	var next_hint = "Nemico sconfitto. Nuova carta pronta da scoprire."
 	if not equip_text.is_empty():
@@ -1156,7 +1186,7 @@ func _update_ability_label() -> void:
 	var enemy_block_text = ""
 	if current_enemy_blocks > 0:
 		enemy_block_text = " | Parate Nemico: %d" % current_enemy_blocks
-	ability_label.text = "%s | PV: %d | PM: %d | Oro: %d | Difesa: %d | Danno Arma: %d | Armatura: %d%s | Abilita: %s" % [current_character_name, current_character_hp, current_character_mp, current_gold, current_pending_defense, current_weapon_damage_per_hit, current_armor, enemy_block_text, current_character_ability]
+	ability_label.text = "%s | PV: %d | PM: %d | Oro: %d | Frecce: %d | Difesa: %d | Danno %s: %d | Armatura: %d%s | Abilita: %s" % [current_character_name, current_character_hp, current_character_mp, current_gold, current_arrows, current_pending_defense, _get_icon_display_name(current_weapon_attack_symbol), current_weapon_damage_per_hit, current_armor, enemy_block_text, current_character_ability]
 
 func _get_ability_hp_cost() -> int:
 	for effect in current_character_ability_effects:
@@ -1494,11 +1524,11 @@ func _can_pay_token_activation_cost(token_data: Dictionary) -> bool:
 	var cost_amount = max(0, int(token_data.get("activation_cost_amount", 0)))
 	if cost_amount <= 0 or cost_type == "none":
 		return true
-	match cost_type:
-		"mana":
-			return current_character_mp >= cost_amount
-		_:
-			return true
+	if cost_type == "mana":
+		return current_character_mp >= cost_amount
+	if cost_type == "arrows" or cost_type == "freccia" or cost_type == "frecce":
+		return current_arrows >= cost_amount
+	return true
 
 func _pay_token_activation_cost(token_data: Dictionary) -> bool:
 	var cost_type = str(token_data.get("activation_cost_type", "none")).strip_edges().to_lower()
@@ -1507,10 +1537,12 @@ func _pay_token_activation_cost(token_data: Dictionary) -> bool:
 		return true
 	if not _can_pay_token_activation_cost(token_data):
 		return false
-	match cost_type:
-		"mana":
-			current_character_mp = max(current_character_mp - cost_amount, 0)
-			_update_ability_label()
+	if cost_type == "mana":
+		current_character_mp = max(current_character_mp - cost_amount, 0)
+		_update_ability_label()
+	elif cost_type == "arrows" or cost_type == "freccia" or cost_type == "frecce":
+		current_arrows = max(current_arrows - cost_amount, 0)
+		_update_ability_label()
 	return true
 
 func _refresh_token_cost_states() -> void:
@@ -1747,6 +1779,7 @@ func _equip_current_object() -> String:
 func _recalculate_equipment_stats() -> void:
 	current_attack_bonus = 0
 	current_weapon_damage_per_hit = 1
+	current_weapon_attack_symbol = "spada"
 	current_armor = 0
 	for slot_id in current_equipment.keys():
 		var item = current_equipment[slot_id]
@@ -1756,7 +1789,19 @@ func _recalculate_equipment_stats() -> void:
 			if _normalize_equipment_slot(str(item.get("equipment_slot", slot_id))) == "weapon" and weapon_damage > 0:
 				current_weapon_damage_per_hit = max(current_weapon_damage_per_hit, weapon_damage)
 				current_attack_bonus = max(current_attack_bonus, weapon_damage - 1)
+				current_weapon_attack_symbol = _get_weapon_attack_symbol(item)
 			current_armor += int(item.get("armor_value", 0))
+
+func _get_weapon_attack_symbol(item: Dictionary) -> String:
+	var explicit_symbol = str(item.get("weapon_attack_symbol", "")).strip_edges().to_lower()
+	if explicit_symbol == "arco":
+		return "arco"
+	var granted_icons = item.get("granted_icons", [])
+	if granted_icons is Array:
+		for raw_icon in granted_icons:
+			if str(raw_icon).strip_edges().to_lower() == "arco":
+				return "arco"
+	return "spada"
 
 func _normalize_equipment_slot(slot_id: String) -> String:
 	if slot_id == "armor" or slot_id == "accessory":

@@ -29,7 +29,12 @@ const DURABILITY_OPTIONS := [
 ]
 const ACTIVATION_COST_OPTIONS := [
 	{"id": "none", "label": "Nessuno"},
-	{"id": "mana", "label": "Mana"}
+	{"id": "mana", "label": "Mana"},
+	{"id": "arrows", "label": "Frecce"}
+]
+const WEAPON_ATTACK_SYMBOL_OPTIONS := [
+	{"id": "spada", "label": "Spada"},
+	{"id": "arco", "label": "Arco"}
 ]
 const DICE_ICON_PALETTE := [
 	{"id": "spada", "path": "res://assets/icone/spada.png"},
@@ -108,6 +113,8 @@ var object_uses_label: Label
 var object_uses_input: SpinBox
 var weapon_attack_count_label: Label
 var weapon_attack_count_input: SpinBox
+var weapon_attack_symbol_label: Label
+var weapon_attack_symbol_input: OptionButton
 var attack_sequences_label: Label
 var attack_sequence_palette: FlowContainer
 var attack_sequences_text: TextEdit
@@ -181,6 +188,8 @@ func _bind_events():
 		attack_sequences_remove_button.pressed.connect(_on_attack_sequence_remove_pressed)
 	if weapon_attack_count_input != null:
 		weapon_attack_count_input.value_changed.connect(_on_weapon_attack_count_changed)
+	if weapon_attack_symbol_input != null:
+		weapon_attack_symbol_input.item_selected.connect(_on_weapon_attack_symbol_changed)
 	if activation_cost_input != null:
 		activation_cost_input.item_selected.connect(_on_activation_cost_changed)
 	if activation_cost_amount_input != null:
@@ -305,10 +314,21 @@ func _build_object_icon_runtime_ui():
 	right_vbox.add_child(weapon_attack_count_input)
 	right_vbox.move_child(weapon_attack_count_input, weapon_attack_count_label.get_index() + 1)
 
+	weapon_attack_symbol_label = Label.new()
+	weapon_attack_symbol_label.text = "Tipo Attacco"
+	right_vbox.add_child(weapon_attack_symbol_label)
+	right_vbox.move_child(weapon_attack_symbol_label, weapon_attack_count_input.get_index() + 1)
+
+	weapon_attack_symbol_input = OptionButton.new()
+	for option in WEAPON_ATTACK_SYMBOL_OPTIONS:
+		weapon_attack_symbol_input.add_item(str(option["label"]))
+	right_vbox.add_child(weapon_attack_symbol_input)
+	right_vbox.move_child(weapon_attack_symbol_input, weapon_attack_symbol_label.get_index() + 1)
+
 	activation_cost_label = Label.new()
 	activation_cost_label.text = "Costo Attivazione Icone"
 	right_vbox.add_child(activation_cost_label)
-	right_vbox.move_child(activation_cost_label, weapon_attack_count_input.get_index() + 1)
+	right_vbox.move_child(activation_cost_label, weapon_attack_symbol_input.get_index() + 1)
 
 	activation_cost_input = OptionButton.new()
 	for option in ACTIVATION_COST_OPTIONS:
@@ -537,6 +557,9 @@ func _on_armor_value_changed(_value):
 func _on_weapon_attack_count_changed(_value):
 	_update_preview()
 
+func _on_weapon_attack_symbol_changed(_index):
+	_update_preview()
+
 func _on_activation_cost_changed(_index):
 	_update_form_for_category()
 	_update_preview()
@@ -578,6 +601,7 @@ func _save_current_enemy():
 	var equipment_slot = _get_selected_equipment_slot_id()
 	var weapon_damage_per_hit = int(attack_bonus_input.value)
 	var weapon_attack_count = int(weapon_attack_count_input.value)
+	var weapon_attack_symbol = _get_selected_weapon_attack_symbol_id()
 	var attack_bonus = max(0, weapon_damage_per_hit - 1)
 	var armor_value = int(armor_value_input.value)
 	var granted_icons = _get_object_icon_sequence_data()
@@ -586,7 +610,7 @@ func _save_current_enemy():
 	var activation_cost_type = _get_selected_activation_cost_id()
 	var activation_cost_amount = int(activation_cost_amount_input.value)
 	if category_id == "object" and equipment_slot == "weapon":
-		granted_icons = _build_weapon_attack_icons(weapon_attack_count)
+		granted_icons = _build_weapon_attack_icons(weapon_attack_count, weapon_attack_symbol)
 	if category_id == "treasure":
 		outcome_text = flee_text.text
 		reward_value = reward_text.text
@@ -595,6 +619,7 @@ func _save_current_enemy():
 		attack_bonus = 0
 		weapon_damage_per_hit = 0
 		weapon_attack_count = 0
+		weapon_attack_symbol = "spada"
 		armor_value = 0
 		granted_icons = []
 		granted_durability_mode = "exhaustible"
@@ -625,6 +650,7 @@ func _save_current_enemy():
 		"equipment_slot": equipment_slot,
 		"attack_bonus": attack_bonus,
 		"weapon_attack_count": weapon_attack_count,
+		"weapon_attack_symbol": weapon_attack_symbol,
 		"weapon_damage_per_hit": weapon_damage_per_hit,
 		"armor_value": armor_value,
 		"granted_icons": granted_icons,
@@ -681,6 +707,7 @@ func _load_enemy_into_form(index):
 	exhaustion_input.value = float(_get_editor_limit_value(str(enemy.get("category", "monster")), loaded_exhaustion_limit, loaded_attempt_limit))
 	_select_equipment_slot(str(enemy.get("equipment_slot", "")))
 	weapon_attack_count_input.value = float(enemy.get("weapon_attack_count", _count_icons(enemy.get("granted_icons", []), "spada")))
+	_select_weapon_attack_symbol(str(enemy.get("weapon_attack_symbol", _infer_weapon_attack_symbol(enemy.get("granted_icons", [])))))
 	attack_bonus_input.value = float(enemy.get("weapon_damage_per_hit", int(enemy.get("attack_bonus", 0)) + 1 if int(enemy.get("attack_bonus", 0)) > 0 else 0))
 	armor_value_input.value = float(enemy.get("armor_value", 0))
 	_select_object_durability(str(enemy.get("granted_durability_mode", "exhaustible")))
@@ -716,6 +743,7 @@ func _clear_form():
 	_select_equipment_slot("weapon")
 	attack_bonus_input.value = 0
 	weapon_attack_count_input.value = 1
+	_select_weapon_attack_symbol("spada")
 	armor_value_input.value = 0
 	_select_object_durability("exhaustible")
 	object_uses_input.value = 3
@@ -909,7 +937,8 @@ func _normalize_enemy_record(enemy):
 	var granted_remaining_uses = max(1, int(enemy.get("granted_remaining_uses", 1)))
 	var activation_cost_type = _normalize_activation_cost(str(enemy.get("activation_cost_type", "none")))
 	var activation_cost_amount = max(0, int(enemy.get("activation_cost_amount", 0)))
-	var weapon_attack_count = int(enemy.get("weapon_attack_count", _count_icons(granted_icons, "spada")))
+	var weapon_attack_symbol = _normalize_weapon_attack_symbol(str(enemy.get("weapon_attack_symbol", _infer_weapon_attack_symbol(granted_icons))))
+	var weapon_attack_count = int(enemy.get("weapon_attack_count", _count_icons(granted_icons, weapon_attack_symbol)))
 	var success_outcomes: Array = []
 	var raw_success_outcomes = enemy.get("success_outcomes", [])
 	if raw_success_outcomes is Array:
@@ -942,6 +971,7 @@ func _normalize_enemy_record(enemy):
 		"equipment_slot": equipment_slot,
 		"attack_bonus": attack_bonus,
 		"weapon_attack_count": weapon_attack_count,
+		"weapon_attack_symbol": weapon_attack_symbol,
 		"weapon_damage_per_hit": weapon_damage_per_hit,
 		"armor_value": armor_value,
 		"granted_icons": granted_icons,
@@ -1024,6 +1054,12 @@ func _get_selected_activation_cost_id():
 		return "none"
 	return str(ACTIVATION_COST_OPTIONS[selected]["id"])
 
+func _get_selected_weapon_attack_symbol_id():
+	var selected = weapon_attack_symbol_input.selected
+	if selected < 0 or selected >= WEAPON_ATTACK_SYMBOL_OPTIONS.size():
+		return "spada"
+	return str(WEAPON_ATTACK_SYMBOL_OPTIONS[selected]["id"])
+
 func _select_equipment_slot(slot_id):
 	var normalized = _normalize_equipment_slot(slot_id)
 	for index in range(EQUIPMENT_SLOT_OPTIONS.size()):
@@ -1048,6 +1084,14 @@ func _select_activation_cost(cost_id):
 			return
 	activation_cost_input.select(0)
 
+func _select_weapon_attack_symbol(symbol_id):
+	var normalized = _normalize_weapon_attack_symbol(symbol_id)
+	for index in range(WEAPON_ATTACK_SYMBOL_OPTIONS.size()):
+		if str(WEAPON_ATTACK_SYMBOL_OPTIONS[index]["id"]) == normalized:
+			weapon_attack_symbol_input.select(index)
+			return
+	weapon_attack_symbol_input.select(0)
+
 func _normalize_equipment_slot(slot_id):
 	for option in EQUIPMENT_SLOT_OPTIONS:
 		if str(option["id"]) == slot_id:
@@ -1065,6 +1109,19 @@ func _normalize_activation_cost(cost_id):
 		if str(option["id"]) == cost_id:
 			return cost_id
 	return "none"
+
+func _normalize_weapon_attack_symbol(symbol_id):
+	for option in WEAPON_ATTACK_SYMBOL_OPTIONS:
+		if str(option["id"]) == symbol_id:
+			return symbol_id
+	return "spada"
+
+func _infer_weapon_attack_symbol(icons) -> String:
+	if icons is Array:
+		for raw_icon in icons:
+			if str(raw_icon) == "arco":
+				return "arco"
+	return "spada"
 
 func _get_object_durability_label(durability_id):
 	var normalized = _normalize_object_durability(durability_id)
@@ -1140,6 +1197,8 @@ func _update_form_for_category():
 	attack_bonus_input.visible = is_weapon
 	weapon_attack_count_label.visible = is_weapon
 	weapon_attack_count_input.visible = is_weapon
+	weapon_attack_symbol_label.visible = is_weapon
+	weapon_attack_symbol_input.visible = is_weapon
 	armor_value_label.visible = is_armor
 	armor_value_input.visible = is_armor
 	var show_manual_icons = is_object and not is_weapon
@@ -1175,6 +1234,7 @@ func _update_form_for_category():
 		flee_label.text = "Testo Se Non Recuperato"
 		reward_label.text = "Testo Equipaggiamento"
 		weapon_attack_count_input.editable = is_weapon
+		weapon_attack_symbol_input.disabled = not is_weapon
 		attack_bonus_input.editable = is_weapon
 		armor_value_input.editable = _get_selected_equipment_slot_id() == "armor"
 		object_uses_input.editable = _get_selected_object_durability_id() == "ephemeral"
@@ -1383,14 +1443,14 @@ func _get_reward_label(category_id):
 func _get_object_preview_stat_text() -> String:
 	var slot_id = _get_selected_equipment_slot_id()
 	if slot_id == "weapon" and int(attack_bonus_input.value) > 0:
-		return "Danno %d" % int(attack_bonus_input.value)
+		return "%s Danno %d" % [_get_icon_display_name(_get_selected_weapon_attack_symbol_id()), int(attack_bonus_input.value)]
 	if int(armor_value_input.value) > 0:
 		return "Armatura %d" % int(armor_value_input.value)
 	return ""
 
 func _add_object_preview_icons_to_row() -> void:
 	var slot_id = _get_selected_equipment_slot_id()
-	var granted_icons = _build_weapon_attack_icons(int(weapon_attack_count_input.value)) if slot_id == "weapon" else _get_object_icon_sequence_data()
+	var granted_icons = _build_weapon_attack_icons(int(weapon_attack_count_input.value), _get_selected_weapon_attack_symbol_id()) if slot_id == "weapon" else _get_object_icon_sequence_data()
 	var durability_id = _get_selected_object_durability_id()
 	var charges = max(1, int(object_uses_input.value)) if durability_id == "ephemeral" else 0
 	for icon_id in granted_icons:
@@ -1462,7 +1522,7 @@ func _ensure_object_header() -> void:
 
 func _get_object_header_icon_path() -> String:
 	var slot_id = _get_selected_equipment_slot_id()
-	var granted_icons = _build_weapon_attack_icons(int(weapon_attack_count_input.value)) if slot_id == "weapon" else _get_object_icon_sequence_data()
+	var granted_icons = _build_weapon_attack_icons(int(weapon_attack_count_input.value), _get_selected_weapon_attack_symbol_id()) if slot_id == "weapon" else _get_object_icon_sequence_data()
 	if granted_icons.is_empty():
 		return ""
 	return _get_icon_path(str(granted_icons[0]))
@@ -1525,10 +1585,11 @@ func _on_object_durability_changed(_index):
 func _on_object_uses_changed(_value):
 	_update_preview()
 
-func _build_weapon_attack_icons(count: int) -> Array:
+func _build_weapon_attack_icons(count: int, symbol_id: String = "spada") -> Array:
+	var normalized_symbol = _normalize_weapon_attack_symbol(symbol_id)
 	var icons: Array = []
 	for _i in max(0, count):
-		icons.append("spada")
+		icons.append(normalized_symbol)
 	return icons
 
 func _count_icons(icons, icon_id: String) -> int:

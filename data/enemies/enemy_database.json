@@ -386,5 +386,42 @@
 		"success_outcomes": [],
 		"weapon_attack_count": 0,
 		"weapon_damage_per_hit": 0
+	},
+	{
+		"activation_cost_amount": 1,
+		"activation_cost_type": "arrows",
+		"armor_value": 0,
+		"attack_bonus": 0,
+		"attack_sequences": [],
+		"attempt_limit": 0,
+		"category": "object",
+		"difficulty": 1,
+		"enemy_damage": 0,
+		"equipment_slot": "weapon",
+		"exhaustion_limit": 0,
+		"failure_effects": [],
+		"failure_outcomes": [],
+		"failure_text": "",
+		"flee_effects": [],
+		"flee_text": "",
+		"granted_durability_mode": "perennial",
+		"granted_icons": [
+			"arco"
+		],
+		"granted_remaining_uses": 1,
+		"id": "arco",
+		"image": "res://assets/item/arco.png",
+		"name": "Arco",
+		"requirements": [
+			"arco"
+		],
+		"reward_effects": [],
+		"reward_text": "Concede un attacco a distanza. Ogni uso consuma 1 freccia.",
+		"success_outcomes": [
+			"Concede un attacco a distanza. Ogni uso consuma 1 freccia."
+		],
+		"weapon_attack_count": 1,
+		"weapon_attack_symbol": "arco",
+		"weapon_damage_per_hit": 1
 	}
 ]

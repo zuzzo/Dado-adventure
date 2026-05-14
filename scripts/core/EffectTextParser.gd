@@ -39,6 +39,13 @@ static func parse_enemy_reward_effects(text):
 			"type": "gain_coins",
 			"amount": 15
 		})
+	var arrow_amount = _extract_amount_before_word(source, "frecc")
+	var grants_arrows = source.contains("ottieni") or source.contains("ricevi") or source.contains("guadagni") or source.contains("trovi")
+	if grants_arrows and arrow_amount > 0:
+		effects.append({
+			"type": "gain_arrows",
+			"amount": arrow_amount
+		})
 	if source.contains("5 exp"):
 		effects.append({
 			"type": "gain_exp",
@@ -98,3 +105,12 @@ static func _normalize_text(text):
 	source = source.replace("piÃ¹", "piu")
 	source = source.replace("golonna", "colonna")
 	return source
+
+static func _extract_amount_before_word(source: String, word_prefix: String) -> int:
+	var regex := RegEx.new()
+	if regex.compile("(\\d+)\\s+" + word_prefix) != OK:
+		return 0
+	var result = regex.search(source)
+	if result == null:
+		return 0
+	return int(result.get_string(1))

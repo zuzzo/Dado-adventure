@@ -153,12 +153,16 @@ func _build_tooltip_text() -> String:
 			parts.append("Perenne")
 		_:
 			parts.append("Esauribile")
-	var cost_type = str(result_data.get("activation_cost_type", "none"))
+	var cost_type = str(result_data.get("activation_cost_type", "none")).strip_edges().to_lower()
 	var cost_amount = int(result_data.get("activation_cost_amount", 0))
 	if cost_type == "mana" and cost_amount > 0:
 		parts.append("Costo: %d mana" % cost_amount)
 		if _disabled_by_cost:
 			parts.append("Mana insufficiente")
+	elif (cost_type == "arrows" or cost_type == "freccia" or cost_type == "frecce") and cost_amount > 0:
+		parts.append("Costo: %d frecce" % cost_amount)
+		if _disabled_by_cost:
+			parts.append("Frecce insufficienti")
 	return " | ".join(parts)
 
 func _get_display_modulate() -> Color:
