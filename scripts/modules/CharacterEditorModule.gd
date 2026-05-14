@@ -29,6 +29,11 @@ const LOADOUT_ICON_PATHS := {
 	"+1": "res://assets/icone/+1.png",
 	"x2": "res://assets/icone/+1.png"
 }
+const DURABILITY_BACKGROUND_PATHS := {
+	"perennial": "res://assets/icone/ferro.png",
+	"exhaustible": "res://assets/icone/legno.png",
+	"ephemeral": "res://assets/icone/carta.png"
+}
 
 @onready var right_vbox = $Margin/Root/RightPanel/RightMargin/RightScroll/RightVBox
 @onready var character_list = $Margin/Root/LeftPanel/LeftMargin/LeftVBox/CharacterList
@@ -41,9 +46,11 @@ const LOADOUT_ICON_PATHS := {
 @onready var ability_text = $Margin/Root/RightPanel/RightMargin/RightScroll/RightVBox/AbilityText
 @onready var character_preview = $Margin/Root/RightPanel/RightMargin/RightScroll/RightVBox/PreviewPanel/PreviewMargin/PreviewVBox/PreviewImageCenter/PreviewCard/CharacterPreview
 @onready var preview_name = $Margin/Root/RightPanel/RightMargin/RightScroll/RightVBox/PreviewPanel/PreviewMargin/PreviewVBox/PreviewName
+@onready var preview_card = $Margin/Root/RightPanel/RightMargin/RightScroll/RightVBox/PreviewPanel/PreviewMargin/PreviewVBox/PreviewImageCenter/PreviewCard
 @onready var card_name = $Margin/Root/RightPanel/RightMargin/RightScroll/RightVBox/PreviewPanel/PreviewMargin/PreviewVBox/PreviewImageCenter/PreviewCard/CardName
 @onready var card_hp = $Margin/Root/RightPanel/RightMargin/RightScroll/RightVBox/PreviewPanel/PreviewMargin/PreviewVBox/PreviewImageCenter/PreviewCard/CardHp
 @onready var preview_loadout_text = $Margin/Root/RightPanel/RightMargin/RightScroll/RightVBox/PreviewPanel/PreviewMargin/PreviewVBox/PreviewImageCenter/PreviewCard/CardInfo/CardInfoVBox/PreviewDiceCount
+@onready var preview_ability_title = $Margin/Root/RightPanel/RightMargin/RightScroll/RightVBox/PreviewPanel/PreviewMargin/PreviewVBox/PreviewImageCenter/PreviewCard/CardInfo/CardInfoVBox/PreviewAbilityTitle
 @onready var preview_ability_text = $Margin/Root/RightPanel/RightMargin/RightScroll/RightVBox/PreviewPanel/PreviewMargin/PreviewVBox/PreviewImageCenter/PreviewCard/CardInfo/CardInfoVBox/PreviewAbilityText
 @onready var file_dialog = $FileDialog
 
@@ -67,9 +74,16 @@ var remove_loadout_slot_button: Button
 var token_mode_menu: PopupMenu
 var ephemeral_dialog: ConfirmationDialog
 var ephemeral_uses_input: SpinBox
+var preview_stats_row: HBoxContainer
+var preview_hp_badge: Control
+var preview_hp_label: Label
+var preview_mp_badge: Control
+var preview_mp_label: Label
+var preview_starting_icons_row: FlowContainer
 
 func _ready():
 	_build_runtime_editor_ui()
+	_ensure_runtime_preview_card_ui()
 	_bind_events()
 	_ensure_directories()
 	_load_object_library()
@@ -257,6 +271,57 @@ func _build_runtime_editor_ui():
 	ephemeral_uses_input.value = 3
 	dialog_vbox.add_child(ephemeral_uses_input)
 	add_child(ephemeral_dialog)
+
+func _ensure_runtime_preview_card_ui() -> void:
+	card_hp.visible = false
+	preview_loadout_text.visible = false
+	if preview_stats_row == null:
+		preview_stats_row = HBoxContainer.new()
+		preview_stats_row.layout_mode = 1
+		preview_stats_row.offset_left = 118.0
+		preview_stats_row.offset_top = 8.0
+		preview_stats_row.offset_right = 222.0
+		preview_stats_row.offset_bottom = 42.0
+		preview_stats_row.alignment = BoxContainer.ALIGNMENT_END
+		preview_stats_row.add_theme_constant_override("separation", 10)
+		preview_card.add_child(preview_stats_row)
+		preview_hp_badge = _build_stat_badge("cuore")
+		preview_hp_label = preview_hp_badge.get_meta("value_label")
+		preview_stats_row.add_child(preview_hp_badge)
+		preview_mp_badge = _build_stat_badge("magia")
+		preview_mp_label = preview_mp_badge.get_meta("value_label")
+		preview_stats_row.add_child(preview_mp_badge)
+	if preview_starting_icons_row == null:
+		preview_starting_icons_row = FlowContainer.new()
+		preview_starting_icons_row.name = "PreviewStartingIconsRow"
+		preview_starting_icons_row.add_theme_constant_override("h_separation", 8)
+		preview_starting_icons_row.add_theme_constant_override("v_separation", 8)
+		var card_info_vbox = preview_loadout_text.get_parent()
+		card_info_vbox.add_child(preview_starting_icons_row)
+		card_info_vbox.move_child(preview_starting_icons_row, 0)
+
+func _build_stat_badge(symbol_id: String) -> Control:
+	var holder := Control.new()
+	holder.custom_minimum_size = Vector2(54, 54)
+	var icon := TextureRect.new()
+	icon.set_anchors_and_offsets_preset(Control.PRESET_FULL_RECT)
+	icon.expand_mode = TextureRect.EXPAND_IGNORE_SIZE
+	icon.stretch_mode = TextureRect.STRETCH_KEEP_ASPECT_CENTERED
+	var icon_path = _get_icon_path(symbol_id)
+	if not icon_path.is_empty() and ResourceLoader.exists(icon_path):
+		icon.texture = load(icon_path)
+	holder.add_child(icon)
+	var value_label := Label.new()
+	value_label.set_anchors_and_offsets_preset(Control.PRESET_FULL_RECT)
+	value_label.add_theme_font_size_override("font_size", 18)
+	value_label.add_theme_color_override("font_color", Color(1, 1, 1, 1))
+	value_label.add_theme_constant_override("outline_size", 4)
+	value_label.add_theme_color_override("font_outline_color", Color(0, 0, 0, 1))
+	value_label.horizontal_alignment = HORIZONTAL_ALIGNMENT_CENTER
+	value_label.vertical_alignment = VERTICAL_ALIGNMENT_CENTER
+	holder.add_child(value_label)
+	holder.set_meta("value_label", value_label)
+	return holder
 
 	_build_loadout_palette()
 
@@ -472,9 +537,10 @@ func _clear_form():
 func _update_preview():
 	preview_name.text = name_input.text if not name_input.text.is_empty() else "Nome Personaggio"
 	card_name.text = preview_name.text
-	card_hp.text = "%d PV | %d PM | Traccia %d" % [int(hp_input.value), int(mp_input.value), int(max_trace_length_input.value)]
 	var loadout = _extract_loadout_from_slots()
-	preview_loadout_text.text = "Icone Base: %s\nOggetti Partenza: %s" % [_summarize_loadout(loadout), _summarize_starting_objects()]
+	_update_preview_stat_badges(int(hp_input.value), int(mp_input.value))
+	_refresh_preview_starting_icons(loadout)
+	preview_ability_title.text = "Linea: %d caselle" % int(max_trace_length_input.value)
 	preview_ability_text.text = ability_text.text if not ability_text.text.is_empty() else "-"
 
 func _update_preview_from_project(project_path):
@@ -497,6 +563,79 @@ func _update_preview_from_absolute(abs_path):
 		character_preview.texture = null
 		return
 	character_preview.texture = ImageTexture.create_from_image(image)
+
+func _update_preview_stat_badges(hp: int, mp: int) -> void:
+	if preview_hp_label != null:
+		preview_hp_label.text = str(hp)
+	if preview_mp_label != null:
+		preview_mp_label.text = str(mp)
+
+func _refresh_preview_starting_icons(loadout: Array) -> void:
+	if preview_starting_icons_row == null:
+		return
+	for child in preview_starting_icons_row.get_children():
+		child.queue_free()
+	for entry in loadout:
+		var normalized = _normalize_loadout_entry(entry)
+		if normalized.is_empty():
+			continue
+		preview_starting_icons_row.add_child(_build_preview_start_icon(normalized))
+	for object_id in _selected_starting_objects:
+		var object_data = _find_object_by_id(object_id)
+		if object_data.is_empty():
+			continue
+		var granted_icons = object_data.get("granted_icons", object_data.get("requirements", []))
+		if not (granted_icons is Array):
+			continue
+		var durability_mode = str(object_data.get("granted_durability_mode", "exhaustible")).strip_edges().to_lower()
+		var remaining_uses = max(1, int(object_data.get("granted_remaining_uses", 1)))
+		for raw_icon in granted_icons:
+			preview_starting_icons_row.add_child(_build_preview_start_icon({
+				"symbol_id": str(raw_icon),
+				"durability_mode": durability_mode,
+				"remaining_uses": remaining_uses
+			}))
+
+func _build_preview_start_icon(entry: Dictionary) -> Control:
+	var holder := Control.new()
+	holder.custom_minimum_size = Vector2(40, 40)
+	var background := TextureRect.new()
+	background.set_anchors_and_offsets_preset(Control.PRESET_FULL_RECT)
+	background.expand_mode = TextureRect.EXPAND_IGNORE_SIZE
+	background.stretch_mode = TextureRect.STRETCH_KEEP_ASPECT_CENTERED
+	var durability_mode = str(entry.get("durability_mode", "exhaustible")).strip_edges().to_lower()
+	var background_path = str(DURABILITY_BACKGROUND_PATHS.get(durability_mode, ""))
+	if not background_path.is_empty() and ResourceLoader.exists(background_path):
+		background.texture = load(background_path)
+	holder.add_child(background)
+	var icon := TextureRect.new()
+	icon.set_anchors_and_offsets_preset(Control.PRESET_FULL_RECT)
+	icon.offset_left = 4.0
+	icon.offset_top = 4.0
+	icon.offset_right = -4.0
+	icon.offset_bottom = -4.0
+	icon.expand_mode = TextureRect.EXPAND_IGNORE_SIZE
+	icon.stretch_mode = TextureRect.STRETCH_KEEP_ASPECT_CENTERED
+	var icon_path = _get_icon_path(str(entry.get("symbol_id", "")))
+	if not icon_path.is_empty() and ResourceLoader.exists(icon_path):
+		icon.texture = load(icon_path)
+	holder.add_child(icon)
+	if durability_mode == "ephemeral":
+		var uses_label := Label.new()
+		uses_label.layout_mode = 1
+		uses_label.offset_left = 8.0
+		uses_label.offset_top = -8.0
+		uses_label.offset_right = 32.0
+		uses_label.offset_bottom = 8.0
+		uses_label.add_theme_font_size_override("font_size", 12)
+		uses_label.add_theme_color_override("font_color", Color(1, 1, 1, 1))
+		uses_label.add_theme_constant_override("outline_size", 3)
+		uses_label.add_theme_color_override("font_outline_color", Color(0, 0, 0, 1))
+		uses_label.horizontal_alignment = HORIZONTAL_ALIGNMENT_CENTER
+		uses_label.vertical_alignment = VERTICAL_ALIGNMENT_CENTER
+		uses_label.text = str(max(1, int(entry.get("remaining_uses", 1))))
+		holder.add_child(uses_label)
+	return holder
 
 func _slugify(text):
 	var slug = text.to_lower().strip_edges()

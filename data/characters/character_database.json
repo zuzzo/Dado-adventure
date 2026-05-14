@@ -2,15 +2,10 @@
 	{
 		"ability_effects": [
 			{
-				"amount": 1,
-				"type": "pay_hp_cost"
-			},
-			{
-				"target": "chosen_die",
-				"type": "reactivate_exhausted_die"
+				"type": "make_first_exhaustible_attack_perennial"
 			}
 		],
-		"ability_text": "Paga un punto vita, riattiva un dado esausto.",
+		"ability_text": "Un attacco ad esaurimento diventa perenne.",
 		"hp": 10,
 		"id": "guerriero",
 		"image": "res://assets/characters/Guerriero.png",
@@ -18,11 +13,6 @@
 		"mp": 0,
 		"name": "Guerriero",
 		"starting_loadout": [
-			{
-				"durability_mode": "perennial",
-				"remaining_uses": 1,
-				"symbol_id": "spada"
-			},
 			{
 				"durability_mode": "exhaustible",
 				"remaining_uses": 1,
@@ -37,20 +27,16 @@
 	{
 		"ability_effects": [
 			{
-				"amount": 1,
+				"amount": 1.0,
 				"type": "pay_hp_cost"
-			},
-			{
-				"lifetime": "until_used",
-				"type": "create_ephemeral_symbol"
 			}
 		],
-		"ability_text": "Paga un punto vita. Puoi creare un simbolo effimero (si distrugge dopo l'uso).",
+		"ability_text": "Paga un punto vita, muovi un icona non esaurita.",
 		"hp": 7,
 		"id": "mago",
 		"image": "res://assets/characters/Mago.png",
-		"max_trace_length": 4,
-		"mp": 3,
+		"max_trace_length": 3,
+		"mp": 5,
 		"name": "Mago",
 		"starting_loadout": [
 			{
@@ -67,32 +53,17 @@
 		"starting_objects": []
 	},
 	{
-		"ability_effects": [
-			{
-				"amount": 1.0,
-				"type": "pay_hp_cost"
-			},
-			{
-				"symbol": "chosen_symbol",
-				"target": "chosen_die",
-				"type": "set_exhausted_die_symbol"
-			}
-		],
-		"ability_text": "Paga un punto vita. Puoi settare un dado esausto sul simbolo che preferisci.",
+		"ability_effects": [],
+		"ability_text": "",
 		"hp": 8,
 		"id": "ladro",
 		"image": "res://assets/characters/Ladro.png",
-		"max_trace_length": 4,
-		"mp": 1,
+		"max_trace_length": 3,
+		"mp": 2,
 		"name": "Ladro",
 		"starting_loadout": [
 			{
-				"durability_mode": "exhaustible",
-				"remaining_uses": 1,
-				"symbol_id": "ladro"
-			},
-			{
-				"durability_mode": "exhaustible",
+				"durability_mode": "perennial",
 				"remaining_uses": 1,
 				"symbol_id": "arco"
 			},
@@ -102,20 +73,13 @@
 				"symbol_id": "moneta"
 			}
 		],
-		"starting_objects": []
+		"starting_objects": [
+			"armatura_di_pelle"
+		]
 	},
 	{
-		"ability_effects": [
-			{
-				"amount": 1.0,
-				"type": "pay_hp_cost"
-			},
-			{
-				"amount": 1.0,
-				"type": "select_extra_line"
-			}
-		],
-		"ability_text": "Paga un punto vita. Puoi scegliere una riga/colonna in piÃ¹ oltre alla prima.",
+		"ability_effects": [],
+		"ability_text": "Quando imfliggi danno con un attacco, guadagni un punto mana.",
 		"hp": 7,
 		"id": "stregone",
 		"image": "res://assets/characters/Warlock.png",
@@ -126,24 +90,11 @@
 			{
 				"durability_mode": "exhaustible",
 				"remaining_uses": 1,
-				"symbol_id": "magia"
-			},
-			{
-				"durability_mode": "exhaustible",
-				"remaining_uses": 1,
 				"symbol_id": "spada"
-			},
-			{
-				"durability_mode": "exhaustible",
-				"remaining_uses": 1,
-				"symbol_id": "cuore"
-			},
-			{
-				"durability_mode": "exhaustible",
-				"remaining_uses": 1,
-				"symbol_id": "moneta"
 			}
 		],
-		"starting_objects": []
+		"starting_objects": [
+			"daga"
+		]
 	}
 ]

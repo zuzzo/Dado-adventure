@@ -64,6 +64,7 @@ const DURABILITY_BACKGROUND_PATHS := {
 @onready var enemy_list = $Margin/Root/LeftPanel/LeftMargin/LeftVBox/EnemyList
 @onready var status_label = $Margin/Root/LeftPanel/LeftMargin/LeftVBox/StatusLabel
 @onready var damage_label = $Margin/Root/RightPanel/RightMargin/RightScroll/RightVBox/DamageLabel
+@onready var damage_input = $Margin/Root/RightPanel/RightMargin/RightScroll/RightVBox/DamageInput
 @onready var exhaustion_label = $Margin/Root/RightPanel/RightMargin/RightScroll/RightVBox/ExhaustionLabel
 @onready var flee_label = $Margin/Root/RightPanel/RightMargin/RightScroll/RightVBox/FleeLabel
 @onready var reward_label = $Margin/Root/RightPanel/RightMargin/RightScroll/RightVBox/RewardLabel
@@ -71,7 +72,6 @@ const DURABILITY_BACKGROUND_PATHS := {
 @onready var name_input = $Margin/Root/RightPanel/RightMargin/RightScroll/RightVBox/NameInput
 @onready var image_path_input = $Margin/Root/RightPanel/RightMargin/RightScroll/RightVBox/ImageRow/ImagePathInput
 @onready var category_input = $Margin/Root/RightPanel/RightMargin/RightScroll/RightVBox/CategoryInput
-@onready var damage_input = $Margin/Root/RightPanel/RightMargin/RightScroll/RightVBox/DamageInput
 @onready var exhaustion_input = $Margin/Root/RightPanel/RightMargin/RightScroll/RightVBox/ExhaustionInput
 @onready var difficulty_value = $Margin/Root/RightPanel/RightMargin/RightScroll/RightVBox/DifficultyValue
 @onready var flee_text = $Margin/Root/RightPanel/RightMargin/RightScroll/RightVBox/FleeText
@@ -132,6 +132,8 @@ var activation_cost_label: Label
 var activation_cost_input: OptionButton
 var activation_cost_amount_label: Label
 var activation_cost_amount_input: SpinBox
+var enemy_hp_label: Label
+var enemy_hp_input: SpinBox
 var _current_attack_sequences: Array = []
 var _object_header_container: VBoxContainer
 var _object_header_icon_holder: Control
@@ -172,6 +174,8 @@ func _bind_events():
 	name_input.text_changed.connect(_on_name_changed)
 	category_input.item_selected.connect(_on_category_changed)
 	damage_input.value_changed.connect(_update_preview)
+	if enemy_hp_input != null:
+		enemy_hp_input.value_changed.connect(_update_preview)
 	exhaustion_input.value_changed.connect(_on_exhaustion_changed)
 	flee_text.text_changed.connect(_update_preview)
 	reward_text.text_changed.connect(_update_preview)
@@ -234,11 +238,24 @@ func _build_object_icon_runtime_ui():
 	right_vbox.add_child(attack_sequences_label)
 	right_vbox.move_child(attack_sequences_label, damage_input.get_index() + 1)
 
+	enemy_hp_label = Label.new()
+	enemy_hp_label.text = "Punti Vita Nemico"
+	right_vbox.add_child(enemy_hp_label)
+	right_vbox.move_child(enemy_hp_label, attack_sequences_label.get_index() + 1)
+
+	enemy_hp_input = SpinBox.new()
+	enemy_hp_input.min_value = 1
+	enemy_hp_input.max_value = 99
+	enemy_hp_input.step = 1
+	enemy_hp_input.value = 1
+	right_vbox.add_child(enemy_hp_input)
+	right_vbox.move_child(enemy_hp_input, enemy_hp_label.get_index() + 1)
+
 	attack_sequence_palette = FlowContainer.new()
 	attack_sequence_palette.add_theme_constant_override("h_separation", 10)
 	attack_sequence_palette.add_theme_constant_override("v_separation", 10)
 	right_vbox.add_child(attack_sequence_palette)
-	right_vbox.move_child(attack_sequence_palette, attack_sequences_label.get_index() + 1)
+	right_vbox.move_child(attack_sequence_palette, enemy_hp_input.get_index() + 1)
 	_build_attack_sequence_palette()
 
 	attack_sequence_length_label = Label.new()
@@ -592,7 +609,8 @@ func _save_current_enemy():
 		image_project_path = _copy_selected_image()
 		if image_project_path.is_empty():
 			return false
-	var difficulty = requirements.size() if not _uses_damage(category_id) else _current_attack_sequences.size()
+	var enemy_hp = max(1, int(enemy_hp_input.value)) if _uses_damage(category_id) else requirements.size()
+	var difficulty = requirements.size() if not _uses_damage(category_id) else enemy_hp
 	var outcome_text = flee_text.text
 	var reward_value = reward_text.text
 	var success_outcomes = _parse_outcome_lines(reward_text.text)
@@ -634,6 +652,7 @@ func _save_current_enemy():
 		"image": image_project_path,
 		"category": category_id,
 		"enemy_damage": max(1, int(damage_input.value)) if _uses_damage(category_id) else 0,
+		"enemy_hp": enemy_hp if _uses_damage(category_id) else 0,
 		"attack_sequences": attack_sequences,
 		"exhaustion_limit": int(exhaustion_input.value),
 		"attempt_limit": _get_attempt_limit_for_category(),
@@ -701,6 +720,8 @@ func _load_enemy_into_form(index):
 	image_path_input.text = str(enemy.get("image", ""))
 	_select_category(str(enemy.get("category", "monster")))
 	damage_input.value = float(max(1, int(enemy.get("enemy_damage", 1))))
+	if enemy_hp_input != null:
+		enemy_hp_input.value = float(max(1, int(enemy.get("enemy_hp", enemy.get("difficulty", 1)))))
 	_set_attack_sequences(enemy.get("attack_sequences", []))
 	var loaded_attempt_limit = int(enemy.get("attempt_limit", 0))
 	var loaded_exhaustion_limit = int(enemy.get("exhaustion_limit", 0))
@@ -737,6 +758,8 @@ func _clear_form():
 	image_path_input.text = ""
 	_select_category("monster")
 	damage_input.value = 1
+	if enemy_hp_input != null:
+		enemy_hp_input.value = 1
 	_set_attack_sequences([["spada"]])
 	_on_attack_sequence_clear_pressed()
 	exhaustion_input.value = 0
@@ -825,12 +848,9 @@ func _update_preview():
 	_update_preview_card_header(false)
 	if _uses_damage(category_id):
 		preview_meta_line.visible = true
-		var attacks = _normalize_attack_sequences(_current_attack_sequences)
 		var enemy_damage = max(1, int(damage_input.value))
-		var sequence_text = ""
-		if not attacks.is_empty():
-			sequence_text = " | Sequenze: %d" % attacks.size()
-		preview_meta_line.text = "Danno/colpo: %d | 1 colpo per ogni spada non parata%s" % [enemy_damage, sequence_text]
+		var enemy_hp = max(1, int(enemy_hp_input.value)) if enemy_hp_input != null else 1
+		preview_meta_line.text = "PV: %d | Danno/colpo: %d" % [enemy_hp, enemy_damage]
 	else:
 		preview_meta_line.visible = false
 		preview_meta_line.text = ""
@@ -852,18 +872,19 @@ func _update_preview():
 	if _uses_damage(category_id):
 		preview_requirement_title.visible = false
 		preview_requirement_row.visible = false
-	else:
-		var object_icons_only = is_object and _get_selected_object_durability_id() == "ephemeral" and _get_object_preview_stat_text().is_empty()
-		preview_requirement_title.visible = not object_icons_only
-		preview_requirement_row.visible = object_icons_only or not is_object
-		if object_icons_only:
+	elif is_object:
+		preview_requirement_title.visible = false
+		preview_requirement_row.visible = _object_preview_has_icons()
+		if preview_requirement_row.visible:
 			_add_object_preview_icons_to_row()
-		elif not is_object:
-			var preview_background_mode = _get_selected_object_durability_id() if category_id == "object" else ""
-			for icon_id in requirements:
-				var icon = _build_preview_icon(icon_id, preview_background_mode)
-				icon.tooltip_text = icon_id.capitalize()
-				preview_requirement_row.add_child(icon)
+	else:
+		preview_requirement_title.visible = true
+		preview_requirement_row.visible = true
+		var preview_background_mode = _get_selected_object_durability_id() if category_id == "object" else ""
+		for icon_id in requirements:
+			var icon = _build_preview_icon(icon_id, preview_background_mode)
+			icon.tooltip_text = icon_id.capitalize()
+			preview_requirement_row.add_child(icon)
 
 func _update_preview_from_project(project_path):
 	if project_path.is_empty():
@@ -921,7 +942,8 @@ func _normalize_enemy_record(enemy):
 		reward_value = str(enemy.get("reward"))
 	var flee_effects = enemy.get("flee_effects", EffectTextParser.parse_enemy_flee_effects(flee_value))
 	var reward_effects = enemy.get("reward_effects", EffectTextParser.parse_enemy_reward_effects(str(reward_value)))
-	var difficulty = int(enemy.get("difficulty", requirements.size()))
+	var enemy_hp = max(1, int(enemy.get("enemy_hp", enemy.get("difficulty", 1 if attack_sequences.size() > 0 else requirements.size()))))
+	var difficulty = int(enemy.get("difficulty", enemy_hp if attack_sequences.size() > 0 else requirements.size()))
 	var equipment_slot = _normalize_equipment_slot(str(enemy.get("equipment_slot", "")))
 	var attack_bonus = int(enemy.get("attack_bonus", 0))
 	var weapon_damage_per_hit = int(enemy.get("weapon_damage_per_hit", attack_bonus + 1 if attack_bonus > 0 else 0))
@@ -955,6 +977,7 @@ func _normalize_enemy_record(enemy):
 		"image": image_path,
 		"category": category_id,
 		"enemy_damage": enemy_damage,
+		"enemy_hp": enemy_hp,
 		"attack_sequences": attack_sequences,
 		"exhaustion_limit": exhaustion_limit,
 		"attempt_limit": attempt_limit,
@@ -1169,6 +1192,8 @@ func _update_form_for_category():
 	sequence_slots.visible = use_requirements
 	damage_label.visible = _uses_damage(category_id)
 	damage_input.visible = _uses_damage(category_id)
+	enemy_hp_label.visible = _uses_damage(category_id)
+	enemy_hp_input.visible = _uses_damage(category_id)
 	attack_sequences_label.visible = _uses_damage(category_id)
 	attack_sequence_palette.visible = _uses_damage(category_id)
 	attack_sequence_length_label.visible = _uses_damage(category_id)
@@ -1458,6 +1483,11 @@ func _add_object_preview_icons_to_row() -> void:
 		icon.custom_minimum_size = Vector2(72, 72)
 		icon.tooltip_text = icon_id.capitalize()
 		preview_requirement_row.add_child(icon)
+
+func _object_preview_has_icons() -> bool:
+	var slot_id = _get_selected_equipment_slot_id()
+	var granted_icons = _build_weapon_attack_icons(int(weapon_attack_count_input.value)) if slot_id == "weapon" else _get_object_icon_sequence_data()
+	return not granted_icons.is_empty()
 
 func _update_preview_card_header(is_object: bool) -> void:
 	_ensure_object_header()

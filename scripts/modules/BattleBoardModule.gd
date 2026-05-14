@@ -82,10 +82,14 @@ var _drag_path_overlay: Control
 var current_results: Array[Dictionary] = []
 var current_enemy: Dictionary = {}
 var current_enemy_requirements: Array = []
+var current_enemy_hp: int = 0
+var current_enemy_max_hp: int = 0
 var enemy_revealed := false
 var current_character_name: String = ""
 var current_character_hp: int = 0
 var current_character_mp: int = 0
+var current_character_max_hp: int = 0
+var current_character_max_mp: int = 0
 var current_max_trace_length: int = 4
 var current_character_ability: String = ""
 var current_character_ability_effects: Array = []
@@ -114,6 +118,7 @@ var _drag_path: Array[Vector2i] = []
 var _pending_status_messages: Array[String] = []
 var _board_layout_locked: bool = false
 var _current_enemy_sequence_summary: String = ""
+var _current_enemy_sequence_tokens: Array = []
 var _object_header_container: VBoxContainer
 var _object_header_icon_holder: Control
 var _object_header_background: TextureRect
@@ -210,6 +215,8 @@ func set_character_context(character_name: String, hp: int, mp: int, max_trace_l
 	current_character_name = character_name
 	current_character_hp = hp
 	current_character_mp = mp
+	current_character_max_hp = hp
+	current_character_max_mp = mp
 	current_max_trace_length = max(2, int(max_trace_length))
 	current_character_ability = ability_text
 	current_character_ability_effects = ability_effects.duplicate(true)
@@ -228,6 +235,7 @@ func start_battle(character_name: String, hp: int, mp: int, max_trace_length: in
 		starting_results.append(_create_loadout_result_data({"symbol_id": "spada"}))
 	set_roll_results(starting_results)
 	_apply_starting_objects(starting_objects)
+	_apply_character_starting_passives()
 	if results_title_label != null:
 		results_title_label.text = "Simboli Da Piazzare"
 
@@ -320,11 +328,17 @@ func _build_result_tray() -> void:
 func _prepare_hidden_enemy(hint_text: String = "Piazza tutti i simboli, poi clicca la carta a destra per scoprire il nemico.") -> void:
 	current_enemy = _pick_random_enemy()
 	current_enemy_requirements.clear()
+	current_enemy_hp = 0
+	current_enemy_max_hp = 0
 	current_pending_defense = 0
 	current_enemy_blocks = 0
 	_current_enemy_sequence_summary = ""
+	_current_enemy_sequence_tokens.clear()
 	var raw_requirements = current_enemy.get("requirements", [])
-	if raw_requirements is Array:
+	if _enemy_uses_hp_model():
+		current_enemy_max_hp = max(1, int(current_enemy.get("enemy_hp", current_enemy.get("difficulty", 1))))
+		current_enemy_hp = current_enemy_max_hp
+	elif raw_requirements is Array:
 		for requirement in raw_requirements:
 			current_enemy_requirements.append(str(requirement))
 	enemy_revealed = false
@@ -332,6 +346,7 @@ func _prepare_hidden_enemy(hint_text: String = "Piazza tutti i simboli, poi clic
 	card_name_label.text = "Carta Coperta"
 	_update_battle_card_header(false)
 	card_name_label.visible = true
+	requirements_title_label.text = "Per Sconfiggere"
 	requirements_title_label.visible = true
 	requirements_row.visible = true
 	damage_line_label.text = ""
@@ -364,14 +379,20 @@ func _reveal_enemy() -> void:
 	if is_object:
 		enemy_damage = 0
 	_update_battle_card_header(false)
-	var object_durability_mode = str(current_enemy.get("granted_durability_mode", "exhaustible")).strip_edges().to_lower()
-	var object_icons_only = is_object and object_durability_mode == "ephemeral" and _get_enemy_meta_text(enemy_damage).is_empty()
-	requirements_title_label.visible = not is_object
-	requirements_row.visible = not is_object or object_icons_only
-	damage_line_label.visible = object_icons_only or is_object or enemy_damage > 0
+	var object_has_icons = is_object and _current_object_has_granted_icons()
+	requirements_title_label.visible = false if is_object else true
+	requirements_row.visible = not is_object or object_has_icons
+	damage_line_label.visible = is_object or enemy_damage > 0 or _enemy_uses_hp_model()
 	damage_line_label.text = _get_enemy_meta_text(enemy_damage)
-	if object_icons_only:
-		damage_line_label.visible = false
+	if _enemy_uses_hp_model():
+		_roll_next_enemy_attack_preview()
+	if _enemy_uses_hp_model():
+		requirements_title_label.visible = not _current_enemy_sequence_tokens.is_empty()
+		requirements_row.visible = not _current_enemy_sequence_tokens.is_empty()
+		if not _current_enemy_sequence_tokens.is_empty():
+			requirements_title_label.text = "Attacco"
+			_build_requirements_row()
+	if object_has_icons:
 		_build_object_granted_icons_row()
 	if is_object:
 		damage_line_label.add_theme_font_size_override("font_size", 28)
@@ -400,7 +421,13 @@ func _pick_random_enemy() -> Dictionary:
 	var enemies := _read_enemy_database()
 	if enemies.is_empty():
 		return {}
-	return enemies[randi() % enemies.size()]
+	var monster_only: Array[Dictionary] = []
+	for enemy in enemies:
+		if str(enemy.get("category", "")).strip_edges().to_lower() == "monster":
+			monster_only.append(enemy)
+	if monster_only.is_empty():
+		return enemies[randi() % enemies.size()]
+	return monster_only[randi() % monster_only.size()]
 
 func _read_enemy_database() -> Array[Dictionary]:
 	var enemies: Array[Dictionary] = []
@@ -454,6 +481,21 @@ func _all_results_placed() -> bool:
 
 func _build_requirements_row() -> void:
 	_clear_requirements_row()
+	if _enemy_uses_hp_model():
+		for token_id in _current_enemy_sequence_tokens:
+			var attack_icon_id = str(token_id)
+			var attack_icon_path = str(ENEMY_ICON_PATHS.get(attack_icon_id, ""))
+			if attack_icon_path.is_empty():
+				continue
+			var attack_icon := TextureRect.new()
+			attack_icon.custom_minimum_size = Vector2(62, 62)
+			attack_icon.expand_mode = TextureRect.EXPAND_IGNORE_SIZE
+			attack_icon.stretch_mode = TextureRect.STRETCH_KEEP_ASPECT_CENTERED
+			if ResourceLoader.exists(attack_icon_path):
+				attack_icon.texture = load(attack_icon_path)
+			attack_icon.tooltip_text = attack_icon_id.capitalize()
+			requirements_row.add_child(attack_icon)
+		return
 	for requirement in current_enemy_requirements:
 		var icon_id = str(requirement)
 		var icon_path = str(ENEMY_ICON_PATHS.get(icon_id, ""))
@@ -831,6 +873,28 @@ func _on_flee_button_pressed() -> void:
 	_prepare_hidden_enemy(next_hint)
 
 func _consume_enemy_requirements(used_symbol_entries: Array) -> void:
+	if _enemy_uses_hp_model():
+		var total_damage := 0
+		for entry in used_symbol_entries:
+			if not (entry is Dictionary):
+				continue
+			var symbol_id = str(entry.get("symbol_id", ""))
+			var amount = int(entry.get("value", 1))
+			if symbol_id.is_empty():
+				symbol_id = _infer_symbol_id_from_label(str(entry.get("label", "")))
+			if symbol_id != "spada" and symbol_id != "arco" and symbol_id != "pergamena":
+				continue
+			var applied_damage = amount * max(1, current_weapon_damage_per_hit)
+			if symbol_id == "spada" or symbol_id == "pergamena":
+				var blocked_consumption = min(current_enemy_blocks, applied_damage)
+				current_enemy_blocks -= blocked_consumption
+				applied_damage -= blocked_consumption
+			total_damage += max(0, applied_damage)
+		if total_damage > 0:
+			current_enemy_hp = max(current_enemy_hp - total_damage, 0)
+		damage_line_label.text = _get_enemy_meta_text(int(current_enemy.get("enemy_damage", 0)))
+		_update_ability_label()
+		return
 	for entry in used_symbol_entries:
 		if not (entry is Dictionary):
 			continue
@@ -839,9 +903,12 @@ func _consume_enemy_requirements(used_symbol_entries: Array) -> void:
 		if symbol_id.is_empty():
 			symbol_id = _infer_symbol_id_from_label(str(entry.get("label", "")))
 		var total_consumption = amount
-		if symbol_id == current_weapon_attack_symbol:
+		var ignore_enemy_blocks = false
+		if symbol_id == current_weapon_attack_symbol or symbol_id == "pergamena":
 			total_consumption = amount * max(1, current_weapon_damage_per_hit)
-		if symbol_id == "spada":
+		if symbol_id == "arco":
+			ignore_enemy_blocks = true
+		if not ignore_enemy_blocks and (symbol_id == current_weapon_attack_symbol or symbol_id == "pergamena"):
 			var blocked_consumption = min(current_enemy_blocks, total_consumption)
 			current_enemy_blocks -= blocked_consumption
 			total_consumption -= blocked_consumption
@@ -884,10 +951,43 @@ func _collect_healing_from_symbols(used_symbol_entries: Array) -> void:
 		gained_hp += int(entry.get("value", 1))
 	if gained_hp <= 0:
 		return
-	current_character_hp += gained_hp
+	current_character_hp = min(current_character_hp + gained_hp, current_character_max_hp)
 	character_hp_changed.emit(current_character_hp)
 	_update_ability_label()
 	player_stats_changed.emit(current_character_hp, current_gold)
+
+func _collect_mana_from_symbols(used_symbol_entries: Array) -> void:
+	var gained_mp := 0
+	for entry in used_symbol_entries:
+		if not (entry is Dictionary):
+			continue
+		var symbol_id = str(entry.get("symbol_id", ""))
+		if symbol_id.is_empty():
+			symbol_id = _infer_symbol_id_from_label(str(entry.get("label", "")))
+		if symbol_id != "magia":
+			continue
+		gained_mp += int(entry.get("value", 1))
+	if gained_mp <= 0:
+		return
+	current_character_mp = min(current_character_mp + gained_mp, current_character_max_mp)
+	_update_ability_label()
+	_refresh_token_cost_states()
+
+func _collect_potion_from_symbols(used_symbol_entries: Array) -> void:
+	var potion_healing_entries: Array = []
+	for entry in used_symbol_entries:
+		if not (entry is Dictionary):
+			continue
+		var symbol_id = str(entry.get("symbol_id", ""))
+		if symbol_id.is_empty():
+			symbol_id = _infer_symbol_id_from_label(str(entry.get("label", "")))
+		if symbol_id != "pozione":
+			continue
+		potion_healing_entries.append({
+			"symbol_id": "cuore",
+			"value": int(entry.get("value", 1))
+		})
+	_collect_healing_from_symbols(potion_healing_entries)
 
 func _apply_flee_effects() -> void:
 	var flee_effects = current_enemy.get("flee_effects", [])
@@ -1000,7 +1100,11 @@ func _handle_enemy_defeated() -> void:
 	_prepare_hidden_enemy(next_hint)
 
 func _enemy_survived_player_action() -> bool:
-	return enemy_revealed and not current_enemy_requirements.is_empty()
+	if not enemy_revealed:
+		return false
+	if _enemy_uses_hp_model():
+		return current_enemy_hp > 0
+	return not current_enemy_requirements.is_empty()
 
 func _infer_symbol_id_from_label(label: String) -> String:
 	var lower = label.to_lower()
@@ -1018,6 +1122,10 @@ func _infer_symbol_id_from_label(label: String) -> String:
 		return "ladro"
 	if lower.contains("arc"):
 		return "arco"
+	if lower.contains("pergam"):
+		return "pergamena"
+	if lower.contains("pozi"):
+		return "pozione"
 	return lower
 
 func _all_pending_reroll_cells_filled() -> bool:
@@ -1070,7 +1178,6 @@ func _end_player_action() -> void:
 	var block_count = int(attack_result.get("block_count", 0))
 	var heal_count = int(attack_result.get("heal_count", 0))
 	var sequence_summary = str(attack_result.get("summary", ""))
-	_current_enemy_sequence_summary = sequence_summary
 	var blocked_attacks = min(current_pending_defense, attack_count)
 	var unblocked_attacks = max(attack_count - blocked_attacks, 0)
 	var damage_per_attack = max(1, int(current_enemy.get("enemy_damage", 1)))
@@ -1084,6 +1191,8 @@ func _end_player_action() -> void:
 	_update_ability_label()
 	_refresh_token_cost_states()
 	player_stats_changed.emit(current_character_hp, current_gold)
+	if _enemy_uses_hp_model():
+		_roll_next_enemy_attack_preview()
 	var sequence_text = ""
 	if not sequence_summary.is_empty():
 		sequence_text = " Sequenza: %s." % sequence_summary
@@ -1108,7 +1217,9 @@ func _choose_enemy_attack_result() -> Dictionary:
 	var normalized_sequences = _normalize_enemy_attack_sequences(sequences)
 	if normalized_sequences.is_empty():
 		return {"attack_count": 0, "block_count": 0, "summary": ""}
-	var sequence = normalized_sequences[randi() % normalized_sequences.size()]
+	var sequence = _current_enemy_sequence_tokens.duplicate()
+	if sequence.is_empty():
+		sequence = (normalized_sequences[randi() % normalized_sequences.size()] as Array).duplicate()
 	var attack_count := 0
 	var block_count := 0
 	var heal_count := 0
@@ -1124,8 +1235,25 @@ func _choose_enemy_attack_result() -> Dictionary:
 		"attack_count": attack_count,
 		"block_count": block_count,
 		"heal_count": heal_count,
+		"sequence": sequence,
 		"summary": _summarize_enemy_attack_sequence(sequence)
 	}
+
+func _roll_next_enemy_attack_preview() -> void:
+	var sequences = _normalize_enemy_attack_sequences(current_enemy.get("attack_sequences", []))
+	_current_enemy_sequence_tokens.clear()
+	_current_enemy_sequence_summary = ""
+	if sequences.is_empty():
+		requirements_title_label.visible = false
+		requirements_row.visible = false
+		_clear_requirements_row()
+		return
+	_current_enemy_sequence_tokens = (sequences[randi() % sequences.size()] as Array).duplicate()
+	_current_enemy_sequence_summary = _summarize_enemy_attack_sequence(_current_enemy_sequence_tokens)
+	requirements_title_label.text = "Attacco"
+	requirements_title_label.visible = true
+	requirements_row.visible = true
+	_build_requirements_row()
 
 func _normalize_enemy_attack_sequences(raw_sequences) -> Array:
 	var sequences: Array = []
@@ -1163,6 +1291,12 @@ func _summarize_enemy_attack_sequence(sequence: Array) -> String:
 func _heal_enemy_requirements(heal_amount: int) -> int:
 	if heal_amount <= 0:
 		return 0
+	if _enemy_uses_hp_model():
+		var restored_hp = min(heal_amount, max(current_enemy_max_hp - current_enemy_hp, 0))
+		if restored_hp > 0:
+			current_enemy_hp += restored_hp
+			damage_line_label.text = _get_enemy_meta_text(int(current_enemy.get("enemy_damage", 0)))
+		return restored_hp
 	var base_requirements = current_enemy.get("requirements", [])
 	if not (base_requirements is Array) or base_requirements.is_empty():
 		return 0
@@ -1215,6 +1349,33 @@ func _apply_character_ability() -> bool:
 			return true
 	reveal_hint_label.text = "L'abilita non puo essere usata in questo momento."
 	return false
+
+func _apply_character_starting_passives() -> void:
+	for effect in current_character_ability_effects:
+		if not (effect is Dictionary):
+			continue
+		var effect_type = str(effect.get("type", ""))
+		match effect_type:
+			"make_first_exhaustible_attack_perennial":
+				_make_first_exhaustible_attack_perennial()
+	_refresh_token_cost_states()
+
+func _make_first_exhaustible_attack_perennial() -> void:
+	for slot in token_tray.get_children():
+		if slot == null or not slot.has_method("has_token") or not slot.call("has_token"):
+			continue
+		var token = slot.call("get_token") as Control
+		if token == null or not token.has_method("get_result_data") or not token.has_method("set_result_data_value"):
+			continue
+		var token_data = token.call("get_result_data") as Dictionary
+		if str(token_data.get("durability_mode", "exhaustible")) != "exhaustible":
+			continue
+		var symbol_id = str(token_data.get("symbol_id", "")).strip_edges().to_lower()
+		if symbol_id != "spada" and symbol_id != "arco" and symbol_id != "pergamena":
+			continue
+		token.call("set_result_data_value", "durability_mode", "perennial")
+		token.call("set_result_data_value", "remaining_uses", 1)
+		return
 
 func _ability_reactivate_exhausted_die() -> bool:
 	if _exhausted_cells.is_empty():
@@ -1384,6 +1545,8 @@ func _apply_resolved_outputs(outputs: Array) -> void:
 	var requirement_entries: Array = []
 	var healing_entries: Array = []
 	var gold_entries: Array = []
+	var mana_entries: Array = []
+	var potion_entries: Array = []
 	for output in outputs:
 		if not (output is Dictionary):
 			continue
@@ -1395,10 +1558,16 @@ func _apply_resolved_outputs(outputs: Array) -> void:
 				healing_entries.append(output)
 			"moneta":
 				gold_entries.append(output)
+			"magia":
+				mana_entries.append(output)
+			"pozione":
+				potion_entries.append(output)
 			_:
 				requirement_entries.append(output)
 	_collect_healing_from_symbols(healing_entries)
 	_collect_gold_from_symbols(gold_entries)
+	_collect_mana_from_symbols(mana_entries)
+	_collect_potion_from_symbols(potion_entries)
 	_consume_enemy_requirements(requirement_entries)
 
 func _summarize_outputs(outputs: Array) -> String:
@@ -1575,15 +1744,14 @@ func _slot_token_is_rerollable(slot: PanelContainer) -> bool:
 
 func _get_enemy_meta_text(enemy_damage: int) -> String:
 	if str(current_enemy.get("category", "")) != "object":
+		if _enemy_uses_hp_model():
+			return "PV: %d/%d | Danno/colpo: %d" % [current_enemy_hp, current_enemy_max_hp, max(1, enemy_damage)]
 		var sequences = _normalize_enemy_attack_sequences(current_enemy.get("attack_sequences", []))
 		if sequences.is_empty():
 			return "Nessuna sequenza attacco"
 		var hp_text = "PV: %d" % current_enemy_requirements.size()
 		var damage_text = "Danno/colpo: %d" % max(1, enemy_damage)
-		var sequence_text = "Sequenze: %d" % sequences.size()
-		if not _current_enemy_sequence_summary.is_empty():
-			sequence_text = "Sequenza: %s" % _current_enemy_sequence_summary
-		return "%s | %s | %s" % [hp_text, damage_text, sequence_text]
+		return "%s | %s" % [hp_text, damage_text]
 	var slot_id = str(current_enemy.get("equipment_slot", "weapon"))
 	var attack_bonus = int(current_enemy.get("attack_bonus", 0))
 	var weapon_attack_count = int(current_enemy.get("weapon_attack_count", 0))
@@ -1594,6 +1762,12 @@ func _get_enemy_meta_text(enemy_damage: int) -> String:
 	if armor_value > 0:
 		return "Armatura %d" % armor_value
 	return ""
+
+func _enemy_uses_hp_model() -> bool:
+	if str(current_enemy.get("category", "")) == "object":
+		return false
+	var sequences = _normalize_enemy_attack_sequences(current_enemy.get("attack_sequences", []))
+	return not sequences.is_empty()
 
 func _update_battle_card_header(is_object: bool) -> void:
 	_ensure_object_header()
@@ -1679,6 +1853,10 @@ func _build_object_granted_icons_row() -> void:
 	for raw_icon in granted_icons:
 		var icon = _build_card_info_icon(str(raw_icon), durability_mode, charges)
 		requirements_row.add_child(icon)
+
+func _current_object_has_granted_icons() -> bool:
+	var granted_icons = current_enemy.get("granted_icons", current_enemy.get("requirements", []))
+	return granted_icons is Array and not granted_icons.is_empty()
 
 func _build_card_info_icon(icon_id: String, background_mode: String = "", charges: int = 0) -> Control:
 	var holder := Control.new()

@@ -21,8 +21,9 @@
 		],
 		"attempt_limit": 0,
 		"category": "monster",
-		"difficulty": 3,
+		"difficulty": 4,
 		"enemy_damage": 1,
+		"enemy_hp": 4,
 		"equipment_slot": "weapon",
 		"exhaustion_limit": 0,
 		"failure_effects": [],
@@ -42,7 +43,7 @@
 		"requirements": [],
 		"reward_effects": [
 			{
-				"amount": 10.0,
+				"amount": 10,
 				"type": "gain_coins"
 			}
 		],
@@ -76,6 +77,7 @@
 		"category": "monster",
 		"difficulty": 3,
 		"enemy_damage": 1,
+		"enemy_hp": 3,
 		"equipment_slot": "weapon",
 		"exhaustion_limit": 0,
 		"failure_effects": [],
@@ -118,48 +120,46 @@
 			[
 				"scudo",
 				"spada"
+			],
+			[
+				"spada",
+				"cuore",
+				"spada"
 			]
 		],
 		"attempt_limit": 0,
 		"category": "monster",
-		"difficulty": 4,
+		"difficulty": 6,
 		"enemy_damage": 2,
+		"enemy_hp": 6,
 		"equipment_slot": "weapon",
 		"exhaustion_limit": 0,
 		"failure_effects": [
 			{
-				"amount": 1.0,
+				"amount": 1,
 				"target": "chosen_die",
 				"type": "remove_symbol_from_die"
 			}
 		],
-		"failure_outcomes": [],
+		"failure_outcomes": [
+			"Rimuovi un simbolo da un dado."
+		],
 		"failure_text": "Rimuovi un simbolo da un dado.",
 		"flee_effects": [
 			{
-				"amount": 1.0,
+				"amount": 1,
 				"target": "chosen_die",
 				"type": "remove_symbol_from_die"
 			}
 		],
 		"flee_text": "Rimuovi un simbolo da un dado.",
 		"granted_durability_mode": "exhaustible",
-		"granted_icons": [
-			"ladro",
-			"magia",
-			"magia",
-			"arco"
-		],
+		"granted_icons": [],
 		"granted_remaining_uses": 1,
 		"id": "licantropo",
 		"image": "res://assets/enemies/werewolf.png",
 		"name": "Licantropo",
-		"requirements": [
-			"ladro",
-			"magia",
-			"magia",
-			"arco"
-		],
+		"requirements": [],
 		"reward_effects": [
 			{
 				"target": "chosen_die_face",
@@ -167,7 +167,9 @@
 			}
 		],
 		"reward_text": "Raddoppia un simbolo ad una faccia di un dado.",
-		"success_outcomes": [],
+		"success_outcomes": [
+			"Raddoppia un simbolo ad una faccia di un dado."
+		],
 		"weapon_attack_count": 0,
 		"weapon_damage_per_hit": 0
 	},
@@ -185,6 +187,7 @@
 		"category": "trap",
 		"difficulty": 1,
 		"enemy_damage": 3,
+		"enemy_hp": 1,
 		"equipment_slot": "weapon",
 		"exhaustion_limit": 1,
 		"failure_effects": [],
@@ -219,6 +222,7 @@
 		"category": "door",
 		"difficulty": 1,
 		"enemy_damage": 0,
+		"enemy_hp": 1,
 		"equipment_slot": "weapon",
 		"exhaustion_limit": 0,
 		"failure_effects": [],
@@ -257,6 +261,7 @@
 		"category": "event",
 		"difficulty": 2,
 		"enemy_damage": 0,
+		"enemy_hp": 2,
 		"equipment_slot": "weapon",
 		"exhaustion_limit": 0,
 		"failure_effects": [],
@@ -293,6 +298,7 @@
 		"category": "object",
 		"difficulty": 1,
 		"enemy_damage": 0,
+		"enemy_hp": 1,
 		"equipment_slot": "weapon",
 		"exhaustion_limit": 0,
 		"failure_effects": [],
@@ -327,6 +333,7 @@
 		"category": "object",
 		"difficulty": 1,
 		"enemy_damage": 0,
+		"enemy_hp": 1,
 		"equipment_slot": "armor",
 		"exhaustion_limit": 0,
 		"failure_effects": [],
@@ -363,6 +370,7 @@
 		"category": "object",
 		"difficulty": 1,
 		"enemy_damage": 0,
+		"enemy_hp": 1,
 		"equipment_slot": "armor",
 		"exhaustion_limit": 3,
 		"failure_effects": [],
@@ -397,6 +405,7 @@
 		"category": "object",
 		"difficulty": 1,
 		"enemy_damage": 0,
+		"enemy_hp": 1,
 		"equipment_slot": "weapon",
 		"exhaustion_limit": 0,
 		"failure_effects": [],
@@ -422,6 +431,77 @@
 		],
 		"weapon_attack_count": 1,
 		"weapon_attack_symbol": "arco",
+		"weapon_damage_per_hit": 1
+	},
+	{
+		"activation_cost_amount": 2,
+		"activation_cost_type": "mana",
+		"armor_value": 0,
+		"attack_bonus": 2,
+		"attack_sequences": [],
+		"attempt_limit": 0,
+		"category": "object",
+		"difficulty": 1,
+		"enemy_damage": 0,
+		"enemy_hp": 1,
+		"equipment_slot": "weapon",
+		"exhaustion_limit": 0,
+		"failure_effects": [],
+		"failure_outcomes": [],
+		"failure_text": "",
+		"flee_effects": [],
+		"flee_text": "",
+		"granted_durability_mode": "perennial",
+		"granted_icons": [
+			"spada"
+		],
+		"granted_remaining_uses": 1,
+		"id": "palla_di_fuoco",
+		"image": "res://assets/enemies/palla di fuoco.png",
+		"name": "Palla di fuoco",
+		"requirements": [
+			"pergamena"
+		],
+		"reward_effects": [],
+		"reward_text": "",
+		"success_outcomes": [],
+		"weapon_attack_count": 1,
+		"weapon_damage_per_hit": 3
+	},
+	{
+		"activation_cost_amount": 0,
+		"activation_cost_type": "none",
+		"armor_value": 0,
+		"attack_bonus": 0,
+		"attack_sequences": [],
+		"attempt_limit": 0,
+		"category": "object",
+		"difficulty": 2,
+		"enemy_damage": 0,
+		"enemy_hp": 2,
+		"equipment_slot": "weapon",
+		"exhaustion_limit": 0,
+		"failure_effects": [],
+		"failure_outcomes": [],
+		"failure_text": "",
+		"flee_effects": [],
+		"flee_text": "",
+		"granted_durability_mode": "exhaustible",
+		"granted_icons": [
+			"spada"
+		],
+		"granted_remaining_uses": 1,
+		"id": "daga",
+		"image": "res://assets/enemies/daga.png",
+		"name": "Daga",
+		"requirements": [
+			"spada",
+			"spada"
+		],
+		"reward_effects": [],
+		"reward_text": "",
+		"success_outcomes": [],
+		"weapon_attack_count": 1,
 		"weapon_damage_per_hit": 1
 	}
 ]
